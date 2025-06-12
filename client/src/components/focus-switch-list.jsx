@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Edit, Trash2, GripVertical } from "lucide-react";
@@ -36,7 +35,7 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
       onDrop={(e) => {
         e.preventDefault();
         e.currentTarget.classList.remove('border-blue-400', 'bg-blue-100/50');
-        
+
         try {
           const taskData = JSON.parse(e.dataTransfer.getData('text/plain'));
           if (taskData && taskData.id) {
@@ -51,7 +50,7 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
         <h3 className="text-sm font-medium text-blue-700 dark:text-blue-300">Focus Switch List</h3>
         <p className="text-xs text-blue-600 dark:text-blue-400">Drag tasks here to focus on them</p>
       </div>
-      
+
       {/* Task Rows */}
       <div className="divide-y divide-blue-200 dark:divide-blue-700 divide-dashed max-h-96 overflow-y-auto">
         {tasks.length === 0 ? (

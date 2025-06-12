@@ -48,7 +48,7 @@ export default function TodoApp() {
   // Filter tasks into main and later sections
   const mainTasks = tasks?.filter(task => !task.isLater && !task.completed) || [];
   const laterTasks = tasks?.filter(task => Boolean(task.isLater)) || [];
-  
+
   // Calculate statistics (only from main tasks)
   const completedTasks = mainTasks.filter(task => task.completed) || [];
   const pendingTasks = mainTasks.filter(task => !task.completed) || [];
@@ -138,14 +138,10 @@ export default function TodoApp() {
   };
 
   const handleAddToFocus = (task) => {
-    // Create a duplicate with a unique key for focus list
-    const focusTask = {
-      ...task,
-      focusId: `focus-${task.id}-${Date.now()}` // Unique identifier for focus list
-    };
-    
+    // Allow duplicate tasks in focus
+    const focusTask = { ...task, isFocus: true };
     setFocusTasks(prev => [...prev, focusTask]);
-    showNotification(`Task "${task.title}" added to Focus Switch List`, 'success');
+    showNotification(`"${task.title}" added to focus list`, 'success');
   };
 
   const handleRemoveFromFocus = (task) => {
