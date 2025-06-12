@@ -80,21 +80,18 @@ export default function TodoApp() {
     setCurrentTask(null);
   };
 
-  const handleUndoCompletion = (taskId) => {
-    const task = tasks?.find(t => t.id === taskId);
-    if (task) {
-      updateTask.mutate({
-        id: taskId,
-        title: task.title,
-        priority: task.priority,
-        estimatedTime: task.estimatedTime,
-        actualTime: null,
-        distractionLevel: null,
-        completed: false,
-        completedAt: null,
-      });
-      showNotification('Task completion undone', 'success');
-    }
+  const handleUndoCompletion = (task) => {
+    updateTask.mutate({
+      id: task.id,
+      title: task.title,
+      priority: task.priority,
+      estimatedTime: task.estimatedTime,
+      actualTime: null,
+      distractionLevel: null,
+      completed: false,
+      completedAt: null,
+    });
+    showNotification('Task completion undone', 'success');
   };
 
   const handleDeleteTask = (task) => {
@@ -202,6 +199,7 @@ export default function TodoApp() {
               onMoveToMain={handleMoveToMain}
               onDeleteTask={handleDeleteTask}
               onEditTask={handleEditTask}
+              onMoveToLater={handleMoveToLater}
             />
           </div>
         </div>

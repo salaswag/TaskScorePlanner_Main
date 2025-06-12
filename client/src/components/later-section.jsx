@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Edit, Trash2, ArrowUp } from "lucide-react";
 
-export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask }) {
+export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -18,7 +18,29 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
   };
 
   return (
-    <Card className="bg-gray-50/50 dark:bg-gray-900/50 shadow-sm border border-gray-200 dark:border-gray-700 border-dashed overflow-hidden mt-4">
+    <Card 
+      className="bg-gray-50/50 dark:bg-gray-900/50 shadow-sm border border-gray-200 dark:border-gray-700 border-dashed overflow-hidden mt-4"
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('border-blue-400', 'bg-blue-50/50');
+      }}
+      onDragLeave={(e) => {
+        e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50');
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50');
+        
+        try {
+          const taskData = JSON.parse(e.dataTransfer.getData('text/plain'));
+          if (taskData && taskData.id) {
+            onMoveToLater && onMoveToLater(taskData);
+          }
+        } catch (error) {
+          console.error('Error parsing dropped task data:', error);
+        }
+      }}
+    >
       <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 border-dashed">
         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Later (Not counted in score)</h3>
       </div>
