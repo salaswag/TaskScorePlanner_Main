@@ -1,3 +1,4 @@
+
 import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -8,6 +9,7 @@ export const tasks = pgTable("tasks", {
   priority: integer("priority").notNull().default(5),
   estimatedTime: integer("estimated_time").notNull(), // in minutes
   actualTime: integer("actual_time"), // in minutes, null until completed
+  distractionLevel: integer("distraction_level"), // 1-5, null until completed
   completed: boolean("completed").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
@@ -23,6 +25,7 @@ export const insertTaskSchema = createInsertSchema(tasks).pick({
 export const updateTaskSchema = z.object({
   id: z.number(),
   actualTime: z.number().nullable().optional(),
+  distractionLevel: z.number().min(1).max(5).nullable().optional(),
   completed: z.boolean().optional(),
   completedAt: z.union([z.string(), z.date()]).nullable().optional(),
 });

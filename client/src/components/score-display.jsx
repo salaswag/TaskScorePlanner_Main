@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3 } from "lucide-react";
 
@@ -8,8 +9,9 @@ export default function ScoreDisplay({
   pendingTasks, 
   totalEstimatedTime 
 }) {
-  const completedScore = completedTasks > 0 ? Math.round((totalScore / completedTasks) * 100) / 100 : 0;
-  const maxPossibleScore = totalTasks > 0 ? Math.round((totalScore / completedTasks) * totalTasks) : 0;
+  // Calculate the maximum possible score from all tasks
+  const allTasks = [...(completedTasks || []), ...(pendingTasks || [])];
+  const maxPossibleScore = allTasks.reduce((sum, task) => sum + (task.priority || 0), 0);
   const scorePercentage = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
 
   return (
@@ -25,12 +27,24 @@ export default function ScoreDisplay({
           <p className="text-xs text-gray-600 dark:text-gray-400">Priority Points ({scorePercentage}%)</p>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Tasks</span>
-            <span className="text-xs font-semibold text-black dark:text-white">{completedTasks}/{totalTasks}</span>
+        <div className="grid grid-cols-2 gap-4 text-center">
+          <div>
+            <div className="text-lg font-semibold text-black dark:text-white">{completedTasks?.length || 0}</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Completed</p>
+          </div>
+          <div>
+            <div className="text-lg font-semibold text-black dark:text-white">{pendingTasks?.length || 0}</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Pending</p>
           </div>
         </div>
+
+        {totalEstimatedTime > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Remaining: {Math.floor(totalEstimatedTime / 60)}h {totalEstimatedTime % 60}m
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

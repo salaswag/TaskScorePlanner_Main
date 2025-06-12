@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,6 +16,18 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
     if (priority >= 8) return "bg-red-100 text-red-800";
     if (priority >= 5) return "bg-yellow-100 text-yellow-800";
     return "bg-green-100 text-green-800";
+  };
+
+  const getDistractionColor = (level) => {
+    if (!level) return '';
+    const colors = [
+      'text-green-600', // 1
+      'text-green-500', // 2
+      'text-yellow-500', // 3
+      'text-orange-500', // 4
+      'text-red-500'    // 5
+    ];
+    return colors[level - 1];
   };
 
   if (isLoading) {
@@ -58,23 +71,11 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
           </div>
         ) : (
           tasks.map((task) => {
-            const getDistractionColor = (level) => {
-              if (!level) return '';
-              const colors = [
-                'text-green-600', // 1
-                'text-green-500', // 2
-                'text-yellow-500', // 3
-                'text-orange-500', // 4
-                'text-red-500'    // 5
-              ];
-              return colors[level - 1];
-            };
-
             return (
               <div 
                 key={task.id} 
                 className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors ${
-                  task.completed ? 'bg-gray-100 dark:bg-gray-800 opacity-70' : ''
+                  task.completed ? 'bg-gray-100 dark:bg-gray-800' : ''
                 }`}
               >
                 <div className="grid grid-cols-12 gap-4 items-center">
@@ -88,7 +89,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   </div>
                   <div className="col-span-1">
                     <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                      task.completed ? 'bg-gray-200 text-gray-600' : getPriorityColor(task.priority)
+                      task.completed ? 'bg-gray-300 text-gray-500' : getPriorityColor(task.priority)
                     }`}>
                       {task.priority}
                     </span>
@@ -96,12 +97,12 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   <div className="col-span-4">
                     <span className={`font-medium ${
                       task.completed 
-                        ? 'text-gray-500 dark:text-gray-400 line-through' 
+                        ? 'text-gray-500 dark:text-gray-500 line-through' 
                         : 'text-gray-900 dark:text-gray-100'
                     }`}>
                       {task.title}
                     </span>
-                    {task.distractionLevel && (
+                    {task.completed && task.distractionLevel && (
                       <div className={`text-xs mt-1 ${getDistractionColor(task.distractionLevel)}`}>
                         Distraction: {task.distractionLevel}/5
                       </div>
@@ -117,7 +118,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   </div>
                   <div className="col-span-2">
                     {task.completed && task.actualTime ? (
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-500">
                         <CheckCircle className="h-4 w-4 mr-1" />
                         <span>{formatTime(task.actualTime)}</span>
                       </div>
@@ -127,7 +128,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   </div>
                   <div className="col-span-2 flex space-x-2">
                     {task.completed ? (
-                      <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
+                      <span className="text-xs bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 px-2 py-1 rounded-full">
                         Completed
                       </span>
                     ) : (
