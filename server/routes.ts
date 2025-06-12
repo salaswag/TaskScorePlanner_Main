@@ -89,41 +89,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertUserSchema.parse(req.body);
       
-      // Check if user already exists
-      const existingUser = await activeStorage.getUserByUsername(validatedData.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+      const user = await activeStorage.createUser(validatedData);
+      
+      // Create session
+      req.session.user = { id: user.id, username: user.username };
+      
+      // Save session with error handling
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        res.status(201).json({ user: { id: user.id, username: user.username } });
+      });
+    } catch (error) {
+      console.error('Signup error:', error);
+      
+      if (error instanceof z.ZodError) {
+        const fieldErrors = error.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }));
+        return res.status(400).json({ 
+          message: "Invalid user data", 
+          errors: fieldErrors 
+        });
       }
       
-      const user = await activeStorage.createUser(validatedData);
-      req.session.user = { id: user.id, username: user.username };
-      res.status(201).json({ user: { id: user.id, username: user.username } });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid user data", errors: error.errors });
-      } else {
-        res.status(500).json({ message: "Failed to create user" });
+      if (error.message.includes('already exists')) {
+        return res.status(409).json({ message: "Username already exists" });
       }
+      
+      if (error.message.includes('characters long')) {
+        return res.status(400).json({ message: "Password must be at least 6 characters long" });
+      }
+      
+      res.status(500).json({ message: "Failed to create user account" });
     }
   });
 
   app.post("/api/auth/login", async (req, res) => {
     try {
       const validatedData = loginSchema.parse(req.body);
+      
+      // Rate limiting could be added here in the future
       const user = await activeStorage.verifyUser(validatedData.username, validatedData.password);
       
       if (!user) {
         return res.status(401).json({ message: "Invalid username or password" });
       }
       
+      // Create session
       req.session.user = { id: user.id, username: user.username };
-      res.json({ user: { id: user.id, username: user.username } });
+      
+      // Save session with error handling
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        res.json({ user: { id: user.id, username: user.username } });
+      });
     } catch (error) {
+      console.error('Login error:', error);
+      
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid login data", errors: error.errors });
-      } else {
-        res.status(500).json({ message: "Failed to login" });
+        const fieldErrors = error.errors.map(err => ({
+          field: err.path.join('.'),
+          message: err.message
+        }));
+        return res.status(400).json({ 
+          message: "Invalid login data", 
+          errors: fieldErrors 
+        });
       }
+      
+      if (error.message.includes('required')) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      res.status(500).json({ message: "Authentication failed" });
     }
   });
 

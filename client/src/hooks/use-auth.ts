@@ -34,29 +34,61 @@ export function useAuth() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: z.infer<typeof loginSchema>) => {
-      const response = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      return response.json();
+      try {
+        const response = await apiRequest('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Login failed');
+        }
+        
+        return response.json();
+      } catch (error) {
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error('Network error occurred during login');
+      }
     },
     onSuccess: (data: AuthResponse) => {
       queryClient.setQueryData(['/api/auth/me'], data.user);
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+    onError: (error: Error) => {
+      console.error('Login failed:', error.message);
     },
   });
 
   const signupMutation = useMutation({
     mutationFn: async (data: z.infer<typeof insertUserSchema>) => {
-      const response = await apiRequest('/api/auth/signup', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-      return response.json();
+      try {
+        const response = await apiRequest('/api/auth/signup', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Signup failed');
+        }
+        
+        return response.json();
+      } catch (error) {
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error('Network error occurred during signup');
+      }
     },
     onSuccess: (data: AuthResponse) => {
       queryClient.setQueryData(['/api/auth/me'], data.user);
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+    onError: (error: Error) => {
+      console.error('Signup failed:', error.message);
     },
   });
 

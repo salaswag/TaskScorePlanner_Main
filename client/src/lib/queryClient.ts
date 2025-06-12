@@ -14,15 +14,27 @@ export async function apiRequest(
     body?: string;
   }
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method: options?.method || 'GET',
-    headers: options?.body ? { "Content-Type": "application/json" } : {},
-    body: options?.body,
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(url, {
+      method: options?.method || 'GET',
+      headers: options?.body ? { "Content-Type": "application/json" } : {},
+      body: options?.body,
+      credentials: "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    // Don't throw for authentication endpoints, let them handle their own errors
+    if (url.includes('/api/auth/')) {
+      return res;
+    }
+
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error('Network error: Please check your connection');
+    }
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
