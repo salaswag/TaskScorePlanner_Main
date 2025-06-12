@@ -106,7 +106,27 @@ export class MongoStorage {
 
       // Convert string ID to ObjectId if needed
       const { ObjectId } = await import('mongodb');
-      const objectId = typeof id === 'string' && id.length === 24 ? new ObjectId(id) : id;
+      let objectId;
+      
+      if (typeof id === 'string' && id.length === 24) {
+        objectId = new ObjectId(id);
+      } else if (typeof id === 'number') {
+        // For numeric IDs, find by the id field instead of _id
+        const result = await this.tasksCollection.findOneAndUpdate(
+          { id: id },
+          { $set: updateFields },
+          { returnDocument: 'after' }
+        );
+        
+        if (!result.value) return undefined;
+        
+        return {
+          ...result.value,
+          id: result.value._id.toString()
+        };
+      } else {
+        objectId = id;
+      }
 
       const result = await this.tasksCollection.findOneAndUpdate(
         { _id: objectId },

@@ -41,7 +41,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/tasks/:id", async (req, res) => {
     try {
       const id = req.params.id;
-      const validatedData = updateTaskSchema.parse({ ...req.body, id });
+      // Convert to number if it's a numeric string, otherwise keep as string
+      const processedId = isNaN(Number(id)) ? id : Number(id);
+      const validatedData = updateTaskSchema.parse({ ...req.body, id: processedId });
       const updatedTask = await activeStorage.updateTask(validatedData);
       
       if (!updatedTask) {
@@ -51,8 +53,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedTask);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error('Validation error:', error.errors);
         res.status(400).json({ message: "Invalid update data", errors: error.errors });
       } else {
+        console.error('Update error:', error);
         res.status(500).json({ message: "Failed to update task" });
       }
     }

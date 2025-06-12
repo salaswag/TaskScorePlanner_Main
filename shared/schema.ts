@@ -23,7 +23,10 @@ export const insertTaskSchema = createInsertSchema(tasks).pick({
 });
 
 export const updateTaskSchema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
+  title: z.string().optional(),
+  priority: z.number().optional(),
+  estimatedTime: z.number().optional(),
   actualTime: z.number().nullable().optional(),
   distractionLevel: z.number().min(1).max(5).nullable().optional(),
   completed: z.boolean().optional(),
