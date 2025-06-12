@@ -9,7 +9,7 @@ import NotificationToast from "@/components/notification-toast";
 import UserMenu from "@/components/user-menu";
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
-import { Moon, Sun, CheckSquare } from "lucide-react";
+import { Moon, Sun, CheckSquare, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function TodoApp() {
@@ -209,24 +209,39 @@ export default function TodoApp() {
                 score: (
                   <div 
                     key="score"
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
-                      e.dataTransfer.effectAllowed = 'move';
-                    }}
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.dataTransfer.dropEffect = 'move';
+                      e.currentTarget.classList.add('border-t-4', 'border-blue-400');
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('border-t-4', 'border-blue-400');
                     }}
                     onDrop={(e) => {
                       e.preventDefault();
+                      e.currentTarget.classList.remove('border-t-4', 'border-blue-400');
                       const data = JSON.parse(e.dataTransfer.getData('text/plain'));
                       if (data.type === 'panel') {
                         handleReorderPanels(data.index, index);
                       }
                     }}
-                    className="cursor-move"
+                    className="relative transition-all duration-300 ease-in-out"
                   >
+                    <div 
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.currentTarget.closest('div').classList.add('opacity-50', 'scale-95');
+                      }}
+                      onDragEnd={(e) => {
+                        e.currentTarget.closest('div').classList.remove('opacity-50', 'scale-95');
+                      }}
+                      className="absolute top-2 right-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-grab active:cursor-grabbing z-10 transition-colors"
+                      title="Drag to reorder panel"
+                    >
+                      <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                    </div>
                     <ScoreDisplay 
                       totalScore={totalScore}
                       completedTasks={completedTasks}
@@ -239,24 +254,39 @@ export default function TodoApp() {
                 form: (
                   <div 
                     key="form"
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
-                      e.dataTransfer.effectAllowed = 'move';
-                    }}
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.dataTransfer.dropEffect = 'move';
+                      e.currentTarget.classList.add('border-t-4', 'border-blue-400');
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('border-t-4', 'border-blue-400');
                     }}
                     onDrop={(e) => {
                       e.preventDefault();
+                      e.currentTarget.classList.remove('border-t-4', 'border-blue-400');
                       const data = JSON.parse(e.dataTransfer.getData('text/plain'));
                       if (data.type === 'panel') {
                         handleReorderPanels(data.index, index);
                       }
                     }}
-                    className="cursor-move"
+                    className="relative transition-all duration-300 ease-in-out"
                   >
+                    <div 
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.currentTarget.closest('div').classList.add('opacity-50', 'scale-95');
+                      }}
+                      onDragEnd={(e) => {
+                        e.currentTarget.closest('div').classList.remove('opacity-50', 'scale-95');
+                      }}
+                      className="absolute top-2 right-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-grab active:cursor-grabbing z-10 transition-colors"
+                      title="Drag to reorder panel"
+                    >
+                      <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                    </div>
                     <TaskForm 
                       onSubmit={(taskData) => {
                         createTask.mutate(taskData);
@@ -269,24 +299,39 @@ export default function TodoApp() {
                 focus: (
                   <div 
                     key="focus"
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
-                      e.dataTransfer.effectAllowed = 'move';
-                    }}
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.dataTransfer.dropEffect = 'move';
+                      e.currentTarget.classList.add('border-t-4', 'border-blue-400');
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('border-t-4', 'border-blue-400');
                     }}
                     onDrop={(e) => {
                       e.preventDefault();
+                      e.currentTarget.classList.remove('border-t-4', 'border-blue-400');
                       const data = JSON.parse(e.dataTransfer.getData('text/plain'));
                       if (data.type === 'panel') {
                         handleReorderPanels(data.index, index);
                       }
                     }}
-                    className="cursor-move"
+                    className="relative transition-all duration-300 ease-in-out"
                   >
+                    <div 
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.currentTarget.closest('div').classList.add('opacity-50', 'scale-95');
+                      }}
+                      onDragEnd={(e) => {
+                        e.currentTarget.closest('div').classList.remove('opacity-50', 'scale-95');
+                      }}
+                      className="absolute top-2 right-2 p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-grab active:cursor-grabbing z-10 transition-colors"
+                      title="Drag to reorder panel"
+                    >
+                      <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                    </div>
                     <FocusSwitchList 
                       tasks={focusTasks}
                       onMoveToMain={handleMoveToMain}

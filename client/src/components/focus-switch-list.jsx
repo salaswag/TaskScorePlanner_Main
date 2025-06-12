@@ -62,26 +62,40 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
           tasks.map((task, index) => (
             <div 
               key={task.focusId || `focus-${task.id}-${index}`}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('text/plain', JSON.stringify({type: 'reorder', index}));
-                e.dataTransfer.effectAllowed = 'move';
-              }}
               onDragOver={(e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
+                e.currentTarget.classList.add('border-t-2', 'border-blue-400');
+              }}
+              onDragLeave={(e) => {
+                e.currentTarget.classList.remove('border-t-2', 'border-blue-400');
               }}
               onDrop={(e) => {
                 e.preventDefault();
+                e.currentTarget.classList.remove('border-t-2', 'border-blue-400');
                 const data = JSON.parse(e.dataTransfer.getData('text/plain'));
                 if (data.type === 'reorder' && onReorder) {
                   onReorder(data.index, index);
                 }
               }}
-              className={`px-4 py-4 transition-colors group border-l-4 ${getPriorityBgColor(task.priority)} hover:shadow-sm cursor-move`}
+              className={`px-4 py-4 transition-all duration-300 ease-in-out group border-l-4 ${getPriorityBgColor(task.priority)} hover:shadow-md transform hover:scale-[1.02]`}
             >
               <div className="flex items-center gap-3">
-                <GripVertical className="h-4 w-4 text-gray-400 opacity-50 group-hover:opacity-100 cursor-grab active:cursor-grabbing flex-shrink-0" />
+                <div 
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify({type: 'reorder', index}));
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.currentTarget.closest('.group').classList.add('opacity-50', 'scale-95');
+                  }}
+                  onDragEnd={(e) => {
+                    e.currentTarget.closest('.group').classList.remove('opacity-50', 'scale-95');
+                  }}
+                  className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-grab active:cursor-grabbing flex-shrink-0 transition-colors"
+                  title="Drag to reorder"
+                >
+                  <GripVertical className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+                </div>
                 <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2 flex-shrink-0 ${getPriorityColor(task.priority)}`}>
                   {task.priority}
                 </span>
