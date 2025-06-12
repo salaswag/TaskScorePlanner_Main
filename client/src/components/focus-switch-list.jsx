@@ -12,9 +12,15 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
   };
 
   const getPriorityColor = (priority) => {
-    if (priority >= 8) return "border-red-200 text-red-600";
-    if (priority >= 5) return "border-yellow-200 text-yellow-600";
-    return "border-green-200 text-green-600";
+    if (priority >= 8) return "border-red-200 text-red-600 bg-red-50 dark:bg-red-900/20";
+    if (priority >= 5) return "border-yellow-200 text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20";
+    return "border-green-200 text-green-600 bg-green-50 dark:bg-green-900/20";
+  };
+
+  const getPriorityBgColor = (priority) => {
+    if (priority >= 8) return "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800";
+    if (priority >= 5) return "bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800";
+    return "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800";
   };
 
   return (
@@ -56,38 +62,40 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
           tasks.map((task) => (
             <div 
               key={`focus-${task.id}-${task.priority}-${task.title}`}
-              className="px-4 py-2 hover:bg-blue-100/50 dark:hover:bg-blue-800/30 transition-colors group"
+              className={`px-4 py-4 transition-colors group border-l-4 ${getPriorityBgColor(task.priority)} hover:shadow-sm`}
             >
-              <div className="flex items-center gap-2">
-                <GripVertical className="h-3 w-3 text-blue-400 opacity-50 group-hover:opacity-100 cursor-grab active:cursor-grabbing flex-shrink-0" />
-                <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-medium border flex-shrink-0 ${getPriorityColor(task.priority)}`}>
+              <div className="flex items-center gap-3">
+                <GripVertical className="h-4 w-4 text-gray-400 opacity-50 group-hover:opacity-100 cursor-grab active:cursor-grabbing flex-shrink-0" />
+                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2 flex-shrink-0 ${getPriorityColor(task.priority)}`}>
                   {task.priority}
                 </span>
-                <span className="text-xs text-blue-700 dark:text-blue-300 truncate flex-1 min-w-0">
-                  {task.title}
-                </span>
-                <div className="flex items-center text-xs text-blue-500 dark:text-blue-400 flex-shrink-0">
-                  <Clock className="h-3 w-3 mr-1" />
-                  <span>{formatTime(task.estimatedTime)}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 block leading-tight">
+                    {task.title}
+                  </span>
+                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>{formatTime(task.estimatedTime)}</span>
+                  </div>
                 </div>
                 <div className="flex space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onEditTask && onEditTask(task)}
-                    className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 text-xs px-1 py-0.5 h-5"
+                    className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1"
                     title="Edit Task"
                   >
-                    <Edit className="h-3 w-3" />
+                    <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onDeleteTask(task)}
-                    className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-1 py-0.5 h-5"
+                    className="text-red-500 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 px-2 py-1"
                     title="Remove from Focus"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

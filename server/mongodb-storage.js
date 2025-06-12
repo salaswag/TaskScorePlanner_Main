@@ -122,18 +122,24 @@ export class MongoStorage {
       if (updateFields.completed !== undefined) {
         updateFields.completed = Boolean(updateFields.completed);
       }
-      if (updateFields.actualTime !== undefined && updateFields.actualTime !== null) {
-        updateFields.actualTime = Number(updateFields.actualTime);
+      if (updateFields.actualTime !== undefined) {
+        updateFields.actualTime = updateFields.actualTime === null ? null : Number(updateFields.actualTime);
       }
-      if (updateFields.distractionLevel !== undefined && updateFields.distractionLevel !== null) {
-        updateFields.distractionLevel = Number(updateFields.distractionLevel);
+      if (updateFields.distractionLevel !== undefined) {
+        updateFields.distractionLevel = updateFields.distractionLevel === null ? null : Number(updateFields.distractionLevel);
+      }
+      if (updateFields.priority !== undefined) {
+        updateFields.priority = Number(updateFields.priority);
+      }
+      if (updateFields.estimatedTime !== undefined) {
+        updateFields.estimatedTime = Number(updateFields.estimatedTime);
       }
 
       console.log('Updating task:', id, updateFields);
 
       // Try to update by numeric id first
       let result = await this.tasksCollection.findOneAndUpdate(
-        { id: parseInt(id) },
+        { id: Number(id) },
         { $set: updateFields },
         { returnDocument: 'after' }
       );
@@ -162,9 +168,9 @@ export class MongoStorage {
       return {
         ...result.value,
         id: result.value.id || result.value._id.toString(),
-        actualTime: result.value.actualTime || null,
-        distractionLevel: result.value.distractionLevel || null,
-        isLater: result.value.isLater || false
+        actualTime: result.value.actualTime,
+        distractionLevel: result.value.distractionLevel,
+        isLater: Boolean(result.value.isLater)
       };
     } catch (error) {
       console.error('Error updating task:', error);
