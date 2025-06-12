@@ -102,20 +102,6 @@ export default function TodoApp() {
     showNotification('Task deletion undone', 'success');
   };
 
-  const showNotification = (message, type = 'success', hasUndo = false, undoAction = null) => {
-    const id = Date.now();
-    const notification = { id, message, type, hasUndo, undoAction };
-    setNotifications(prev => [...prev, notification]);
-    
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 5000);
-  };
-
-  const hideNotification = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
   
 
   return (
