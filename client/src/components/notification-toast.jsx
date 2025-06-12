@@ -30,9 +30,13 @@ export default function NotificationToast({ notification, onClose, onUndo }) {
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm text-gray-900 dark:text-gray-100">
-            {notification.message}
-          </p>
+          <div className="text-sm text-gray-900 dark:text-gray-100">
+            {notification.message.split(' - ').map((part, index) => (
+              <div key={index} className={index === 0 ? 'font-medium mb-1' : 'text-xs text-gray-600 dark:text-gray-400'}>
+                {part}
+              </div>
+            ))}
+          </div>
         </div>
         <Button
           variant="ghost"

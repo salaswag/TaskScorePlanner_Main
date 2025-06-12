@@ -51,6 +51,9 @@ export default function TodoApp() {
     if (currentTask) {
       updateTask.mutate({
         id: currentTask.id,
+        title: currentTask.title,
+        priority: currentTask.priority,
+        estimatedTime: currentTask.estimatedTime,
         actualTime,
         distractionLevel,
         completed: true,
@@ -62,7 +65,7 @@ export default function TodoApp() {
       const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
       showNotification(
-        `Task completed successfully! ${currentTask.title} - ${timeStr} actual`,
+        `Task completed successfully! - ${currentTask.title} (${timeStr} actual time)`,
         'success',
         true,
         () => handleUndoCompletion(currentTask.id)
@@ -73,14 +76,20 @@ export default function TodoApp() {
   };
 
   const handleUndoCompletion = (taskId) => {
-    updateTask.mutate({
-      id: taskId,
-      actualTime: null,
-      distractionLevel: null,
-      completed: false,
-      completedAt: null,
-    });
-    showNotification('Task completion undone', 'success');
+    const task = tasks?.find(t => t.id === taskId);
+    if (task) {
+      updateTask.mutate({
+        id: taskId,
+        title: task.title,
+        priority: task.priority,
+        estimatedTime: task.estimatedTime,
+        actualTime: null,
+        distractionLevel: null,
+        completed: false,
+        completedAt: null,
+      });
+      showNotification('Task completion undone', 'success');
+    }
   };
 
   const handleDeleteTask = (task) => {
