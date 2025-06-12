@@ -1,106 +1,144 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Clock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Clock, CheckCircle } from "lucide-react";
 
 export default function TimerModal({ isOpen, task, onClose, onConfirm }) {
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(30);
+  const [actualTime, setActualTime] = useState(30);
+  const [isRunning, setIsRunning] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
-    if (task) {
-      const estimatedHours = Math.floor(task.estimatedTime / 60);
-      const estimatedMinutes = task.estimatedTime % 60;
-      setHours(estimatedHours);
-      setMinutes(estimatedMinutes);
+    let interval = null;
+    if (isRunning) {
+      interval = setInterval(() => {
+        setElapsedTime(prevTime => prevTime + 1);
+      }, 1000);
+    } else if (!isRunning && elapsedTime !== 0) {
+      clearInterval(interval);
     }
-  }, [task]);
+    return () => clearInterval(interval);
+  }, [isRunning, elapsedTime]);
+
+  const handleStart = () => {
+    setIsRunning(true);
+    setElapsedTime(0);
+  };
+
+  const handleStop = () => {
+    setIsRunning(false);
+    setActualTime(Math.floor(elapsedTime / 60));
+  };
 
   const handleConfirm = () => {
-    const totalMinutes = parseInt(hours) * 60 + parseInt(minutes);
-    onConfirm(totalMinutes);
+    const timeInMinutes = elapsedTime > 0 ? Math.floor(elapsedTime / 60) : actualTime;
+    if (timeInMinutes > 0) {
+      onConfirm(timeInMinutes);
+      setActualTime(30);
+      setElapsedTime(0);
+      setIsRunning(false);
+    }
   };
 
-  const formatTime = (minutes) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  const handleClose = () => {
+    setActualTime(30);
+    setElapsedTime(0);
+    setIsRunning(false);
+    onClose();
   };
 
-  if (!task) return null;
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatTimeMinutes = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  };
+
+  if (!isOpen || !task) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="text-center mb-6">
-            <Clock className="h-12 w-12 text-black mx-auto mb-4" />
-            <DialogTitle className="text-xl font-semibold text-black mb-2">
-              Task Completion
-            </DialogTitle>
-            <p className="text-gray-600">How long did this task actually take?</p>
-          </div>
+          <DialogTitle className="flex items-center space-x-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <span>Complete Task</span>
+          </DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-4">
+
+        <div className="space-y-6 p-4">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              {task.title}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Estimated: {formatTimeMinutes(task.estimatedTime)}
+            </p>
+          </div>
+
+          {/* Timer Section */}
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+            <div className="text-2xl font-mono font-bold text-gray-900 dark:text-gray-100 mb-4">
+              {formatTime(elapsedTime)}
+            </div>
+            <div className="flex justify-center space-x-2">
+              <Button
+                onClick={handleStart}
+                disabled={isRunning}
+                variant="outline"
+                size="sm"
+              >
+                Start Timer
+              </Button>
+              <Button
+                onClick={handleStop}
+                disabled={!isRunning}
+                variant="outline"
+                size="sm"
+              >
+                Stop Timer
+              </Button>
+            </div>
+          </div>
+
+          {/* Time Slider */}
           <div>
-            <Label className="block text-sm font-medium text-black mb-2">
-              Actual Time Spent
-            </Label>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="block text-xs text-gray-500 mb-1">Hours</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="23"
-                  value={hours}
-                  onChange={(e) => setHours(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <Label className="block text-xs text-gray-500 mb-1">Minutes</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="59"
-                  value={minutes}
-                  onChange={(e) => setMinutes(e.target.value)}
-                  className="w-full"
-                />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Actual time spent: {formatTimeMinutes(actualTime)}
+            </label>
+            <div className="relative">
+              <input
+                type="range"
+                min="5"
+                max="240"
+                step="5"
+                value={actualTime}
+                onChange={(e) => setActualTime(parseInt(e.target.value))}
+                className="slider w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <span>5m</span>
+                <span>4h</span>
               </div>
             </div>
           </div>
-          
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Estimated:</span>
-              <span className="font-medium">{formatTime(task.estimatedTime)}</span>
-            </div>
-            <div className="flex justify-between text-sm mt-1">
-              <span className="text-gray-600">Actual:</span>
-              <span className="font-medium">{formatTime(parseInt(hours) * 60 + parseInt(minutes))}</span>
-            </div>
+
+          <div className="flex space-x-3">
+            <Button onClick={handleClose} variant="outline" className="flex-1">
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleConfirm} 
+              className="flex-1"
+            >
+              Complete Task
+            </Button>
           </div>
-        </div>
-        
-        <div className="flex space-x-3 mt-6">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            className="flex-1 bg-black text-white hover:bg-gray-800"
-          >
-            Complete Task
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

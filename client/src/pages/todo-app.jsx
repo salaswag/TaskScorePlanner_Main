@@ -129,31 +129,36 @@ export default function TodoApp() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8 bg-white dark:bg-black">
-        {/* Top Section: Score Display and Task Form Side by Side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <ScoreDisplay 
-            totalScore={totalScore}
-            completedTasks={completedTasks.length}
-            totalTasks={tasks?.length || 0}
-            pendingTasks={pendingTasks.length}
-            totalEstimatedTime={totalEstimatedTime}
-          />
-          <TaskForm 
-            onSubmit={(taskData) => {
-              createTask.mutate(taskData);
-              showNotification(`Task "${taskData.title}" added successfully!`, 'success');
-            }}
-            isLoading={createTask.isPending}
-          />
-        </div>
+        {/* Main Layout: Left sidebar with scoring/form, Right main area with tasks */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            <ScoreDisplay 
+              totalScore={totalScore}
+              completedTasks={completedTasks.length}
+              totalTasks={tasks?.length || 0}
+              pendingTasks={pendingTasks.length}
+              totalEstimatedTime={totalEstimatedTime}
+            />
+            <TaskForm 
+              onSubmit={(taskData) => {
+                createTask.mutate(taskData);
+                showNotification(`Task "${taskData.title}" added successfully!`, 'success');
+              }}
+              isLoading={createTask.isPending}
+            />
+          </div>
 
-        {/* Task List Table */}
-        <TaskTable 
-          tasks={tasks || []}
-          isLoading={isLoading}
-          onCompleteTask={handleCompleteTask}
-          onDeleteTask={handleDeleteTask}
-        />
+          {/* Right Main Area */}
+          <div className="lg:col-span-2">
+            <TaskTable 
+              tasks={tasks || []}
+              isLoading={isLoading}
+              onCompleteTask={handleCompleteTask}
+              onDeleteTask={handleDeleteTask}
+            />
+          </div>
+        </div>
       </main>
 
       {/* Timer Modal */}

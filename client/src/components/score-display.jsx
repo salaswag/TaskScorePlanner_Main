@@ -20,27 +20,19 @@ export default function ScoreDisplay({
           <h2 className="text-lg font-semibold text-black dark:text-white">Your Score</h2>
         </div>
         
-        <div className="text-center mb-6">
-          <div className="text-4xl font-bold text-black dark:text-white mb-2">{totalScore}</div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Priority Points Earned</p>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{pendingTasks} points remaining</p>
+        <div className="text-center mb-4">
+          <div className="text-3xl font-bold text-black dark:text-white mb-1">{totalScore}</div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Priority Points</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tasks</span>
             <span className="text-sm font-semibold text-black dark:text-white">{completedTasks}/{totalTasks}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Priority Score</span>
-            <span className="text-sm font-semibold text-black dark:text-white">{totalScore}/{totalScore + pendingTasks}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Time Efficiency</span>
-            <span className="text-sm font-semibold text-black dark:text-white">{timeStr}</span>
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-            {totalEstimatedTime > 0 ? `${pendingTasks} tasks estimated` : 'No estimates'}
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+            <span className="text-sm font-semibold text-black dark:text-white">{totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%</span>
           </div>
         </div>
       </CardContent>

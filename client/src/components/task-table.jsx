@@ -39,9 +39,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-          <div className="col-span-1">
-            <Checkbox />
-          </div>
+          <div className="col-span-1">Done</div>
           <div className="col-span-1">Priority</div>
           <div className="col-span-4">Task</div>
           <div className="col-span-2">Estimated Time</div>
@@ -71,6 +69,8 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   <Checkbox 
                     checked={task.completed} 
                     disabled={task.completed}
+                    onCheckedChange={() => !task.completed && onCompleteTask(task)}
+                    className="cursor-pointer"
                   />
                 </div>
                 <div className="col-span-1">
@@ -86,14 +86,14 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                 <div className="col-span-2">
                   <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                     <Clock className="h-4 w-4 mr-1" />
-                    <span>{formatTime(task.estimatedTime)} est.</span>
+                    <span>{formatTime(task.estimatedTime)}</span>
                   </div>
                 </div>
                 <div className="col-span-2">
-                  {task.actualTime ? (
+                  {task.actualTime && task.actualTime > 0 ? (
                     <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                       <CheckCircle className="h-4 w-4 mr-1" />
-                      <span>{formatTime(task.actualTime)} actual</span>
+                      <span>{formatTime(task.actualTime)}</span>
                     </div>
                   ) : (
                     <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
@@ -106,15 +106,6 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                     </span>
                   ) : (
                     <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onCompleteTask(task)}
-                        className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                        title="Complete Task"
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"

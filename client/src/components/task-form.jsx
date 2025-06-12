@@ -45,10 +45,10 @@ export default function TaskForm({ onSubmit, isLoading }) {
           </div>
 
           {/* Priority and Time Controls */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
             {/* Priority Slider */}
             <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-3">
+              <label className="block text-sm font-medium text-black dark:text-white mb-2">
                 Priority: {priority}
               </label>
               <div className="relative">
@@ -69,7 +69,7 @@ export default function TaskForm({ onSubmit, isLoading }) {
 
             {/* Estimated Time Slider */}
             <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-3">
+              <label className="block text-sm font-medium text-black dark:text-white mb-2">
                 Estimated Time: {formatTime(estimatedTime)}
               </label>
               <div className="relative">
