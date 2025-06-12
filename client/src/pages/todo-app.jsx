@@ -137,9 +137,9 @@ export default function TodoApp() {
           <div className="lg:col-span-1 space-y-6">
             <ScoreDisplay 
               totalScore={totalScore}
-              completedTasks={completedTasks.length}
+              completedTasks={completedTasks}
               totalTasks={tasks?.length || 0}
-              pendingTasks={pendingTasks.length}
+              pendingTasks={pendingTasks}
               totalEstimatedTime={totalEstimatedTime}
             />
             <TaskForm 
