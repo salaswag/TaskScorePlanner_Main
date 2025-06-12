@@ -28,6 +28,8 @@ export function useAuth() {
         return null;
       }
     },
+    retry: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const loginMutation = useMutation({

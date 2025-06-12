@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 
 export function useTasks() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const {
     data: tasks,
