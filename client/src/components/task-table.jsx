@@ -117,7 +117,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                     </div>
                   </div>
                   <div className="col-span-2">
-                    {task.completed && task.actualTime ? (
+                    {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
                       <div className="flex items-center text-sm text-gray-500 dark:text-gray-500">
                         <CheckCircle className="h-4 w-4 mr-1" />
                         <span>{formatTime(task.actualTime)}</span>
