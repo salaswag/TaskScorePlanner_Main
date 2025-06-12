@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Edit, Trash2, GripVertical } from "lucide-react";
 
-export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onEditTask, onAddToFocus }) {
+export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onEditTask, onAddToFocus, onReorder }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -59,10 +59,26 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
             <p className="text-xs">Drag tasks here to focus</p>
           </div>
         ) : (
-          tasks.map((task) => (
+          tasks.map((task, index) => (
             <div 
-              key={`focus-${task.id}-${task.priority}-${task.title}`}
-              className={`px-4 py-4 transition-colors group border-l-4 ${getPriorityBgColor(task.priority)} hover:shadow-sm`}
+              key={task.focusId || `focus-${task.id}-${index}`}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify({type: 'reorder', index}));
+                e.dataTransfer.effectAllowed = 'move';
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                if (data.type === 'reorder' && onReorder) {
+                  onReorder(data.index, index);
+                }
+              }}
+              className={`px-4 py-4 transition-colors group border-l-4 ${getPriorityBgColor(task.priority)} hover:shadow-sm cursor-move`}
             >
               <div className="flex items-center gap-3">
                 <GripVertical className="h-4 w-4 text-gray-400 opacity-50 group-hover:opacity-100 cursor-grab active:cursor-grabbing flex-shrink-0" />

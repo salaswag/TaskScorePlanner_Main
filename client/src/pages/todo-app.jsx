@@ -17,6 +17,7 @@ export default function TodoApp() {
   const [currentTask, setCurrentTask] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [focusTasks, setFocusTasks] = useState([]);
+  const [panelOrder, setPanelOrder] = useState(['score', 'form', 'focus']);
 
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
   const { theme, setTheme } = useTheme();
@@ -45,8 +46,8 @@ export default function TodoApp() {
   };
 
   // Filter tasks into main and later sections
-  const mainTasks = tasks?.filter(task => !task.isLater) || [];
-  const laterTasks = tasks?.filter(task => task.isLater) || [];
+  const mainTasks = tasks?.filter(task => !task.isLater && !task.completed) || [];
+  const laterTasks = tasks?.filter(task => Boolean(task.isLater)) || [];
   
   // Calculate statistics (only from main tasks)
   const completedTasks = mainTasks.filter(task => task.completed) || [];
@@ -152,6 +153,24 @@ export default function TodoApp() {
     showNotification(`Task "${task.title}" removed from Focus Switch List`, 'success');
   };
 
+  const handleReorderFocusTasks = (fromIndex, toIndex) => {
+    setFocusTasks(prev => {
+      const newTasks = [...prev];
+      const [removed] = newTasks.splice(fromIndex, 1);
+      newTasks.splice(toIndex, 0, removed);
+      return newTasks;
+    });
+  };
+
+  const handleReorderPanels = (fromIndex, toIndex) => {
+    setPanelOrder(prev => {
+      const newOrder = [...prev];
+      const [removed] = newOrder.splice(fromIndex, 1);
+      newOrder.splice(toIndex, 0, removed);
+      return newOrder;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Header */}
@@ -185,27 +204,102 @@ export default function TodoApp() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <ScoreDisplay 
-              totalScore={totalScore}
-              completedTasks={completedTasks}
-              totalTasks={mainTasks.length}
-              pendingTasks={pendingTasks}
-              totalEstimatedTime={totalEstimatedTime}
-            />
-            <TaskForm 
-              onSubmit={(taskData) => {
-                createTask.mutate(taskData);
-                showNotification(`Task "${taskData.title}" added successfully!`, 'success');
-              }}
-              isLoading={createTask.isPending}
-            />
-            <FocusSwitchList 
-              tasks={focusTasks}
-              onMoveToMain={handleMoveToMain}
-              onDeleteTask={handleRemoveFromFocus}
-              onEditTask={handleEditTask}
-              onAddToFocus={handleAddToFocus}
-            />
+            {panelOrder.map((panelType, index) => {
+              const panelComponents = {
+                score: (
+                  <div 
+                    key="score"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = 'move';
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                      if (data.type === 'panel') {
+                        handleReorderPanels(data.index, index);
+                      }
+                    }}
+                    className="cursor-move"
+                  >
+                    <ScoreDisplay 
+                      totalScore={totalScore}
+                      completedTasks={completedTasks}
+                      totalTasks={mainTasks.length}
+                      pendingTasks={pendingTasks}
+                      totalEstimatedTime={totalEstimatedTime}
+                    />
+                  </div>
+                ),
+                form: (
+                  <div 
+                    key="form"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = 'move';
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                      if (data.type === 'panel') {
+                        handleReorderPanels(data.index, index);
+                      }
+                    }}
+                    className="cursor-move"
+                  >
+                    <TaskForm 
+                      onSubmit={(taskData) => {
+                        createTask.mutate(taskData);
+                        showNotification(`Task "${taskData.title}" added successfully!`, 'success');
+                      }}
+                      isLoading={createTask.isPending}
+                    />
+                  </div>
+                ),
+                focus: (
+                  <div 
+                    key="focus"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', JSON.stringify({type: 'panel', index}));
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = 'move';
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                      if (data.type === 'panel') {
+                        handleReorderPanels(data.index, index);
+                      }
+                    }}
+                    className="cursor-move"
+                  >
+                    <FocusSwitchList 
+                      tasks={focusTasks}
+                      onMoveToMain={handleMoveToMain}
+                      onDeleteTask={handleRemoveFromFocus}
+                      onEditTask={handleEditTask}
+                      onAddToFocus={handleAddToFocus}
+                      onReorder={handleReorderFocusTasks}
+                    />
+                  </div>
+                )
+              };
+              return panelComponents[panelType];
+            })}
           </div>
 
           {/* Right Main Area */}

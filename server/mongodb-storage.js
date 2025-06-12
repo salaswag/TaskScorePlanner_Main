@@ -81,7 +81,7 @@ export class MongoStorage {
       // Get the next numeric ID
       const lastTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
       const nextId = lastTask ? (lastTask.id || 0) + 1 : 1;
-      
+
       const task = {
         ...taskData,
         id: nextId,
