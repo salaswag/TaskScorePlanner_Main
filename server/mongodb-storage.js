@@ -48,8 +48,8 @@ export class MongoStorage {
         id: task.id || task._id.toString(),
         createdAt: task.createdAt || new Date(),
         completedAt: task.completedAt || null,
-        actualTime: task.actualTime || null,
-        distractionLevel: task.distractionLevel || null,
+        actualTime: task.actualTime,
+        distractionLevel: task.distractionLevel,
         isLater: task.isLater || false,
         userId: task.userId || null
       }));
