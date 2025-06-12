@@ -97,8 +97,12 @@ export class MongoStorage {
         updateFields.completedAt = new Date(updateFields.completedAt);
       }
       
+      // Convert string ID to ObjectId if needed
+      const { ObjectId } = await import('mongodb');
+      const objectId = typeof id === 'string' && id.length === 24 ? new ObjectId(id) : id;
+      
       const result = await this.tasksCollection.findOneAndUpdate(
-        { _id: id },
+        { _id: objectId },
         { $set: updateFields },
         { returnDocument: 'after' }
       );
@@ -117,7 +121,11 @@ export class MongoStorage {
 
   async deleteTask(id) {
     try {
-      const result = await this.tasksCollection.deleteOne({ _id: id });
+      // Convert string ID to ObjectId if needed
+      const { ObjectId } = await import('mongodb');
+      const objectId = typeof id === 'string' && id.length === 24 ? new ObjectId(id) : id;
+      
+      const result = await this.tasksCollection.deleteOne({ _id: objectId });
       return result.deletedCount > 0;
     } catch (error) {
       console.error('Error deleting task:', error);

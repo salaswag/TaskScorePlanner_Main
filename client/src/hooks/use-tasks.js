@@ -16,7 +16,10 @@ export function useTasks() {
 
   const createTask = useMutation({
     mutationFn: async (taskData) => {
-      const response = await apiRequest("POST", "/api/tasks", taskData);
+      const response = await apiRequest("/api/tasks", {
+        method: "POST",
+        body: JSON.stringify(taskData)
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -26,7 +29,10 @@ export function useTasks() {
 
   const updateTask = useMutation({
     mutationFn: async (taskData) => {
-      const response = await apiRequest("PATCH", `/api/tasks/${taskData.id}`, taskData);
+      const response = await apiRequest(`/api/tasks/${taskData.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(taskData)
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -36,7 +42,9 @@ export function useTasks() {
 
   const deleteTask = useMutation({
     mutationFn: async (taskId) => {
-      await apiRequest("DELETE", `/api/tasks/${taskId}`);
+      await apiRequest(`/api/tasks/${taskId}`, {
+        method: "DELETE"
+      });
       return taskId;
     },
     onSuccess: () => {

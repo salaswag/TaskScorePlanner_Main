@@ -14,7 +14,7 @@ export default function TodoApp() {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  
+
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
   const { theme, setTheme } = useTheme();
 
@@ -31,7 +31,7 @@ export default function TodoApp() {
     const id = Date.now();
     const notification = { id, message, type, hasUndo, undoAction };
     setNotifications(prev => [...prev, notification]);
-    
+
     setTimeout(() => {
       hideNotification(id);
     }, 5000);
@@ -40,8 +40,6 @@ export default function TodoApp() {
   const hideNotification = (id) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
-
-  
 
   // Calculate statistics
   const completedTasks = tasks?.filter(task => task.completed) || [];
@@ -57,11 +55,11 @@ export default function TodoApp() {
         completed: true,
         completedAt: new Date().toISOString(),
       });
-      
+
       const hours = Math.floor(actualTime / 60);
       const minutes = actualTime % 60;
       const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-      
+
       showNotification(
         `Task completed successfully! ${currentTask.title} - ${timeStr} actual`,
         'success',
@@ -101,8 +99,6 @@ export default function TodoApp() {
     });
     showNotification('Task deletion undone', 'success');
   };
-
-  
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
