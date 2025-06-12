@@ -5,7 +5,9 @@ import TaskTable from "@/components/task-table";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
 import { useTasks } from "@/hooks/use-tasks";
-import { Moon, CheckSquare } from "lucide-react";
+import { useTheme } from "@/components/theme-provider";
+import { Moon, Sun, CheckSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function TodoApp() {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
@@ -13,6 +15,7 @@ export default function TodoApp() {
   const [notifications, setNotifications] = useState([]);
   
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
+  const { theme, setTheme } = useTheme();
 
   const handleCompleteTask = (task) => {
     setCurrentTask(task);
@@ -91,23 +94,36 @@ export default function TodoApp() {
   const totalScore = completedTasks.reduce((sum, task) => sum + task.priority, 0);
   const totalEstimatedTime = pendingTasks.reduce((sum, task) => sum + task.estimatedTime, 0);
 
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <CheckSquare className="h-8 w-8 text-black" />
-            <h1 className="text-xl font-semibold text-black">Todo Priority App</h1>
+            <CheckSquare className="h-8 w-8 text-black dark:text-white" />
+            <h1 className="text-xl font-semibold text-black dark:text-white">Todo Priority App</h1>
           </div>
-          <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-            <Moon className="h-5 w-5 text-gray-600" />
-          </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleTheme}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            {theme === 'light' ? (
+              <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            ) : (
+              <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            )}
+          </Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8 bg-white dark:bg-black">
         {/* Top Section: Score Display and Task Form Side by Side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <ScoreDisplay 
