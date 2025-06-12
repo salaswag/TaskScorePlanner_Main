@@ -41,25 +41,7 @@ export default function TodoApp() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const handleDeleteTask = (task) => {
-    deleteTask.mutate(task.id);
-    showNotification(`Task "${task.title}" deleted`, 'success', true, () => {
-      // Undo functionality could be implemented here
-    });
-  };
-
-  const handleConfirmCompletion = (actualTime) => {
-    if (currentTask) {
-      updateTask.mutate({ 
-        id: currentTask.id, 
-        completed: true, 
-        actualTime 
-      });
-      showNotification(`Task "${currentTask.title}" completed!`, 'success');
-    }
-    setIsTimerModalOpen(false);
-    setCurrentTask(null);
-  };
+  
 
   // Calculate statistics
   const completedTasks = tasks?.filter(task => task.completed) || [];
@@ -134,14 +116,7 @@ export default function TodoApp() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const completedTasks = tasks?.filter(task => task.completed) || [];
-  const pendingTasks = tasks?.filter(task => !task.completed) || [];
-  const totalScore = completedTasks.reduce((sum, task) => sum + task.priority, 0);
-  const totalEstimatedTime = pendingTasks.reduce((sum, task) => sum + task.estimatedTime, 0);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
+  
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
