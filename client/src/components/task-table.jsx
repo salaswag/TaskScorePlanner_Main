@@ -42,7 +42,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
           <div className="col-span-1">Done</div>
           <div className="col-span-1">Priority</div>
           <div className="col-span-4">Task</div>
-          <div className="col-span-2">Estimated Time</div>
+          <div className="col-span-2">Est Time</div>
           <div className="col-span-2">Actual Time</div>
           <div className="col-span-2">Actions</div>
         </div>
@@ -57,78 +57,105 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
             <p className="text-sm text-gray-400 dark:text-gray-500">Add a new task to get started!</p>
           </div>
         ) : (
-          tasks.map((task) => (
-            <div 
-              key={task.id} 
-              className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors ${
-                task.completed ? 'bg-green-50 dark:bg-green-900/20' : ''
-              }`}
-            >
-              <div className="grid grid-cols-12 gap-4 items-center">
-                <div className="col-span-1">
-                  <Checkbox 
-                    checked={task.completed} 
-                    disabled={task.completed}
-                    onCheckedChange={() => !task.completed && onCompleteTask(task)}
-                    className="cursor-pointer"
-                  />
-                </div>
-                <div className="col-span-1">
-                  <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${getPriorityColor(task.priority)}`}>
-                    {task.priority}
-                  </span>
-                </div>
-                <div className="col-span-4">
-                  <span className={`font-medium ${task.completed ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}`}>
-                    {task.title}
-                  </span>
-                </div>
-                <div className="col-span-2">
-                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                    <Clock className="h-4 w-4 mr-1" />
-                    <span>{formatTime(task.estimatedTime)}</span>
+          tasks.map((task) => {
+            const getDistractionColor = (level) => {
+              if (!level) return '';
+              const colors = [
+                'text-green-600', // 1
+                'text-green-500', // 2
+                'text-yellow-500', // 3
+                'text-orange-500', // 4
+                'text-red-500'    // 5
+              ];
+              return colors[level - 1];
+            };
+
+            return (
+              <div 
+                key={task.id} 
+                className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors ${
+                  task.completed ? 'bg-gray-100 dark:bg-gray-800 opacity-70' : ''
+                }`}
+              >
+                <div className="grid grid-cols-12 gap-4 items-center">
+                  <div className="col-span-1">
+                    <Checkbox 
+                      checked={task.completed} 
+                      disabled={task.completed}
+                      onCheckedChange={() => !task.completed && onCompleteTask(task)}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                      task.completed ? 'bg-gray-200 text-gray-600' : getPriorityColor(task.priority)
+                    }`}>
+                      {task.priority}
+                    </span>
+                  </div>
+                  <div className="col-span-4">
+                    <span className={`font-medium ${
+                      task.completed 
+                        ? 'text-gray-500 dark:text-gray-400 line-through' 
+                        : 'text-gray-900 dark:text-gray-100'
+                    }`}>
+                      {task.title}
+                    </span>
+                    {task.distractionLevel && (
+                      <div className={`text-xs mt-1 ${getDistractionColor(task.distractionLevel)}`}>
+                        Distraction: {task.distractionLevel}/5
+                      </div>
+                    )}
+                  </div>
+                  <div className="col-span-2">
+                    <div className={`flex items-center text-sm ${
+                      task.completed ? 'text-gray-400' : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      <Clock className="h-4 w-4 mr-1" />
+                      <span>{formatTime(task.estimatedTime)}</span>
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    {task.completed && task.actualTime ? (
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        <span>{formatTime(task.actualTime)}</span>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                    )}
+                  </div>
+                  <div className="col-span-2 flex space-x-2">
+                    {task.completed ? (
+                      <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
+                        Completed
+                      </span>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          title="Edit Task"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDeleteTask(task)}
+                          className="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          title="Delete Task"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
-                <div className="col-span-2">
-                  {task.actualTime && task.actualTime > 0 ? (
-                    <div className="flex items-center text-sm text-green-600 dark:text-green-400">
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      <span>{formatTime(task.actualTime)}</span>
-                    </div>
-                  ) : (
-                    <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
-                  )}
-                </div>
-                <div className="col-span-2 flex space-x-2">
-                  {task.completed ? (
-                    <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">
-                      Completed
-                    </span>
-                  ) : (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                        title="Edit Task"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDeleteTask(task)}
-                        className="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        title="Delete Task"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </Card>

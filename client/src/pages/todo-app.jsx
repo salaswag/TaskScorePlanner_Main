@@ -47,11 +47,12 @@ export default function TodoApp() {
   const totalScore = completedTasks.reduce((sum, task) => sum + (task.priority || 0), 0);
   const totalEstimatedTime = pendingTasks.reduce((sum, task) => sum + (task.estimatedTime || 0), 0);
 
-  const handleConfirmCompletion = (actualTime) => {
+  const handleConfirmCompletion = (actualTime, distractionLevel) => {
     if (currentTask) {
       updateTask.mutate({
         id: currentTask.id,
         actualTime,
+        distractionLevel,
         completed: true,
         completedAt: new Date().toISOString(),
       });
@@ -75,6 +76,7 @@ export default function TodoApp() {
     updateTask.mutate({
       id: taskId,
       actualTime: null,
+      distractionLevel: null,
       completed: false,
       completedAt: null,
     });
