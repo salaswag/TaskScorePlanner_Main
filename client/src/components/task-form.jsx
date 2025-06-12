@@ -94,7 +94,7 @@ export default function TaskForm({ onSubmit, isLoading }) {
           <Button
             type="submit"
             disabled={!title.trim() || isLoading}
-            className="w-full bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors duration-200 flex items-center justify-center space-x-2"
+            className="w-full bg-black dark:bg-white text-white dark:text-black py-3 px-6 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center space-x-2"
           >
             <Plus className="h-4 w-4" />
             <span>{isLoading ? 'Adding...' : 'Add Task'}</span>

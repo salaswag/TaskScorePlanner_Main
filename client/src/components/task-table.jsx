@@ -31,14 +31,14 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
   }
 
   return (
-    <Card className="bg-white shadow-sm border border-gray-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-black">Tasks</h3>
+    <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+        <h3 className="text-lg font-semibold text-black dark:text-white">Tasks</h3>
       </div>
       
       {/* Table Header */}
-      <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
-        <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
+      <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1">
             <Checkbox />
           </div>
@@ -51,19 +51,19 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
       </div>
 
       {/* Task Rows */}
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 dark:divide-gray-800">
         {tasks.length === 0 ? (
-          <div className="px-6 py-12 text-center text-gray-500">
-            <CheckSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-lg font-medium text-gray-400 mb-2">No tasks found</p>
-            <p className="text-sm text-gray-400">Add a new task to get started!</p>
+          <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+            <CheckSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <p className="text-lg font-medium text-gray-400 dark:text-gray-500 mb-2">No tasks found</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">Add a new task to get started!</p>
           </div>
         ) : (
           tasks.map((task) => (
             <div 
               key={task.id} 
-              className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
-                task.completed ? 'bg-green-50' : ''
+              className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors ${
+                task.completed ? 'bg-green-50 dark:bg-green-900/20' : ''
               }`}
             >
               <div className="grid grid-cols-12 gap-4 items-center">
@@ -79,29 +79,29 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   </span>
                 </div>
                 <div className="col-span-4">
-                  <span className={`font-medium ${task.completed ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+                  <span className={`font-medium ${task.completed ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}`}>
                     {task.title}
                   </span>
                 </div>
                 <div className="col-span-2">
-                  <div className="flex items-center text-sm text-gray-600">
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                     <Clock className="h-4 w-4 mr-1" />
                     <span>{formatTime(task.estimatedTime)} est.</span>
                   </div>
                 </div>
                 <div className="col-span-2">
                   {task.actualTime ? (
-                    <div className="flex items-center text-sm text-green-600">
+                    <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                       <CheckCircle className="h-4 w-4 mr-1" />
                       <span>{formatTime(task.actualTime)} actual</span>
                     </div>
                   ) : (
-                    <span className="text-sm text-gray-500">-</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
                   )}
                 </div>
                 <div className="col-span-2 flex space-x-2">
                   {task.completed ? (
-                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">
                       Completed
                     </span>
                   ) : (
@@ -110,7 +110,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                         variant="ghost"
                         size="sm"
                         onClick={() => onCompleteTask(task)}
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
                         title="Complete Task"
                       >
                         <Check className="h-4 w-4" />
@@ -118,7 +118,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         title="Edit Task"
                       >
                         <Edit className="h-4 w-4" />
@@ -127,7 +127,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                         variant="ghost"
                         size="sm"
                         onClick={() => onDeleteTask(task)}
-                        className="text-red-400 hover:text-red-600 hover:bg-red-50"
+                        className="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                         title="Delete Task"
                       >
                         <Trash2 className="h-4 w-4" />
