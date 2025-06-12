@@ -6,7 +6,7 @@ export interface IStorage {
   getTask(id: number): Promise<Task | undefined>;
   createTask(task: InsertTask, userId?: string | null): Promise<Task>;
   updateTask(task: UpdateTask): Promise<Task | undefined>;
-  deleteTask(id: number): Promise<boolean>;
+  deleteTask(id: number | string): Promise<boolean>;
   
   // User operations
   getUser(id: string): Promise<any>;
@@ -41,7 +41,7 @@ export class MemStorage implements IStorage {
     return this.tasks.get(id);
   }
 
-  async createTask(insertTask: InsertTask, userId?: string): Promise<Task> {
+  async createTask(insertTask: InsertTask, userId?: string | null): Promise<Task> {
     const id = this.currentTaskId++;
     const task: Task = {
       ...insertTask,
@@ -72,8 +72,9 @@ export class MemStorage implements IStorage {
     return updatedTask;
   }
 
-  async deleteTask(id: number): Promise<boolean> {
-    return this.tasks.delete(id);
+  async deleteTask(id: number | string): Promise<boolean> {
+    const numId = typeof id === 'string' ? parseInt(id) : id;
+    return this.tasks.delete(numId);
   }
 
   // User operations

@@ -13,7 +13,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all tasks (filtered by user if authenticated)
   app.get("/api/tasks", async (req, res) => {
     try {
-      const userId = req.session?.user?.id;
+      const userId = req.session?.user?.id || null;
       const tasks = await activeStorage.getTasks(userId);
       res.json(tasks);
     } catch (error) {
@@ -25,7 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/tasks", async (req, res) => {
     try {
       const validatedData = insertTaskSchema.parse(req.body);
-      const userId = req.session?.user?.id;
+      const userId = req.session?.user?.id || null;
       const task = await activeStorage.createTask(validatedData, userId);
       res.status(201).json(task);
     } catch (error) {
@@ -81,6 +81,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // Authentication routes
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await activeStorage.getUserByUsername(validatedData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      const user = await activeStorage.createUser(validatedData);
+      req.session.user = { id: user.id, username: user.username };
+      res.status(201).json({ user: { id: user.id, username: user.username } });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid user data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create user" });
+      }
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      const user = await activeStorage.verifyUser(validatedData.username, validatedData.password);
+      
+      if (!user) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      
+      req.session.user = { id: user.id, username: user.username };
+      res.json({ user: { id: user.id, username: user.username } });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid login data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to login" });
+      }
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get("/api/auth/me", (req, res) => {
+    if (req.session.user) {
+      res.json({ user: req.session.user });
+    } else {
+      res.status(401).json({ message: "Not authenticated" });
     }
   });
 
