@@ -144,7 +144,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                     )}
                   </div>
                   <div className="col-span-1">
-                    {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined ? (
+                    {task.completed && task.distractionLevel && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
                       <span className={`text-sm font-medium ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
                       </span>

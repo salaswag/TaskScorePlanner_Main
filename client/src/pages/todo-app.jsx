@@ -46,8 +46,8 @@ export default function TodoApp() {
   };
 
   // Filter tasks into main and later sections - include completed tasks in main view
-  const mainTasks = tasks?.filter(task => !task.isLater) || [];
-  const laterTasks = tasks?.filter(task => Boolean(task.isLater)) || [];
+  const mainTasks = (tasks && Array.isArray(tasks)) ? tasks.filter(task => !task.isLater) : [];
+  const laterTasks = (tasks && Array.isArray(tasks)) ? tasks.filter(task => Boolean(task.isLater)) : [];
 
   // Calculate statistics (only from main tasks)
   const completedTasks = mainTasks.filter(task => task.completed) || [];
@@ -138,7 +138,7 @@ export default function TodoApp() {
     // Allow duplicate tasks in focus with unique focus ID
     const focusTask = { 
       ...task, 
-      focusId: `focus-${task.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      focusId: `focus-${task.id}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       isFocus: true 
     };
     setFocusTasks(prev => [...prev, focusTask]);
