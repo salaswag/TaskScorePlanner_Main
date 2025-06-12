@@ -11,6 +11,7 @@ export const tasks = pgTable("tasks", {
   completed: boolean("completed").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
+  userId: text("user_id"), // null for anonymous users
 });
 
 export const insertTaskSchema = createInsertSchema(tasks).pick({
@@ -31,9 +32,10 @@ export type UpdateTask = z.infer<typeof updateTaskSchema>;
 export type Task = typeof tasks.$inferSelect;
 
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(), // Using text ID for MongoDB compatibility
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -41,5 +43,11 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
+export const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type LoginUser = z.infer<typeof loginSchema>;
 export type User = typeof users.$inferSelect;

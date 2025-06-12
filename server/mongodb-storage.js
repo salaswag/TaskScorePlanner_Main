@@ -1,4 +1,6 @@
 import { MongoClient } from 'mongodb';
+import bcrypt from 'bcrypt';
+import { nanoid } from 'nanoid';
 
 const MONGODB_URI = "mongodb+srv://salaswag:Borderbiz8k@clusterfortask.riwouqe.mongodb.net/ClusterforTask";
 
@@ -7,6 +9,7 @@ export class MongoStorage {
     this.client = null;
     this.db = null;
     this.tasksCollection = null;
+    this.usersCollection = null;
   }
 
   async connect() {
@@ -18,6 +21,7 @@ export class MongoStorage {
       await this.client.connect();
       this.db = this.client.db('ClusterforTask');
       this.tasksCollection = this.db.collection('Tasks');
+      this.usersCollection = this.db.collection('Users');
       console.log('Connected to MongoDB successfully');
       return true;
     } catch (error) {
@@ -27,15 +31,17 @@ export class MongoStorage {
     }
   }
 
-  async getTasks() {
+  async getTasks(userId = null) {
     try {
-      const tasks = await this.tasksCollection.find({}).sort({ createdAt: -1 }).toArray();
+      const filter = userId ? { userId } : { $or: [{ userId: null }, { userId: { $exists: false } }] };
+      const tasks = await this.tasksCollection.find(filter).sort({ createdAt: -1 }).toArray();
       return tasks.map(task => ({
         ...task,
         id: task._id.toString(),
         createdAt: task.createdAt || new Date(),
         completedAt: task.completedAt || null,
-        actualTime: task.actualTime || null
+        actualTime: task.actualTime || null,
+        userId: task.userId || null
       }));
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -60,7 +66,7 @@ export class MongoStorage {
     }
   }
 
-  async createTask(taskData) {
+  async createTask(taskData, userId = null) {
     try {
       const task = {
         ...taskData,
@@ -68,7 +74,8 @@ export class MongoStorage {
         completed: false,
         actualTime: null,
         createdAt: new Date(),
-        completedAt: null
+        completedAt: null,
+        userId: userId
       };
       
       const result = await this.tasksCollection.insertOne(task);
