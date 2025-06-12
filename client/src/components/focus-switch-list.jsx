@@ -38,7 +38,7 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
 
         try {
           const taskData = JSON.parse(e.dataTransfer.getData('text/plain'));
-          if (taskData && taskData.id) {
+          if (taskData && taskData.id && !taskData.type) {
             onAddToFocus && onAddToFocus(taskData);
           }
         } catch (error) {
@@ -60,7 +60,7 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
         ) : (
           tasks.map((task, index) => (
             <div 
-              key={task.focusId || `focus-${task.id}-${index}`}
+              key={task.focusId || `focus-${task.id}-${index}-${Date.now()}`}
               onDragOver={(e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
@@ -99,7 +99,7 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
                   {task.priority}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <span className="text-4xl font-bold text-gray-900 dark:text-gray-100 block leading-tight">
+                  <span className="text-lg font-medium text-gray-900 dark:text-gray-100 block leading-tight">
                     {task.title}
                   </span>
                 </div>

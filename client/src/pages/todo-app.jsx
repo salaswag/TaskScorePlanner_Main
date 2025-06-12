@@ -45,8 +45,8 @@ export default function TodoApp() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Filter tasks into main and later sections
-  const mainTasks = tasks?.filter(task => !task.isLater && !task.completed) || [];
+  // Filter tasks into main and later sections - include completed tasks in main view
+  const mainTasks = tasks?.filter(task => !task.isLater) || [];
   const laterTasks = tasks?.filter(task => Boolean(task.isLater)) || [];
 
   // Calculate statistics (only from main tasks)
@@ -85,10 +85,7 @@ export default function TodoApp() {
 
   const handleUndoCompletion = (task) => {
     updateTask.mutate({
-      id: task.id,
-      title: task.title,
-      priority: task.priority,
-      estimatedTime: task.estimatedTime,
+      ...task,
       actualTime: null,
       distractionLevel: null,
       completed: false,
@@ -138,8 +135,12 @@ export default function TodoApp() {
   };
 
   const handleAddToFocus = (task) => {
-    // Allow duplicate tasks in focus
-    const focusTask = { ...task, isFocus: true };
+    // Allow duplicate tasks in focus with unique focus ID
+    const focusTask = { 
+      ...task, 
+      focusId: `focus-${task.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      isFocus: true 
+    };
     setFocusTasks(prev => [...prev, focusTask]);
     showNotification(`"${task.title}" added to focus list`, 'success');
   };
