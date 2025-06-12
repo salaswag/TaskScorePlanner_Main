@@ -42,12 +42,14 @@ export class MongoStorage {
     try {
       const filter = userId ? { userId } : { $or: [{ userId: null }, { userId: { $exists: false } }] };
       const tasks = await this.tasksCollection.find(filter).sort({ createdAt: -1 }).toArray();
+      console.log('Fetched tasks from MongoDB:', tasks.length);
       return tasks.map(task => ({
         ...task,
-        id: task._id.toString(),
+        id: task.id || task._id.toString(),
         createdAt: task.createdAt || new Date(),
         completedAt: task.completedAt || null,
         actualTime: task.actualTime || null,
+        distractionLevel: task.distractionLevel || null,
         userId: task.userId || null
       }));
     } catch (error) {
@@ -75,20 +77,27 @@ export class MongoStorage {
 
   async createTask(taskData, userId) {
     try {
+      // Get the next numeric ID
+      const lastTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
+      const nextId = lastTask ? (lastTask.id || 0) + 1 : 1;
+      
       const task = {
         ...taskData,
+        id: nextId,
         priority: taskData.priority || 5,
         completed: false,
         actualTime: null,
+        distractionLevel: null,
         createdAt: new Date(),
         completedAt: null,
         userId: userId
       };
 
       const result = await this.tasksCollection.insertOne(task);
+      console.log('Task created:', task);
       return {
         ...task,
-        id: result.insertedId.toString()
+        id: task.id
       };
     } catch (error) {
       console.error('Error creating task:', error);
@@ -104,41 +113,39 @@ export class MongoStorage {
         updateFields.completedAt = new Date(updateFields.completedAt);
       }
 
-      // Convert string ID to ObjectId if needed
-      const { ObjectId } = await import('mongodb');
-      let objectId;
-      
-      if (typeof id === 'string' && id.length === 24) {
-        objectId = new ObjectId(id);
-      } else if (typeof id === 'number') {
-        // For numeric IDs, find by the id field instead of _id
-        const result = await this.tasksCollection.findOneAndUpdate(
-          { id: id },
-          { $set: updateFields },
-          { returnDocument: 'after' }
-        );
-        
-        if (!result.value) return undefined;
-        
-        return {
-          ...result.value,
-          id: result.value._id.toString()
-        };
-      } else {
-        objectId = id;
-      }
+      console.log('Updating task:', id, updateFields);
 
-      const result = await this.tasksCollection.findOneAndUpdate(
-        { _id: objectId },
+      // Try to update by numeric id first
+      let result = await this.tasksCollection.findOneAndUpdate(
+        { id: parseInt(id) },
         { $set: updateFields },
         { returnDocument: 'after' }
       );
 
-      if (!result.value) return undefined;
+      // If not found and id looks like ObjectId, try _id
+      if (!result.value && typeof id === 'string' && id.length === 24) {
+        const { ObjectId } = await import('mongodb');
+        try {
+          const objectId = new ObjectId(id);
+          result = await this.tasksCollection.findOneAndUpdate(
+            { _id: objectId },
+            { $set: updateFields },
+            { returnDocument: 'after' }
+          );
+        } catch (objectIdError) {
+          console.error('Error with ObjectId conversion:', objectIdError);
+        }
+      }
 
+      if (!result.value) {
+        console.error('Task not found for update:', id);
+        return undefined;
+      }
+
+      console.log('Task updated successfully:', result.value);
       return {
         ...result.value,
-        id: result.value._id.toString()
+        id: result.value.id || result.value._id.toString()
       };
     } catch (error) {
       console.error('Error updating task:', error);

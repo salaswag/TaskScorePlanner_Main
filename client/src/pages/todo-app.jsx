@@ -2,6 +2,7 @@ import { useState } from "react";
 import ScoreDisplay from "@/components/score-display";
 import TaskForm from "@/components/task-form";
 import TaskTable from "@/components/task-table";
+import LaterSection from "@/components/later-section";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
 import UserMenu from "@/components/user-menu";
@@ -41,9 +42,13 @@ export default function TodoApp() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Calculate statistics
-  const completedTasks = tasks?.filter(task => task.completed) || [];
-  const pendingTasks = tasks?.filter(task => !task.completed) || [];
+  // Filter tasks into main and later sections
+  const mainTasks = tasks?.filter(task => !task.isLater) || [];
+  const laterTasks = tasks?.filter(task => task.isLater) || [];
+  
+  // Calculate statistics (only from main tasks)
+  const completedTasks = mainTasks.filter(task => task.completed) || [];
+  const pendingTasks = mainTasks.filter(task => !task.completed) || [];
   const totalScore = completedTasks.reduce((sum, task) => sum + (task.priority || 0), 0);
   const totalEstimatedTime = pendingTasks.reduce((sum, task) => sum + (task.estimatedTime || 0), 0);
 
@@ -116,6 +121,22 @@ export default function TodoApp() {
     showNotification('Edit functionality coming soon!', 'info');
   };
 
+  const handleMoveToLater = (task) => {
+    updateTask.mutate({
+      ...task,
+      isLater: true,
+    });
+    showNotification(`Task "${task.title}" moved to Later section`, 'success');
+  };
+
+  const handleMoveToMain = (task) => {
+    updateTask.mutate({
+      ...task,
+      isLater: false,
+    });
+    showNotification(`Task "${task.title}" moved back to main tasks`, 'success');
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Header */}
@@ -152,7 +173,7 @@ export default function TodoApp() {
             <ScoreDisplay 
               totalScore={totalScore}
               completedTasks={completedTasks}
-              totalTasks={tasks?.length || 0}
+              totalTasks={mainTasks.length}
               pendingTasks={pendingTasks}
               totalEstimatedTime={totalEstimatedTime}
             />
@@ -168,9 +189,17 @@ export default function TodoApp() {
           {/* Right Main Area */}
           <div className="lg:col-span-2">
             <TaskTable 
-              tasks={tasks || []}
+              tasks={mainTasks}
               isLoading={isLoading}
               onCompleteTask={handleCompleteTask}
+              onDeleteTask={handleDeleteTask}
+              onEditTask={handleEditTask}
+              onUndoCompletion={handleUndoCompletion}
+              onMoveToLater={handleMoveToLater}
+            />
+            <LaterSection 
+              tasks={laterTasks}
+              onMoveToMain={handleMoveToMain}
               onDeleteTask={handleDeleteTask}
               onEditTask={handleEditTask}
             />

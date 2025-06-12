@@ -2,9 +2,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare } from "lucide-react";
+import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, ArrowDown } from "lucide-react";
 
-export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTask, onEditTask }) {
+export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTask, onEditTask, onUndoCompletion, onMoveToLater }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -90,8 +90,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   <div className="col-span-1">
                     <Checkbox 
                       checked={task.completed} 
-                      disabled={task.completed}
-                      onCheckedChange={() => !task.completed && onCompleteTask(task)}
+                      onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
                       className="cursor-pointer"
                     />
                   </div>
@@ -130,12 +129,12 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                     )}
                   </div>
                   <div className="col-span-1">
-                    {task.completed && task.distractionLevel ? (
+                    {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined ? (
                       <span className={`text-sm font-medium ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
                       </span>
                     ) : (
-                      <span className="text-sm text-gray-400">-</span>
+                      <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                     )}
                   </div>
                   <div className="col-span-2 flex space-x-2">
@@ -145,6 +144,15 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       </span>
                     ) : (
                       <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onMoveToLater && onMoveToLater(task)}
+                          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          title="Move to Later"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"

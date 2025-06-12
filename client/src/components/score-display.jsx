@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3, Clock } from "lucide-react";
 
@@ -27,12 +26,23 @@ export default function ScoreDisplay({
           <BarChart3 className="h-4 w-4 text-black dark:text-white" />
           <h2 className="text-base font-semibold text-black dark:text-white">Score</h2>
         </div>
-        
+
         <div className="text-center mb-4">
           <div className="text-2xl font-bold text-black dark:text-white mb-1">{totalScore}</div>
           <p className="text-xs text-gray-600 dark:text-gray-400">
             Priority Points: {totalScore}/{maxPossibleScore} ({scorePercentage}%)
           </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 text-center">
+          <div>
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-400">{completedTasks.length}</div>
+            <p className="text-xs text-gray-500 dark:text-gray-500">Completed</p>
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-400">{totalTasks}</div>
+            <p className="text-xs text-gray-500 dark:text-gray-500">Total Tasks</p>
+          </div>
         </div>
 
         {totalEstimatedTime > 0 && (

@@ -31,6 +31,7 @@ export const updateTaskSchema = z.object({
   distractionLevel: z.number().min(1).max(5).nullable().optional(),
   completed: z.boolean().optional(),
   completedAt: z.union([z.string(), z.date()]).nullable().optional(),
+  isLater: z.boolean().optional(),
 });
 
 export type InsertTask = z.infer<typeof insertTaskSchema>;
