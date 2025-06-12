@@ -2,21 +2,22 @@ import { tasks, type Task, type InsertTask, type UpdateTask } from "@shared/sche
 
 export interface IStorage {
   // Task operations
-  getTasks(): Promise<Task[]>;
+  getTasks(userId?: string): Promise<Task[]>;
   getTask(id: number): Promise<Task | undefined>;
-  createTask(task: InsertTask): Promise<Task>;
+  createTask(task: InsertTask, userId?: string): Promise<Task>;
   updateTask(task: UpdateTask): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
   
-  // User operations (keeping existing)
-  getUser(id: number): Promise<any>;
+  // User operations
+  getUser(id: string): Promise<any>;
   getUserByUsername(username: string): Promise<any>;
   createUser(user: any): Promise<any>;
+  verifyUser(username: string, password: string): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
   private tasks: Map<number, Task>;
-  private users: Map<number, any>;
+  private users: Map<string, any>;
   private currentTaskId: number;
   private currentUserId: number;
 
@@ -28,17 +29,19 @@ export class MemStorage implements IStorage {
   }
 
   // Task operations
-  async getTasks(): Promise<Task[]> {
-    return Array.from(this.tasks.values()).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+  async getTasks(userId?: string): Promise<Task[]> {
+    return Array.from(this.tasks.values())
+      .filter(task => userId ? task.userId === userId : !task.userId)
+      .sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
   }
 
   async getTask(id: number): Promise<Task | undefined> {
     return this.tasks.get(id);
   }
 
-  async createTask(insertTask: InsertTask): Promise<Task> {
+  async createTask(insertTask: InsertTask, userId?: string): Promise<Task> {
     const id = this.currentTaskId++;
     const task: Task = {
       ...insertTask,
@@ -48,6 +51,7 @@ export class MemStorage implements IStorage {
       actualTime: null,
       createdAt: new Date(),
       completedAt: null,
+      userId: userId || null,
     };
     this.tasks.set(id, task);
     return task;
@@ -72,8 +76,8 @@ export class MemStorage implements IStorage {
     return this.tasks.delete(id);
   }
 
-  // User operations (keeping existing)
-  async getUser(id: number): Promise<any> {
+  // User operations
+  async getUser(id: string): Promise<any> {
     return this.users.get(id);
   }
 
@@ -84,10 +88,16 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: any): Promise<any> {
-    const id = this.currentUserId++;
+    const id = `user_${this.currentUserId++}`;
     const user = { ...insertUser, id };
     this.users.set(id, user);
     return user;
+  }
+
+  async verifyUser(username: string, password: string): Promise<any> {
+    const user = await this.getUserByUsername(username);
+    if (!user || user.password !== password) return null;
+    return { id: user.id, username: user.username };
   }
 }
 
