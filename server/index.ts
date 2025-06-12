@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { mongoStorage } from "./mongodb-storage.js";
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,12 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Connect to MongoDB with timeout
+  const connected = await mongoStorage.connect();
+  if (!connected) {
+    console.warn("MongoDB connection failed, using in-memory storage");
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
