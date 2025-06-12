@@ -2,17 +2,19 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { mongoStorage } from "./mongodb-storage.js";
-import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
+import { insertTaskSchema, updateTaskSchema, insertUserSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
+import "./types"; // Import session type declarations
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Determine which storage to use
   const activeStorage = mongoStorage.client ? mongoStorage : storage;
 
-  // Get all tasks
+  // Get all tasks (filtered by user if authenticated)
   app.get("/api/tasks", async (req, res) => {
     try {
-      const tasks = await activeStorage.getTasks();
+      const userId = req.session?.user?.id;
+      const tasks = await activeStorage.getTasks(userId);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch tasks" });
@@ -23,7 +25,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/tasks", async (req, res) => {
     try {
       const validatedData = insertTaskSchema.parse(req.body);
-      const task = await activeStorage.createTask(validatedData);
+      const userId = req.session?.user?.id;
+      const task = await activeStorage.createTask(validatedData, userId);
       res.status(201).json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
