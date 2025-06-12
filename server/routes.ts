@@ -58,8 +58,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete a task
   app.delete("/api/tasks/:id", async (req, res) => {
     try {
-      const id = req.params.id;
-      const deleted = await activeStorage.deleteTask(id);
+      const idParam = req.params.id;
+      let deleted: boolean;
+      if (activeStorage === storage) {
+        // In-memory storage expects a number
+        const idNum = Number(idParam);
+        if (isNaN(idNum)) {
+          return res.status(400).json({ message: "Invalid task id" });
+        }
+        deleted = await activeStorage.deleteTask(idNum);
+      } else {
+        // MongoDB storage expects a string
+        deleted = await activeStorage.deleteTask(idParam as string);
+      }
       if (!deleted) {
         return res.status(404).json({ message: "Task not found" });
       }
@@ -72,4 +83,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// In-memory storage implementation
+class InMemoryStorage {
+  private tasks: Map<number, any> = new Map();
+  private idCounter: number = 1;
+
+  async getTasks() {
+    return Array.from(this.tasks.values());
+  }
+
+  async createTask(taskData: any) {
+    const id = this.idCounter++;
+    const task = { id, ...taskData };
+    this.tasks.set(id, task);
+    return task;
+  }
+
+  async updateTask(taskData: any) {
+    if (!this.tasks.has(taskData.id)) {
+      return null;
+    }
+    this.tasks.set(taskData.id, { ...this.tasks.get(taskData.id), ...taskData });
+    return this.tasks.get(taskData.id);
+  }
+
+  async deleteTask(id: number): Promise<boolean> {
+    return this.tasks.delete(id);
+  }
+}
+
+// MongoDB storage implementation
+class MongoDBStorage {
+  private client: any;
+  private dbName: string;
+  private tasksCollection: any;
+
+  constructor(client: any, dbName: string) {
+    this.client = client;
+    this.dbName = dbName;
+    this.tasksCollection = client.db(dbName).collection("tasks");
+  }
+
+  async getTasks() {
+    return this.tasksCollection.find({}).toArray();
+  }
+
+  async createTask(taskData: any) {
+    const result = await this.tasksCollection.insertOne(taskData);
+    return { id: result.insertedId, ...taskData };
+  }
+
+  async updateTask(taskData: any) {
+    const { id, ...updateData } = taskData;
+    await this.tasksCollection.updateOne({ _id: id }, { $set: updateData });
+    return this.getTaskById(id);
+  }
+
+  async deleteTask(id: string) {
+    try {
+      // Convert string id to ObjectId if necessary
+      const { ObjectId } = require('mongodb');
+      const objectId = typeof id === 'string' ? new ObjectId(id) : id;
+      const result = await this.tasksCollection.deleteOne({ _id: objectId });
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      return false;
+    }
+  }
+
+  private async getTaskById(id: string) {
+    const { ObjectId } = require('mongodb');
+    const objectId = new ObjectId(id);
+    return this.tasksCollection.findOne({ _id: objectId });
+  }
 }
