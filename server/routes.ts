@@ -43,9 +43,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = req.params.id;
       console.log('Updating task with ID:', id, 'Data:', req.body);
       
-      // Don't validate with schema for partial updates, just pass the data
-      const updateData = { id: Number(id), ...req.body };
-      const updatedTask = await activeStorage.updateTask(updateData);
+      const userId = req.session?.user?.id;
+      let updateData;
+      
+      if (activeStorage === storage) {
+        // In-memory storage expects numeric id
+        updateData = { id: Number(id), ...req.body };
+      } else {
+        // MongoDB storage expects string id or numeric id
+        updateData = { id: isNaN(Number(id)) ? id : Number(id), ...req.body };
+      }
+      
+      const updatedTask = await activeStorage.updateTask(updateData, userId);
       
       if (!updatedTask) {
         return res.status(404).json({ message: "Task not found" });

@@ -70,13 +70,9 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
                   {task.priority}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 block leading-tight">
+                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100 block leading-tight">
                     {task.title}
                   </span>
-                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    <Clock className="h-4 w-4 mr-1" />
-                    <span>{formatTime(task.estimatedTime)}</span>
-                  </div>
                 </div>
                 <div className="flex space-x-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button

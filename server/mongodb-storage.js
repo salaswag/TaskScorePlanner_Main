@@ -90,6 +90,7 @@ export class MongoStorage {
         actualTime: null,
         distractionLevel: null,
         isLater: taskData.isLater || false,
+        isFocus: taskData.isFocus || false,
         createdAt: new Date(),
         completedAt: null,
         userId: userId
@@ -107,7 +108,7 @@ export class MongoStorage {
     }
   }
 
-  async updateTask(updateData) {
+  async updateTask(updateData, userId) {
     try {
       const { id, ...updateFields } = updateData;
 
@@ -118,6 +119,9 @@ export class MongoStorage {
       // Ensure all fields are properly handled
       if (updateFields.isLater !== undefined) {
         updateFields.isLater = Boolean(updateFields.isLater);
+      }
+      if (updateFields.isFocus !== undefined) {
+        updateFields.isFocus = Boolean(updateFields.isFocus);
       }
       if (updateFields.completed !== undefined) {
         updateFields.completed = Boolean(updateFields.completed);
@@ -137,9 +141,15 @@ export class MongoStorage {
 
       console.log('Updating task:', id, updateFields);
 
+      // Build the query with user filter if userId exists
+      const baseQuery = { id: Number(id) };
+      if (userId) {
+        baseQuery.userId = userId;
+      }
+
       // Try to update by numeric id first
       let result = await this.tasksCollection.findOneAndUpdate(
-        { id: Number(id) },
+        baseQuery,
         { $set: updateFields },
         { returnDocument: 'after' }
       );
@@ -149,8 +159,12 @@ export class MongoStorage {
         const { ObjectId } = await import('mongodb');
         try {
           const objectId = new ObjectId(id);
+          const objectIdQuery = { _id: objectId };
+          if (userId) {
+            objectIdQuery.userId = userId;
+          }
           result = await this.tasksCollection.findOneAndUpdate(
-            { _id: objectId },
+            objectIdQuery,
             { $set: updateFields },
             { returnDocument: 'after' }
           );
@@ -170,7 +184,8 @@ export class MongoStorage {
         id: result.value.id || result.value._id.toString(),
         actualTime: result.value.actualTime,
         distractionLevel: result.value.distractionLevel,
-        isLater: Boolean(result.value.isLater)
+        isLater: Boolean(result.value.isLater),
+        isFocus: Boolean(result.value.isFocus)
       };
     } catch (error) {
       console.error('Error updating task:', error);

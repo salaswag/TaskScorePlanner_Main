@@ -143,16 +143,7 @@ export default function TodoApp() {
       focusId: `focus-${task.id}-${Date.now()}` // Unique identifier for focus list
     };
     
-    setFocusTasks(prev => {
-      // Check if task is already in focus (by original task id)
-      const alreadyExists = prev.some(ft => ft.id === task.id);
-      if (alreadyExists) {
-        showNotification(`Task "${task.title}" is already in focus list`, 'info');
-        return prev;
-      }
-      return [...prev, focusTask];
-    });
-    
+    setFocusTasks(prev => [...prev, focusTask]);
     showNotification(`Task "${task.title}" added to Focus Switch List`, 'success');
   };
 
