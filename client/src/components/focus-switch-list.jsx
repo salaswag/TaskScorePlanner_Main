@@ -70,7 +70,7 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
                   {task.priority}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100 block leading-tight">
+                  <span className="text-4xl font-bold text-gray-900 dark:text-gray-100 block leading-tight">
                     {task.title}
                   </span>
                 </div>
