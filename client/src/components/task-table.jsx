@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare } from "lucide-react";
 
-export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTask }) {
+export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTask, onEditTask }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -30,6 +30,13 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
     return colors[level - 1];
   };
 
+  // Sort tasks: incomplete first, then completed at the bottom
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.completed && !b.completed) return 1;
+    if (!a.completed && b.completed) return -1;
+    return 0;
+  });
+
   if (isLoading) {
     return (
       <Card className="bg-white shadow-sm border border-gray-200">
@@ -54,28 +61,29 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
         <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1">Done</div>
           <div className="col-span-1">Priority</div>
-          <div className="col-span-4">Task</div>
+          <div className="col-span-3">Task</div>
           <div className="col-span-2">Est Time</div>
           <div className="col-span-2">Actual Time</div>
+          <div className="col-span-1">Distract</div>
           <div className="col-span-2">Actions</div>
         </div>
       </div>
 
       {/* Task Rows */}
       <div className="divide-y divide-gray-200 dark:divide-gray-800">
-        {tasks.length === 0 ? (
+        {sortedTasks.length === 0 ? (
           <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
             <CheckSquare className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <p className="text-lg font-medium text-gray-400 dark:text-gray-500 mb-2">No tasks found</p>
             <p className="text-sm text-gray-400 dark:text-gray-500">Add a new task to get started!</p>
           </div>
         ) : (
-          tasks.map((task) => {
+          sortedTasks.map((task) => {
             return (
               <div 
                 key={task.id} 
                 className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors ${
-                  task.completed ? 'bg-gray-100 dark:bg-gray-800' : ''
+                  task.completed ? 'bg-gray-50 dark:bg-gray-800 opacity-60' : ''
                 }`}
               >
                 <div className="grid grid-cols-12 gap-4 items-center">
@@ -94,19 +102,14 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-4">
+                  <div className="col-span-3">
                     <span className={`font-medium ${
                       task.completed 
-                        ? 'text-gray-500 dark:text-gray-500 line-through' 
+                        ? 'text-gray-400 dark:text-gray-500 line-through' 
                         : 'text-gray-900 dark:text-gray-100'
                     }`}>
                       {task.title}
                     </span>
-                    {task.completed && task.distractionLevel && (
-                      <div className={`text-xs mt-1 ${getDistractionColor(task.distractionLevel)}`}>
-                        Distraction: {task.distractionLevel}/5
-                      </div>
-                    )}
                   </div>
                   <div className="col-span-2">
                     <div className={`flex items-center text-sm ${
@@ -118,12 +121,21 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   </div>
                   <div className="col-span-2">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
-                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-500">
+                      <div className="flex items-center text-sm text-gray-400 dark:text-gray-500">
                         <CheckCircle className="h-4 w-4 mr-1" />
                         <span>{formatTime(task.actualTime)}</span>
                       </div>
                     ) : (
                       <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                    )}
+                  </div>
+                  <div className="col-span-1">
+                    {task.completed && task.distractionLevel ? (
+                      <span className={`text-sm font-medium ${getDistractionColor(task.distractionLevel)}`}>
+                        {task.distractionLevel}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">-</span>
                     )}
                   </div>
                   <div className="col-span-2 flex space-x-2">
@@ -136,6 +148,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => onEditTask && onEditTask(task)}
                           className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                           title="Edit Task"
                         >

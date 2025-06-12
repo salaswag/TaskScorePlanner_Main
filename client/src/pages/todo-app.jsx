@@ -102,6 +102,11 @@ export default function TodoApp() {
     showNotification('Task deletion undone', 'success');
   };
 
+  const handleEditTask = (task) => {
+    // For now, just show a notification that edit functionality is coming
+    showNotification('Edit functionality coming soon!', 'info');
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Header */}
@@ -158,6 +163,7 @@ export default function TodoApp() {
               isLoading={isLoading}
               onCompleteTask={handleCompleteTask}
               onDeleteTask={handleDeleteTask}
+              onEditTask={handleEditTask}
             />
           </div>
         </div>
