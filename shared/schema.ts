@@ -19,12 +19,11 @@ export const insertTaskSchema = createInsertSchema(tasks).pick({
   estimatedTime: true,
 });
 
-export const updateTaskSchema = createInsertSchema(tasks).pick({
-  actualTime: true,
-  completed: true,
-  completedAt: true,
-}).extend({
+export const updateTaskSchema = z.object({
   id: z.number(),
+  actualTime: z.number().nullable().optional(),
+  completed: z.boolean().optional(),
+  completedAt: z.union([z.string(), z.date()]).nullable().optional(),
 });
 
 export type InsertTask = z.infer<typeof insertTaskSchema>;

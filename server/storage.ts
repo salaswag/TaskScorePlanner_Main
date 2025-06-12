@@ -43,6 +43,7 @@ export class MemStorage implements IStorage {
     const task: Task = {
       ...insertTask,
       id,
+      priority: insertTask.priority || 5,
       completed: false,
       actualTime: null,
       createdAt: new Date(),
@@ -60,7 +61,7 @@ export class MemStorage implements IStorage {
       ...existingTask,
       actualTime: updateTask.actualTime ?? existingTask.actualTime,
       completed: updateTask.completed ?? existingTask.completed,
-      completedAt: updateTask.completedAt ?? existingTask.completedAt,
+      completedAt: updateTask.completedAt ? (typeof updateTask.completedAt === 'string' ? new Date(updateTask.completedAt) : updateTask.completedAt) : existingTask.completedAt,
     };
 
     this.tasks.set(updateTask.id, updatedTask);
