@@ -1,17 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3, Clock } from "lucide-react";
 
-export default function ScoreDisplay({ 
-  totalScore, 
-  completedTasks, 
-  totalTasks, 
-  pendingTasks, 
-  totalEstimatedTime 
-}) {
-  // Calculate the maximum possible score from all tasks
-  const allTasks = [...(completedTasks || []), ...(pendingTasks || [])];
-  const maxPossibleScore = allTasks.reduce((sum, task) => sum + (task.priority || 0), 0);
-  const scorePercentage = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
+export default function ScoreDisplay({ totalScore, completedTasks, totalTasks, pendingTasks, totalEstimatedTime }) {
+  const completedCount = completedTasks?.length || 0;
+  const pendingCount = (pendingTasks || []).length;
+  const allTasks = [...(pendingTasks || []), ...(completedTasks || [])];
+  const totalPossibleScore = allTasks.reduce((sum, task) => sum + (task.priority || 0), 0);
+  const scorePercentage = totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0;
 
   const formatTime = (minutes) => {
     const hours = Math.floor(minutes / 60);
@@ -27,7 +22,7 @@ export default function ScoreDisplay({
             <h3 className="text-lg font-semibold text-black dark:text-white mb-2">Priority Points</h3>
             <div className="flex items-center justify-center gap-3 mb-2">
               <div className="text-2xl font-bold text-black dark:text-white">
-                {totalScore}/{maxPossibleScore}
+                {totalScore}/{totalPossibleScore}
               </div>
               <div className="text-4xl font-bold text-black dark:text-white">
                 {scorePercentage}%

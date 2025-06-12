@@ -1,9 +1,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Edit, Trash2, ArrowUp } from "lucide-react";
+import { Clock, Edit, Trash2, ArrowUp, GripVertical } from "lucide-react";
 
-export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater }) {
+export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onAddToFocus }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -48,9 +48,10 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
       {/* Table Header */}
       <div className="px-6 py-2 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
         <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 dark:text-gray-400">
+          <div className="col-span-1"></div>
           <div className="col-span-1">Priority</div>
           <div className="col-span-4">Task</div>
-          <div className="col-span-3">Est Time</div>
+          <div className="col-span-2">Est Time</div>
           <div className="col-span-4">Actions</div>
         </div>
       </div>
@@ -65,9 +66,21 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
           tasks.map((task) => (
             <div 
               key={task.id} 
-              className="px-6 py-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors opacity-60"
+              className="px-6 py-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors opacity-60 group"
             >
               <div className="grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-1">
+                  <div
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', JSON.stringify(task));
+                      e.dataTransfer.effectAllowed = 'copy';
+                    }}
+                    className="cursor-grab active:cursor-grabbing opacity-50 group-hover:opacity-100 transition-opacity"
+                  >
+                    <GripVertical className="h-3 w-3 text-gray-400" />
+                  </div>
+                </div>
                 <div className="col-span-1">
                   <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}>
                     {task.priority}
@@ -78,7 +91,7 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
                     {task.title}
                   </span>
                 </div>
-                <div className="col-span-3">
+                <div className="col-span-2">
                   <div className="flex items-center text-xs text-gray-400">
                     <Clock className="h-3 w-3 mr-1" />
                     <span>{formatTime(task.estimatedTime)}</span>

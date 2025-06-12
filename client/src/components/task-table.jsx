@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare } from "lucide-react";
+import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, GripVertical } from "lucide-react";
 
 export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTask, onEditTask, onUndoCompletion, onMoveToLater }) {
   const formatTime = (minutes) => {
@@ -53,15 +53,16 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
   return (
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-        <h3 className="text-lg font-semibold text-black dark:text-white">Tasks</h3>
+        <h3 className="text-lg font-semibold text-black dark:text-white">Main Tasks</h3>
       </div>
       
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="col-span-1"></div>
           <div className="col-span-1">Done</div>
           <div className="col-span-1">Priority</div>
-          <div className="col-span-3">Task</div>
+          <div className="col-span-2">Task</div>
           <div className="col-span-2">Est Time</div>
           <div className="col-span-2">Actual Time</div>
           <div className="col-span-1">Distract</div>
@@ -82,18 +83,25 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
             return (
               <div 
                 key={task.id}
-                draggable={!task.completed}
-                onDragStart={(e) => {
-                  if (!task.completed) {
-                    e.dataTransfer.setData('text/plain', JSON.stringify(task));
-                    e.dataTransfer.effectAllowed = 'move';
-                  }
-                }}
-                className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors ${
-                  task.completed ? 'bg-gray-50 dark:bg-gray-800 opacity-60' : 'cursor-grab active:cursor-grabbing'
+                className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group ${
+                  task.completed ? 'bg-gray-50 dark:bg-gray-800 opacity-60' : ''
                 }`}
               >
                 <div className="grid grid-cols-12 gap-4 items-center">
+                  <div className="col-span-1">
+                    <div
+                      draggable={!task.completed}
+                      onDragStart={(e) => {
+                        if (!task.completed) {
+                          e.dataTransfer.setData('text/plain', JSON.stringify(task));
+                          e.dataTransfer.effectAllowed = 'copy';
+                        }
+                      }}
+                      className={`${!task.completed ? 'cursor-grab active:cursor-grabbing opacity-50 group-hover:opacity-100' : 'opacity-30'} transition-opacity`}
+                    >
+                      <GripVertical className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
                   <div className="col-span-1">
                     <Checkbox 
                       checked={task.completed} 
@@ -108,7 +116,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-3">
+                  <div className="col-span-2">
                     <span className={`font-medium ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 

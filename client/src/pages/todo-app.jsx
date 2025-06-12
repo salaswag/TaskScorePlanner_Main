@@ -3,6 +3,7 @@ import ScoreDisplay from "@/components/score-display";
 import TaskForm from "@/components/task-form";
 import TaskTable from "@/components/task-table";
 import LaterSection from "@/components/later-section";
+import FocusSwitchList from "@/components/focus-switch-list";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
 import UserMenu from "@/components/user-menu";
@@ -15,6 +16,7 @@ export default function TodoApp() {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [focusTasks, setFocusTasks] = useState([]);
 
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
   const { theme, setTheme } = useTheme();
@@ -134,6 +136,31 @@ export default function TodoApp() {
     showNotification(`Task "${task.title}" moved back to main tasks`, 'success');
   };
 
+  const handleAddToFocus = (task) => {
+    // Create a duplicate with a unique key for focus list
+    const focusTask = {
+      ...task,
+      focusId: `focus-${task.id}-${Date.now()}` // Unique identifier for focus list
+    };
+    
+    setFocusTasks(prev => {
+      // Check if task is already in focus (by original task id)
+      const alreadyExists = prev.some(ft => ft.id === task.id);
+      if (alreadyExists) {
+        showNotification(`Task "${task.title}" is already in focus list`, 'info');
+        return prev;
+      }
+      return [...prev, focusTask];
+    });
+    
+    showNotification(`Task "${task.title}" added to Focus Switch List`, 'success');
+  };
+
+  const handleRemoveFromFocus = (task) => {
+    setFocusTasks(prev => prev.filter(ft => ft.focusId !== task.focusId));
+    showNotification(`Task "${task.title}" removed from Focus Switch List`, 'success');
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Header */}
@@ -141,7 +168,7 @@ export default function TodoApp() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <CheckSquare className="h-8 w-8 text-black dark:text-white" />
-            <h1 className="text-xl font-semibold text-black dark:text-white">Todo Priority App</h1>
+            <h1 className="text-xl font-semibold text-black dark:text-white">Task Master Pro</h1>
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -163,7 +190,7 @@ export default function TodoApp() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8 bg-white dark:bg-black">
-        {/* Main Layout: Left sidebar with scoring/form, Right main area with tasks */}
+        {/* Main Layout: Left sidebar with scoring/form/focus, Right main area with tasks */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
@@ -180,6 +207,13 @@ export default function TodoApp() {
                 showNotification(`Task "${taskData.title}" added successfully!`, 'success');
               }}
               isLoading={createTask.isPending}
+            />
+            <FocusSwitchList 
+              tasks={focusTasks}
+              onMoveToMain={handleMoveToMain}
+              onDeleteTask={handleRemoveFromFocus}
+              onEditTask={handleEditTask}
+              onAddToFocus={handleAddToFocus}
             />
           </div>
 
@@ -200,6 +234,7 @@ export default function TodoApp() {
               onDeleteTask={handleDeleteTask}
               onEditTask={handleEditTask}
               onMoveToLater={handleMoveToLater}
+              onAddToFocus={handleAddToFocus}
             />
           </div>
         </div>

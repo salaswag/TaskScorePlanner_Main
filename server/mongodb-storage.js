@@ -50,6 +50,7 @@ export class MongoStorage {
         completedAt: task.completedAt || null,
         actualTime: task.actualTime || null,
         distractionLevel: task.distractionLevel || null,
+        isLater: task.isLater || false,
         userId: task.userId || null
       }));
     } catch (error) {
@@ -88,6 +89,7 @@ export class MongoStorage {
         completed: false,
         actualTime: null,
         distractionLevel: null,
+        isLater: taskData.isLater || false,
         createdAt: new Date(),
         completedAt: null,
         userId: userId
@@ -111,6 +113,20 @@ export class MongoStorage {
 
       if (updateFields.completedAt && typeof updateFields.completedAt === 'string') {
         updateFields.completedAt = new Date(updateFields.completedAt);
+      }
+
+      // Ensure all fields are properly handled
+      if (updateFields.isLater !== undefined) {
+        updateFields.isLater = Boolean(updateFields.isLater);
+      }
+      if (updateFields.completed !== undefined) {
+        updateFields.completed = Boolean(updateFields.completed);
+      }
+      if (updateFields.actualTime !== undefined && updateFields.actualTime !== null) {
+        updateFields.actualTime = Number(updateFields.actualTime);
+      }
+      if (updateFields.distractionLevel !== undefined && updateFields.distractionLevel !== null) {
+        updateFields.distractionLevel = Number(updateFields.distractionLevel);
       }
 
       console.log('Updating task:', id, updateFields);
@@ -145,7 +161,10 @@ export class MongoStorage {
       console.log('Task updated successfully:', result.value);
       return {
         ...result.value,
-        id: result.value.id || result.value._id.toString()
+        id: result.value.id || result.value._id.toString(),
+        actualTime: result.value.actualTime || null,
+        distractionLevel: result.value.distractionLevel || null,
+        isLater: result.value.isLater || false
       };
     } catch (error) {
       console.error('Error updating task:', error);
