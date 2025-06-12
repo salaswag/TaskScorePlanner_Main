@@ -31,7 +31,7 @@ export class MongoStorage {
     }
   }
 
-  async getTasks(userId = null) {
+  async getTasks(userId) {
     try {
       const filter = userId ? { userId } : { $or: [{ userId: null }, { userId: { $exists: false } }] };
       const tasks = await this.tasksCollection.find(filter).sort({ createdAt: -1 }).toArray();
@@ -66,7 +66,7 @@ export class MongoStorage {
     }
   }
 
-  async createTask(taskData, userId = null) {
+  async createTask(taskData, userId) {
     try {
       const task = {
         ...taskData,

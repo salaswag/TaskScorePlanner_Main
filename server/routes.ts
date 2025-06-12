@@ -13,7 +13,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all tasks (filtered by user if authenticated)
   app.get("/api/tasks", async (req, res) => {
     try {
-      const userId = req.session?.user?.id || null;
+      const userId = req.session?.user?.id;
       const tasks = await activeStorage.getTasks(userId);
       res.json(tasks);
     } catch (error) {
@@ -25,7 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/tasks", async (req, res) => {
     try {
       const validatedData = insertTaskSchema.parse(req.body);
-      const userId = req.session?.user?.id || null;
+      const userId = req.session?.user?.id;
       const task = await activeStorage.createTask(validatedData, userId);
       res.status(201).json(task);
     } catch (error) {

@@ -2,9 +2,9 @@ import { tasks, type Task, type InsertTask, type UpdateTask } from "@shared/sche
 
 export interface IStorage {
   // Task operations
-  getTasks(userId?: string | null): Promise<Task[]>;
+  getTasks(userId?: string): Promise<Task[]>;
   getTask(id: number): Promise<Task | undefined>;
-  createTask(task: InsertTask, userId?: string | null): Promise<Task>;
+  createTask(task: InsertTask, userId?: string): Promise<Task>;
   updateTask(task: UpdateTask): Promise<Task | undefined>;
   deleteTask(id: number | string): Promise<boolean>;
   
@@ -29,9 +29,12 @@ export class MemStorage implements IStorage {
   }
 
   // Task operations
-  async getTasks(userId?: string | null): Promise<Task[]> {
+  async getTasks(userId?: string): Promise<Task[]> {
     return Array.from(this.tasks.values())
-      .filter(task => userId ? task.userId === userId : !task.userId)
+      .filter(task => {
+        if (!userId) return !task.userId;
+        return task.userId === userId;
+      })
       .sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -41,7 +44,7 @@ export class MemStorage implements IStorage {
     return this.tasks.get(id);
   }
 
-  async createTask(insertTask: InsertTask, userId?: string | null): Promise<Task> {
+  async createTask(insertTask: InsertTask, userId?: string): Promise<Task> {
     const id = this.currentTaskId++;
     const task: Task = {
       ...insertTask,
