@@ -52,9 +52,9 @@ export function useTasks() {
     },
   });
 
-  const mainTasks = tasks.filter(task => !task.isLater && !task.isFocus);
-  const laterTasks = tasks.filter(task => Boolean(task.isLater));
-  const focusTasks = tasks.filter(task => Boolean(task.isFocus));
+  const mainTasks = tasks?.filter(task => !task.isLater && !task.isFocus) || [];
+  const laterTasks = tasks?.filter(task => Boolean(task.isLater)) || [];
+  const focusTasks = tasks?.filter(task => Boolean(task.isFocus)) || [];
 
   return {
     tasks,
