@@ -16,6 +16,7 @@ export default function TodoApp() {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [focusTasks, setFocusTasks] = useState([]);
   const [panelOrder, setPanelOrder] = useState(["score", "form", "focus"]);
 
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
@@ -49,16 +50,12 @@ export default function TodoApp() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  // Filter tasks into main, later, and focus sections - include completed tasks in main view
+  // Filter tasks into main and later sections - include completed tasks in main view
   const mainTasks =
-    tasks && Array.isArray(tasks) ? tasks.filter((task) => !task.isLater && !task.isFocus) : [];
+    tasks && Array.isArray(tasks) ? tasks.filter((task) => !task.isLater) : [];
   const laterTasks =
     tasks && Array.isArray(tasks)
       ? tasks.filter((task) => Boolean(task.isLater))
-      : [];
-  const focusTasks =
-    tasks && Array.isArray(tasks)
-      ? tasks.filter((task) => Boolean(task.isFocus))
       : [];
 
   // Calculate statistics (only from main tasks)
@@ -156,25 +153,32 @@ export default function TodoApp() {
   };
 
   const handleAddToFocus = (task) => {
-    // Create a new task in database with isFocus flag
-    createTask.mutate({
-      title: task.title,
-      priority: task.priority,
-      estimatedTime: task.estimatedTime,
+    // Allow duplicate tasks in focus with unique focus ID
+    const focusTask = {
+      ...task,
+      focusId: `focus-${task.id}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       isFocus: true,
-    });
+    };
+    setFocusTasks((prev) => [...prev, focusTask]);
     showNotification(`"${task.title}" added to focus list`, "success");
   };
 
   const handleRemoveFromFocus = (task) => {
-    deleteTask.mutate(task.id);
+    setFocusTasks((prev) => prev.filter((ft) => ft.focusId !== task.focusId));
     showNotification(
       `Task "${task.title}" removed from Focus Switch List`,
       "success",
     );
   };
 
-  
+  const handleReorderFocusTasks = (fromIndex, toIndex) => {
+    setFocusTasks((prev) => {
+      const newTasks = [...prev];
+      const [removed] = newTasks.splice(fromIndex, 1);
+      newTasks.splice(toIndex, 0, removed);
+      return newTasks;
+    });
+  };
 
   const handleReorderPanels = (fromIndex, toIndex) => {
     setPanelOrder((prev) => {
@@ -255,6 +259,7 @@ export default function TodoApp() {
                       onDeleteTask={handleRemoveFromFocus}
                       onEditTask={handleEditTask}
                       onAddToFocus={handleAddToFocus}
+                      onReorder={handleReorderFocusTasks}
                     />
                   </div>
                 ),
