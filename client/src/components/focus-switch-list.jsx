@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Edit, Trash2, GripVertical } from "lucide-react";
 
-export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onEditTask, onAddToFocus, onReorder }) {
+export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onEditTask, onAddToFocus }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -60,7 +60,7 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
         ) : (
           tasks.map((task, index) => (
             <div 
-              key={task.focusId || `focus-${task.id}-${index}-${Math.random().toString(36).substring(2, 11)}`}
+              key={task.id}
               className={`px-4 py-4 transition-all duration-300 ease-in-out group border-l-4 ${getPriorityBgColor(task.priority)} hover:shadow-md transform hover:scale-[1.02]`}
             >
               <div className="flex items-center gap-3">
@@ -68,7 +68,7 @@ export default function FocusSwitchList({ tasks, onMoveToMain, onDeleteTask, onE
                   {task.priority}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <span className="text-lg font-medium text-gray-900 dark:text-gray-100 block leading-tight">
+                  <span className="text-base font-medium text-gray-900 dark:text-gray-100 block leading-tight">
                     {task.title}
                   </span>
                 </div>
