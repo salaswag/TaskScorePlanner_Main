@@ -17,7 +17,7 @@ export default function TodoApp() {
   const [currentTask, setCurrentTask] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [focusTasks, setFocusTasks] = useState([]);
-  const [panelOrder, setPanelOrder] = useState(['score', 'form', 'focus']);
+  const [panelOrder, setPanelOrder] = useState(["score", "form", "focus"]);
 
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
   const { theme, setTheme } = useTheme();
@@ -28,13 +28,18 @@ export default function TodoApp() {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const showNotification = (message, type = 'success', hasUndo = false, undoAction = null) => {
+  const showNotification = (
+    message,
+    type = "success",
+    hasUndo = false,
+    undoAction = null,
+  ) => {
     const id = Date.now();
     const notification = { id, message, type, hasUndo, undoAction };
-    setNotifications(prev => [...prev, notification]);
+    setNotifications((prev) => [...prev, notification]);
 
     setTimeout(() => {
       hideNotification(id);
@@ -42,18 +47,28 @@ export default function TodoApp() {
   };
 
   const hideNotification = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
   // Filter tasks into main and later sections - include completed tasks in main view
-  const mainTasks = (tasks && Array.isArray(tasks)) ? tasks.filter(task => !task.isLater) : [];
-  const laterTasks = (tasks && Array.isArray(tasks)) ? tasks.filter(task => Boolean(task.isLater)) : [];
+  const mainTasks =
+    tasks && Array.isArray(tasks) ? tasks.filter((task) => !task.isLater) : [];
+  const laterTasks =
+    tasks && Array.isArray(tasks)
+      ? tasks.filter((task) => Boolean(task.isLater))
+      : [];
 
   // Calculate statistics (only from main tasks)
-  const completedTasks = mainTasks.filter(task => task.completed) || [];
-  const pendingTasks = mainTasks.filter(task => !task.completed) || [];
-  const totalScore = completedTasks.reduce((sum, task) => sum + (task.priority || 0), 0);
-  const totalEstimatedTime = pendingTasks.reduce((sum, task) => sum + (task.estimatedTime || 0), 0);
+  const completedTasks = mainTasks.filter((task) => task.completed) || [];
+  const pendingTasks = mainTasks.filter((task) => !task.completed) || [];
+  const totalScore = completedTasks.reduce(
+    (sum, task) => sum + (task.priority || 0),
+    0,
+  );
+  const totalEstimatedTime = pendingTasks.reduce(
+    (sum, task) => sum + (task.estimatedTime || 0),
+    0,
+  );
 
   const handleConfirmCompletion = (actualTime, distractionLevel) => {
     if (currentTask) {
@@ -74,9 +89,9 @@ export default function TodoApp() {
 
       showNotification(
         `Task completed successfully! - ${currentTask.title} (${timeStr} actual time)`,
-        'success',
+        "success",
         true,
-        () => handleUndoCompletion(currentTask.id)
+        () => handleUndoCompletion(currentTask.id),
       );
     }
     setIsTimerModalOpen(false);
@@ -91,16 +106,16 @@ export default function TodoApp() {
       completed: false,
       completedAt: null,
     });
-    showNotification('Task completion undone', 'success');
+    showNotification("Task completion undone", "success");
   };
 
   const handleDeleteTask = (task) => {
     deleteTask.mutate(task.id);
     showNotification(
       `Task "${task.title}" deleted successfully!`,
-      'success',
+      "success",
       true,
-      () => handleUndoDelete(task)
+      () => handleUndoDelete(task),
     );
   };
 
@@ -110,12 +125,12 @@ export default function TodoApp() {
       priority: task.priority,
       estimatedTime: task.estimatedTime,
     });
-    showNotification('Task deletion undone', 'success');
+    showNotification("Task deletion undone", "success");
   };
 
   const handleEditTask = (task) => {
     // For now, just show a notification that edit functionality is coming
-    showNotification('Edit functionality coming soon!', 'info');
+    showNotification("Edit functionality coming soon!", "info");
   };
 
   const handleMoveToLater = (task) => {
@@ -123,7 +138,7 @@ export default function TodoApp() {
       ...task,
       isLater: true,
     });
-    showNotification(`Task "${task.title}" moved to Later section`, 'success');
+    showNotification(`Task "${task.title}" moved to Later section`, "success");
   };
 
   const handleMoveToMain = (task) => {
@@ -131,27 +146,33 @@ export default function TodoApp() {
       ...task,
       isLater: false,
     });
-    showNotification(`Task "${task.title}" moved back to main tasks`, 'success');
+    showNotification(
+      `Task "${task.title}" moved back to main tasks`,
+      "success",
+    );
   };
 
   const handleAddToFocus = (task) => {
     // Allow duplicate tasks in focus with unique focus ID
-    const focusTask = { 
-      ...task, 
+    const focusTask = {
+      ...task,
       focusId: `focus-${task.id}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      isFocus: true 
+      isFocus: true,
     };
-    setFocusTasks(prev => [...prev, focusTask]);
-    showNotification(`"${task.title}" added to focus list`, 'success');
+    setFocusTasks((prev) => [...prev, focusTask]);
+    showNotification(`"${task.title}" added to focus list`, "success");
   };
 
   const handleRemoveFromFocus = (task) => {
-    setFocusTasks(prev => prev.filter(ft => ft.focusId !== task.focusId));
-    showNotification(`Task "${task.title}" removed from Focus Switch List`, 'success');
+    setFocusTasks((prev) => prev.filter((ft) => ft.focusId !== task.focusId));
+    showNotification(
+      `Task "${task.title}" removed from Focus Switch List`,
+      "success",
+    );
   };
 
   const handleReorderFocusTasks = (fromIndex, toIndex) => {
-    setFocusTasks(prev => {
+    setFocusTasks((prev) => {
       const newTasks = [...prev];
       const [removed] = newTasks.splice(fromIndex, 1);
       newTasks.splice(toIndex, 0, removed);
@@ -160,7 +181,7 @@ export default function TodoApp() {
   };
 
   const handleReorderPanels = (fromIndex, toIndex) => {
-    setPanelOrder(prev => {
+    setPanelOrder((prev) => {
       const newOrder = [...prev];
       const [removed] = newOrder.splice(fromIndex, 1);
       newOrder.splice(toIndex, 0, removed);
@@ -175,7 +196,9 @@ export default function TodoApp() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <CheckSquare className="h-8 w-8 text-black dark:text-white" />
-            <h1 className="text-xl font-semibold text-black dark:text-white">Task Master Pro</h1>
+            <h1 className="text-xl font-semibold text-black dark:text-white">
+              Task Master Pro
+            </h1>
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -184,7 +207,7 @@ export default function TodoApp() {
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              {theme === 'light' ? (
+              {theme === "light" ? (
                 <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               ) : (
                 <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
@@ -198,14 +221,14 @@ export default function TodoApp() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8 bg-white dark:bg-black">
         {/* Main Layout: Left sidebar with scoring/form/focus, Right main area with tasks */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Sidebar */}
           <div className="xl:col-span-1 space-y-6">
             {panelOrder.map((panelType, index) => {
               const panelComponents = {
                 score: (
                   <div key="score">
-                    <ScoreDisplay 
+                    <ScoreDisplay
                       totalScore={totalScore}
                       completedTasks={completedTasks}
                       totalTasks={mainTasks.length}
@@ -216,10 +239,13 @@ export default function TodoApp() {
                 ),
                 form: (
                   <div key="form">
-                    <TaskForm 
+                    <TaskForm
                       onSubmit={(taskData) => {
                         createTask.mutate(taskData);
-                        showNotification(`Task "${taskData.title}" added successfully!`, 'success');
+                        showNotification(
+                          `Task "${taskData.title}" added successfully!`,
+                          "success",
+                        );
                       }}
                       isLoading={createTask.isPending}
                     />
@@ -227,7 +253,7 @@ export default function TodoApp() {
                 ),
                 focus: (
                   <div key="focus">
-                    <FocusSwitchList 
+                    <FocusSwitchList
                       tasks={focusTasks}
                       onMoveToMain={handleMoveToMain}
                       onDeleteTask={handleRemoveFromFocus}
@@ -236,7 +262,7 @@ export default function TodoApp() {
                       onReorder={handleReorderFocusTasks}
                     />
                   </div>
-                )
+                ),
               };
               return panelComponents[panelType];
             })}
@@ -244,7 +270,7 @@ export default function TodoApp() {
 
           {/* Right Main Area */}
           <div className="xl:col-span-2">
-            <TaskTable 
+            <TaskTable
               tasks={mainTasks}
               isLoading={isLoading}
               onCompleteTask={handleCompleteTask}
@@ -253,7 +279,7 @@ export default function TodoApp() {
               onUndoCompletion={handleUndoCompletion}
               onMoveToLater={handleMoveToLater}
             />
-            <LaterSection 
+            <LaterSection
               tasks={laterTasks}
               onMoveToMain={handleMoveToMain}
               onDeleteTask={handleDeleteTask}
@@ -266,7 +292,7 @@ export default function TodoApp() {
       </main>
 
       {/* Timer Modal */}
-      <TimerModal 
+      <TimerModal
         isOpen={isTimerModalOpen}
         task={currentTask}
         onClose={() => {
@@ -278,7 +304,7 @@ export default function TodoApp() {
 
       {/* Notifications */}
       <div className="fixed bottom-4 right-4 z-50 space-y-2">
-        {notifications.map(notification => (
+        {notifications.map((notification) => (
           <NotificationToast
             key={notification.id}
             notification={notification}
