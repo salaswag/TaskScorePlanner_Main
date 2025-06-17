@@ -10,24 +10,6 @@ export default function FocusSwitchList({
   onAddToFocus,
   onReorder,
 }) {
-  const handleDragStart = (e, index) => {
-    e.dataTransfer.setData("text/plain", index.toString());
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDrop = (e, dropIndex) => {
-    e.preventDefault();
-    const dragIndex = parseInt(e.dataTransfer.getData("text/plain"));
-    
-    if (dragIndex !== dropIndex && onReorder) {
-      onReorder(dragIndex, dropIndex);
-    }
-  };
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -97,14 +79,9 @@ export default function FocusSwitchList({
                 task.focusId ||
                 `focus-${task.id}-${index}-${Math.random().toString(36).substring(2, 11)}`
               }
-              draggable
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, index)}
-              className={`px-4 py-4 transition-all duration-300 ease-in-out group border-l-4 ${getPriorityBgColor(task.priority)} hover:shadow-md transform hover:scale-[1.02] cursor-move`}
+              className={`px-4 py-4 transition-all duration-300 ease-in-out group border-l-4 ${getPriorityBgColor(task.priority)} hover:shadow-md transform hover:scale-[1.02]`}
             >
               <div className="flex items-center gap-3">
-                <GripVertical className="h-4 w-4 text-gray-400 flex-shrink-0" />
                 <span
                   className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2 flex-shrink-0 ${getPriorityColor(task.priority)}`}
                 >
