@@ -168,39 +168,37 @@ export function CalendarView({ tasks, onUpdateTask }) {
               <div
                 key={index}
                 className={`
-                  min-h-[90px] p-2 border-b border-r border-gray-200 dark:border-gray-600
-                  ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30 text-gray-400' : 'bg-white dark:bg-gray-900'}
-                  ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
-                  ${isCurrentMonth && dayData.hasData ? getDayBackgroundColor(dayData.priorityPercentage) : ''}
+                  min-h-[120px] p-2 border-b border-r border-gray-200 dark:border-gray-600 relative
+                  ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30 text-gray-400' : ''}
+                  ${isToday && !dayData.hasData ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                  ${isCurrentMonth && dayData.hasData ? getDayBackgroundColor(dayData.priorityPercentage) : (!isCurrentMonth ? '' : 'bg-white dark:bg-gray-900')}
                 `}
               >
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full relative z-10">
                   {/* Date Number */}
                   <div className={`
-                    text-sm font-medium mb-1
-                    ${isToday ? 'text-blue-600 dark:text-blue-400' : ''}
-                    ${!isCurrentMonth ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100'}
+                    text-sm font-medium mb-2
+                    ${isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}
+                    ${!isCurrentMonth ? 'text-gray-400' : dayData.hasData ? 'text-gray-800 dark:text-gray-200' : 'text-gray-900 dark:text-gray-100'}
                   `}>
                     {format(day, 'd')}
                   </div>
 
                   {/* Day Data */}
                   {isCurrentMonth && dayData.hasData && (
-                    <div className="flex-1 space-y-1">
-                      {/* Priority Percentage */}
-                      <div className="flex items-center justify-center">
-                        <Badge 
-                          className={`text-xs px-1 py-0 ${getPriorityBadgeColor(dayData.priorityPercentage)}`}
-                        >
+                    <div className="flex-1 flex flex-col items-center justify-center space-y-2">
+                      {/* Priority Percentage - Larger */}
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-1">
                           {Math.round(dayData.priorityPercentage)}%
-                        </Badge>
+                        </div>
                       </div>
 
-                      {/* Time Spent - Editable */}
+                      {/* Time Spent - Larger and Editable */}
                       {dayData.timeSpent > 0 && (
-                        <div className="flex items-center justify-center">
+                        <div className="text-center">
                           {editingTime === dateKey ? (
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 justify-center">
                               <Input
                                 type="number"
                                 value={tempTimeValue}
@@ -210,20 +208,23 @@ export function CalendarView({ tasks, onUpdateTask }) {
                                   if (e.key === 'Escape') handleTimeCancel();
                                 }}
                                 onBlur={() => handleTimeSave(dateKey)}
-                                className="w-12 h-6 text-xs p-1 text-center"
+                                className="w-16 h-8 text-sm p-1 text-center font-medium"
                                 autoFocus
                               />
-                              <span className="text-xs">m</span>
+                              <span className="text-sm font-medium">m</span>
                             </div>
                           ) : (
-                            <Badge 
-                              variant="outline" 
-                              className="text-xs px-1 py-0 bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900/70"
+                            <div 
+                              className="cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 rounded p-1 transition-colors"
                               onClick={() => handleTimeEdit(dateKey, dayData.timeSpent)}
                             >
-                              <Clock className="w-3 h-3 mr-1" />
-                              {formatTime(dayData.timeSpent)}
-                            </Badge>
+                              <div className="flex items-center justify-center gap-1">
+                                <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                  {formatTime(dayData.timeSpent)}
+                                </span>
+                              </div>
+                            </div>
                           )}
                         </div>
                       )}
