@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,19 +41,33 @@ export function CalendarView({ tasks, onUpdateTask }) {
     }
   };
 
-  // Get background color based on priority percentage
-  const getDayBackgroundColor = (percentage) => {
-    if (percentage === 0) return '';
-    if (percentage < 30) return 'bg-red-100 dark:bg-red-950/30';
-    if (percentage < 60) return 'bg-yellow-100 dark:bg-yellow-950/30';
-    return 'bg-green-100 dark:bg-green-950/30';
+  // Get background color based on priority percentage - full cell coloring
+  const getCellBackgroundColor = (percentage) => {
+    if (percentage === 0) return 'bg-gray-50 dark:bg-gray-900';
+
+    // More vibrant colors for full cell background
+    if (percentage < 25) return 'bg-red-200 dark:bg-red-800/50';
+    if (percentage < 50) return 'bg-orange-200 dark:bg-orange-800/50';
+    if (percentage < 75) return 'bg-yellow-200 dark:bg-yellow-800/50';
+    return 'bg-green-200 dark:bg-green-800/50';
   };
 
-  // Get priority badge color based on percentage
-  const getPriorityBadgeColor = (percentage) => {
-    if (percentage < 30) return 'bg-red-200 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-    if (percentage < 60) return 'bg-yellow-200 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
-    return 'bg-green-200 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+  const getCellBorderColor = (percentage) => {
+    if (percentage === 0) return 'border-gray-300 dark:border-gray-600';
+
+    if (percentage < 25) return 'border-red-400 dark:border-red-600';
+    if (percentage < 50) return 'border-orange-400 dark:border-orange-600';
+    if (percentage < 75) return 'border-yellow-400 dark:border-yellow-600';
+    return 'border-green-400 dark:border-green-600';
+  };
+
+  const getTextColor = (percentage) => {
+    if (percentage === 0) return 'text-gray-600 dark:text-gray-300';
+
+    if (percentage < 25) return 'text-red-800 dark:text-red-200';
+    if (percentage < 50) return 'text-orange-800 dark:text-orange-200';
+    if (percentage < 75) return 'text-yellow-800 dark:text-yellow-200';
+    return 'text-green-800 dark:text-green-200';
   };
 
   const handleTimeEdit = (dateKey, currentTime) => {
@@ -67,15 +80,15 @@ export function CalendarView({ tasks, onUpdateTask }) {
     if (!isNaN(newTime) && newTime >= 0) {
       const date = new Date(dateKey);
       const dayTasks = getDayData(date).tasks;
-      
+
       // Update all tasks for this day with proportional time distribution
       if (dayTasks.length > 0) {
         const totalCurrentTime = dayTasks.reduce((sum, task) => sum + (task.actualTime || 0), 0);
-        
+
         for (const task of dayTasks) {
           const proportion = totalCurrentTime > 0 ? (task.actualTime || 0) / totalCurrentTime : 1 / dayTasks.length;
           const newTaskTime = Math.round(newTime * proportion);
-          
+
           if (onUpdateTask) {
             await onUpdateTask(task.id, { ...task, actualTime: newTaskTime });
           }
@@ -165,13 +178,52 @@ export function CalendarView({ tasks, onUpdateTask }) {
             const dateKey = day.toISOString();
 
             return (
+              
+            
+                
+                  
+                    {format(day, 'd')}
+                  
+                  {isCurrentMonth && dayData.hasData && (
+                    
+                      
+                        
+                          {Math.round(dayData.priorityPercentage)}%
+                        
+                        
+                          
+                          {formatTime(dayData.timeSpent)}
+                        
+                      
+                    
+                  )}
+                
+              
+              
+                
+                  {format(day, 'd')}
+                
+                {dayData.hasData && (
+                  
+                    
+                      {Math.round(dayData.priorityPercentage)}%
+                    
+                    
+                      
+                        {formatTime(dayData.timeSpent)}
+                      
+                    
+                  
+                )}
+              
+            
               <div
                 key={index}
                 className={`
                   min-h-[90px] p-2 border-b border-r border-gray-200 dark:border-gray-600
                   ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30 text-gray-400' : 'bg-white dark:bg-gray-900'}
                   ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
-                  ${isCurrentMonth && dayData.hasData ? getDayBackgroundColor(dayData.priorityPercentage) : ''}
+                  ${isCurrentMonth && dayData.hasData ? getCellBackgroundColor(dayData.priorityPercentage) : ''}
                 `}
               >
                 <div className="flex flex-col h-full">
@@ -189,11 +241,9 @@ export function CalendarView({ tasks, onUpdateTask }) {
                     <div className="flex-1 space-y-1">
                       {/* Priority Percentage */}
                       <div className="flex items-center justify-center">
-                        <Badge 
-                          className={`text-xs px-1 py-0 ${getPriorityBadgeColor(dayData.priorityPercentage)}`}
-                        >
+                        
                           {Math.round(dayData.priorityPercentage)}%
-                        </Badge>
+                        
                       </div>
 
                       {/* Time Spent - Editable */}
@@ -213,17 +263,14 @@ export function CalendarView({ tasks, onUpdateTask }) {
                                 className="w-12 h-6 text-xs p-1 text-center"
                                 autoFocus
                               />
-                              <span className="text-xs">m</span>
+                              
                             </div>
                           ) : (
-                            <Badge 
-                              variant="outline" 
-                              className="text-xs px-1 py-0 bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900/70"
-                              onClick={() => handleTimeEdit(dateKey, dayData.timeSpent)}
-                            >
-                              <Clock className="w-3 h-3 mr-1" />
+                            
+                              
+                              
                               {formatTime(dayData.timeSpent)}
-                            </Badge>
+                            
                           )}
                         </div>
                       )}
@@ -239,23 +286,34 @@ export function CalendarView({ tasks, onUpdateTask }) {
       {/* Legend */}
       <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-100 dark:bg-red-950/30 border rounded"></div>
-            <span>Low Performance (&lt;30%)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-yellow-100 dark:bg-yellow-950/30 border rounded"></div>
-            <span>Medium Performance (30-60%)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-100 dark:bg-green-950/30 border rounded"></div>
-            <span>High Performance (&gt;60%)</span>
-          </div>
+          
+            
+              
+            
+            
+              
+            
+          
+          
+            
+              
+            
+            
+              
+            
+          
+          
+            
+              
+            
+            
+              
+            
+          
         </div>
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          <span>Click time to edit</span>
-        </div>
+        
+          
+        
       </div>
     </div>
   );

@@ -4,9 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle } from "lucide-react";
 
-export default function TimerModal({ isOpen, task, onClose, onConfirm }) {
-  const [actualTime, setActualTime] = useState(30);
+export default function TimerModal({ isOpen, task, onClose, onConfirm, trackedTime = 30 }) {
+  const [actualTime, setActualTime] = useState(trackedTime);
   const [distractionLevel, setDistractionLevel] = useState(1);
+
+  // Update actualTime when trackedTime changes
+  React.useEffect(() => {
+    if (trackedTime > 0) {
+      setActualTime(trackedTime);
+    }
+  }, [trackedTime]);
 
   const handleConfirm = () => {
     if (actualTime > 0) {
