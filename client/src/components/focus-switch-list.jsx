@@ -9,6 +9,7 @@ export default function FocusSwitchList({
   onEditTask,
   onAddToFocus,
   onReorder,
+  onUpdateTask,
 }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
@@ -110,6 +111,25 @@ export default function FocusSwitchList({
                     title="Remove from Focus"
                   >
                     <Trash2 className="h-4 w-4" />
+                  </Button>
+                                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const updatedTask = { 
+                        id: task.id,
+                        completed: !task.completed 
+                      };
+                      onUpdateTask(updatedTask);
+                    }}
+                    className={`${
+                      task.completed 
+                        ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' 
+                        : 'text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                    } px-2 py-1`}
+                    title={task.completed ? "Mark as incomplete" : "Mark as complete"}
+                  >
+                    {task.completed ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>

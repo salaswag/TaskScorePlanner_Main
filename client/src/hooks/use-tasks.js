@@ -29,8 +29,12 @@ export function useTasks() {
 
   const updateTask = useMutation({
     mutationFn: async (taskData) => {
+      console.log('Updating task with data:', taskData);
       const response = await apiRequest(`/api/tasks/${taskData.id}`, {
         method: "PATCH",
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(taskData)
       });
       return response.json();

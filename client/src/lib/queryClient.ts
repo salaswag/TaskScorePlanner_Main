@@ -7,35 +7,29 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
-  url: string,
-  options?: {
-    method?: string;
-    body?: string;
-  }
-): Promise<Response> {
-  try {
-    const res = await fetch(url, {
-      method: options?.method || 'GET',
-      headers: options?.body ? { "Content-Type": "application/json" } : {},
-      body: options?.body,
-      credentials: "include",
-    });
+export const apiRequest = async (url: string, options: RequestInit = {}) => {
+  const defaultHeaders: Record<string, string> = {};
 
-    // Don't throw for authentication endpoints, let them handle their own errors
-    if (url.includes('/api/auth/')) {
-      return res;
-    }
-
-    await throwIfResNotOk(res);
-    return res;
-  } catch (error) {
-    if (error instanceof TypeError) {
-      throw new Error('Network error: Please check your connection');
-    }
-    throw error;
+  // Only set Content-Type for requests with a body
+  if (options.body && typeof options.body === 'string') {
+    defaultHeaders['Content-Type'] = 'application/json';
   }
-}
+
+  const response = await fetch(url, {
+    credentials: 'include',
+    ...options,
+    headers: {
+      ...defaultHeaders,
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response;
+};
 
 type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {

@@ -1,3 +1,6 @@
+Refactoring: Corrected the task update handlers to ensure proper JSON objects are sent during task updates.
+```
+```replit_final_file
 import { useState } from "react";
 import ScoreDisplay from "@/components/score-display";
 import TaskForm from "@/components/task-form";
@@ -160,6 +163,16 @@ export default function TodoApp() {
         );
       }
     });
+  };
+
+  const handleUpdateTask = (taskData) => {
+    console.log('Updating task:', taskData);
+    // Ensure we always have the proper structure
+    const properTaskData = {
+      id: taskData.id,
+      ...taskData
+    };
+    updateTask.mutate(properTaskData);
   };
 
   const handleMoveToMain = (task) => {
