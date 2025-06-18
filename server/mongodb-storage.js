@@ -21,7 +21,8 @@ export class MongoStorage {
       await this.client.connect();
       this.db = this.client.db('ClusterforTask');
       this.tasksCollection = this.db.collection('Tasks');
-      this.usersCollection = this.db.collection('Users');
+      this.usersCollection = this.db.collection('User');
+      this.timelineCollection = this.db.collection('Timeline');
       console.log('Connected to MongoDB successfully');
       return true;
     } catch (error) {
@@ -78,9 +79,13 @@ export class MongoStorage {
 
   async createTask(taskData, userId) {
     try {
+      console.log('Creating task with data:', taskData, 'userId:', userId);
+      
       // Get the next numeric ID
       const lastTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
       const nextId = lastTask ? (lastTask.id || 0) + 1 : 1;
+      
+      console.log('Next task ID:', nextId);
 
       const task = {
         ...taskData,
@@ -96,8 +101,11 @@ export class MongoStorage {
         userId: userId
       };
 
+      console.log('Task object to insert:', task);
       const result = await this.tasksCollection.insertOne(task);
-      console.log('Task created:', task);
+      console.log('MongoDB insert result:', result);
+      console.log('Task created successfully with ID:', task.id);
+      
       return {
         ...task,
         id: task.id
@@ -303,6 +311,77 @@ export class MongoStorage {
         throw error;
       }
       return null;
+    }
+  }
+
+  // Timeline methods
+  async getTimelineEvents(userId) {
+    try {
+      const filter = userId ? { userId } : { $or: [{ userId: null }, { userId: { $exists: false } }] };
+      const events = await this.timelineCollection.find(filter).sort({ createdAt: -1 }).toArray();
+      return events.map(event => ({
+        ...event,
+        id: event.id || event._id.toString(),
+        createdAt: event.createdAt || new Date(),
+        userId: event.userId || null
+      }));
+    } catch (error) {
+      console.error('Error fetching timeline events:', error);
+      return [];
+    }
+  }
+
+  async createTimelineEvent(eventData, userId) {
+    try {
+      const lastEvent = await this.timelineCollection.findOne({}, { sort: { id: -1 } });
+      const nextId = lastEvent ? (lastEvent.id || 0) + 1 : 1;
+
+      const event = {
+        ...eventData,
+        id: nextId,
+        createdAt: new Date(),
+        userId: userId
+      };
+
+      await this.timelineCollection.insertOne(event);
+      return event;
+    } catch (error) {
+      console.error('Error creating timeline event:', error);
+      throw error;
+    }
+  }
+
+  async updateTimelineEvent(updateData, userId) {
+    try {
+      const { id, ...updateFields } = updateData;
+      const baseQuery = { id: Number(id) };
+      if (userId) {
+        baseQuery.userId = userId;
+      }
+
+      const result = await this.timelineCollection.findOneAndUpdate(
+        baseQuery,
+        { $set: updateFields },
+        { returnDocument: 'after' }
+      );
+
+      return result.value ? {
+        ...result.value,
+        id: result.value.id || result.value._id.toString()
+      } : undefined;
+    } catch (error) {
+      console.error('Error updating timeline event:', error);
+      return undefined;
+    }
+  }
+
+  async deleteTimelineEvent(id) {
+    try {
+      const result = await this.timelineCollection.deleteOne({ id: Number(id) });
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('Error deleting timeline event:', error);
+      return false;
     }
   }
 }
