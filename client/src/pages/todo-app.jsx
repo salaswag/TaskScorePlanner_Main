@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import TaskForm from "@/components/task-form";
 import TaskTable from "@/components/task-table";
 import TaskEditModal from "@/components/task-edit-modal";
 import TimerModal from "@/components/timer-modal";
+import LaterSection from "@/components/later-section";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
@@ -53,9 +55,9 @@ export default function TodoApp() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  // Filter tasks - only main tasks now
-  const mainTasks =
-    tasks && Array.isArray(tasks) ? tasks.filter((task) => !task.archived) : [];
+  // Filter tasks into main and later sections
+  const mainTasks = tasks && Array.isArray(tasks) ? tasks.filter((task) => !task.archived && !task.isLater) : [];
+  const laterTasks = tasks && Array.isArray(tasks) ? tasks.filter((task) => !task.archived && Boolean(task.isLater)) : [];
 
   // Calculate statistics
   const completedTasks = mainTasks.filter((task) => task.completed) || [];
@@ -136,8 +138,6 @@ export default function TodoApp() {
     showNotification("Task deletion undone", "success");
   };
 
-  
-
   const handleEditTask = (task) => {
     setTaskToEdit(task);
     setIsEditModalOpen(true);
@@ -164,15 +164,12 @@ export default function TodoApp() {
 
   const handleUpdateTask = (taskData) => {
     console.log('Updating task:', taskData);
-    // Ensure we always have the proper structure
     const properTaskData = {
       id: taskData.id,
       ...taskData
     };
     updateTask.mutate(properTaskData);
   };
-
-  
 
   const handleArchiveTask = async (task) => {
     try {
@@ -205,7 +202,6 @@ export default function TodoApp() {
   };
 
   const handleUndoArchive = (task) => {
-    // Recreate the task to undo archive
     createTask.mutate({
       title: task.title,
       priority: task.priority,
@@ -237,6 +233,24 @@ export default function TodoApp() {
         );
       }
     });
+  };
+
+  const handleMoveToLater = (task) => {
+    const updatedTask = {
+      ...task,
+      isLater: true,
+    };
+    updateTask.mutate(updatedTask);
+    showNotification(`Task "${task.title}" moved to Later section`, "success");
+  };
+
+  const handleMoveToMain = (task) => {
+    const updatedTask = {
+      ...task,
+      isLater: false,
+    };
+    updateTask.mutate(updatedTask);
+    showNotification(`Task "${task.title}" moved back to main tasks`, "success");
   };
 
   return (
@@ -285,19 +299,20 @@ export default function TodoApp() {
         <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
-              {/* Score Display */}
-              <ScoreDisplay
-                totalScore={totalScore}
-                totalPossibleScore={totalPossibleScore}
-                completedTasks={completedTasks}
-                pendingTasks={pendingTasks}
-                totalEstimatedTime={totalEstimatedTime}
-              />
-
-              {/* Main Layout: Left sidebar with form, Right main area with tasks */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8 mt-6">
+              {/* Main Layout: Left sidebar with score and form, Right main area with tasks */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
                 {/* Left Sidebar */}
                 <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+                  {/* Score Display */}
+                  <ScoreDisplay
+                    totalScore={totalScore}
+                    totalPossibleScore={totalPossibleScore}
+                    completedTasks={completedTasks}
+                    pendingTasks={pendingTasks}
+                    totalEstimatedTime={totalEstimatedTime}
+                  />
+                  
+                  {/* Task Form */}
                   <TaskForm
                     onSubmit={handleCreateTask}
                     isLoading={createTask.isPending}
@@ -305,7 +320,8 @@ export default function TodoApp() {
                 </div>
 
                 {/* Right Main Area */}
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-2 space-y-4">
+                  {/* Main Tasks */}
                   <TaskTable
                     tasks={mainTasks}
                     onCompleteTask={handleCompleteTask}
@@ -314,6 +330,20 @@ export default function TodoApp() {
                     onEditTask={handleEditTask}
                     onArchive={handleArchive}
                     onUpdateTask={handleUpdateTask}
+                    onMoveToMain={handleMoveToMain}
+                    onMoveToLater={handleMoveToLater}
+                  />
+                  
+                  {/* Later Section */}
+                  <LaterSection
+                    tasks={laterTasks}
+                    onMoveToMain={handleMoveToMain}
+                    onDeleteTask={handleDeleteTask}
+                    onEditTask={handleEditTask}
+                    onMoveToLater={handleMoveToLater}
+                    onCompleteTask={handleCompleteTask}
+                    onUndoCompletion={handleUndoCompletion}
+                    onArchiveTask={handleArchive}
                   />
                 </div>
               </div>
