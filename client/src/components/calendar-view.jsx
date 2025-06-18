@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +54,14 @@ export function CalendarView({ tasks }) {
     });
   };
 
+    const formatTime = (timeInMinutes) => {
+        if (timeInMinutes >= 60) {
+            return `${Math.floor(timeInMinutes / 60)}h ${timeInMinutes % 60}m`;
+        } else {
+            return `${timeInMinutes}m`;
+        }
+    };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -100,33 +107,6 @@ export function CalendarView({ tasks }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Tasks Created */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-blue-500" />
-                <span className="text-sm font-medium">Tasks Created</span>
-              </div>
-              <Badge variant="secondary">{createdTasks.length}</Badge>
-            </div>
-
-            {/* Tasks Completed */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm font-medium">Tasks Completed</span>
-              </div>
-              <Badge variant="secondary">{completedTasks.length}</Badge>
-            </div>
-
-            {/* Task Completion Rate */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Task Completion Rate</span>
-                <span className="text-sm text-muted-foreground">{completionRate.toFixed(0)}%</span>
-              </div>
-              <Progress value={completionRate} className="h-2" />
-            </div>
-
             {/* Priority Completion Rate */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -149,14 +129,9 @@ export function CalendarView({ tasks }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-orange-500" />
-                <span className="text-sm font-medium">Time Spent Working</span>
+                <span className="text-sm font-medium">Time Spent</span>
               </div>
-              <Badge variant="outline">
-                {totalTimeSpent >= 60 
-                  ? `${Math.floor(totalTimeSpent / 60)}h ${totalTimeSpent % 60}m`
-                  : `${totalTimeSpent}m`
-                }
-              </Badge>
+              <Badge variant="outline">{formatTime(totalTimeSpent)}</Badge>
             </div>
           </CardContent>
         </Card>
