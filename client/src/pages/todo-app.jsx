@@ -3,7 +3,6 @@ import ScoreDisplay from "@/components/score-display";
 import TaskForm from "@/components/task-form";
 import TaskTable from "@/components/task-table";
 import LaterSection from "@/components/later-section";
-import FocusSwitchList from "@/components/focus-switch-list";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
 import UserMenu from "@/components/user-menu";
@@ -16,8 +15,6 @@ export default function TodoApp() {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [focusTasks, setFocusTasks] = useState([]);
-  const [panelOrder, setPanelOrder] = useState(["score", "form", "focus"]);
 
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
   const { theme, setTheme } = useTheme();
@@ -152,42 +149,7 @@ export default function TodoApp() {
     );
   };
 
-  const handleAddToFocus = (task) => {
-    // Allow duplicate tasks in focus with unique focus ID
-    const focusTask = {
-      ...task,
-      focusId: `focus-${task.id}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-      isFocus: true,
-    };
-    setFocusTasks((prev) => [...prev, focusTask]);
-    showNotification(`"${task.title}" added to focus list`, "success");
-  };
-
-  const handleRemoveFromFocus = (task) => {
-    setFocusTasks((prev) => prev.filter((ft) => ft.focusId !== task.focusId));
-    showNotification(
-      `Task "${task.title}" removed from Focus Switch List`,
-      "success",
-    );
-  };
-
-  const handleReorderFocusTasks = (fromIndex, toIndex) => {
-    setFocusTasks((prev) => {
-      const newTasks = [...prev];
-      const [removed] = newTasks.splice(fromIndex, 1);
-      newTasks.splice(toIndex, 0, removed);
-      return newTasks;
-    });
-  };
-
-  const handleReorderPanels = (fromIndex, toIndex) => {
-    setPanelOrder((prev) => {
-      const newOrder = [...prev];
-      const [removed] = newOrder.splice(fromIndex, 1);
-      newOrder.splice(toIndex, 0, removed);
-      return newOrder;
-    });
-  };
+  
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
@@ -221,55 +183,30 @@ export default function TodoApp() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 bg-white dark:bg-black">
         {/* Main Layout: Left sidebar with scoring/form/focus, Right main area with tasks */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
           {/* Left Sidebar */}
-          <div className="md:col-span-1 space-y-4 md:space-y-6">
-            {panelOrder.map((panelType, index) => {
-              const panelComponents = {
-                score: (
-                  <div key="score">
-                    <ScoreDisplay
-                      totalScore={totalScore}
-                      completedTasks={completedTasks}
-                      totalTasks={mainTasks.length}
-                      pendingTasks={pendingTasks}
-                      totalEstimatedTime={totalEstimatedTime}
-                    />
-                  </div>
-                ),
-                form: (
-                  <div key="form">
-                    <TaskForm
-                      onSubmit={(taskData) => {
-                        createTask.mutate(taskData);
-                        showNotification(
-                          `Task "${taskData.title}" added successfully!`,
-                          "success",
-                        );
-                      }}
-                      isLoading={createTask.isPending}
-                    />
-                  </div>
-                ),
-                focus: (
-                  <div key="focus">
-                    <FocusSwitchList
-                      tasks={focusTasks}
-                      onMoveToMain={handleMoveToMain}
-                      onDeleteTask={handleRemoveFromFocus}
-                      onEditTask={handleEditTask}
-                      onAddToFocus={handleAddToFocus}
-                      onReorder={handleReorderFocusTasks}
-                    />
-                  </div>
-                ),
-              };
-              return panelComponents[panelType];
-            })}
+          <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+            <ScoreDisplay
+              totalScore={totalScore}
+              completedTasks={completedTasks}
+              totalTasks={mainTasks.length}
+              pendingTasks={pendingTasks}
+              totalEstimatedTime={totalEstimatedTime}
+            />
+            <TaskForm
+              onSubmit={(taskData) => {
+                createTask.mutate(taskData);
+                showNotification(
+                  `Task "${taskData.title}" added successfully!`,
+                  "success",
+                );
+              }}
+              isLoading={createTask.isPending}
+            />
           </div>
 
           {/* Right Main Area */}
-          <div className="md:col-span-2">
+          <div className="lg:col-span-2">
             <TaskTable
               tasks={mainTasks}
               isLoading={isLoading}
@@ -285,7 +222,6 @@ export default function TodoApp() {
               onDeleteTask={handleDeleteTask}
               onEditTask={handleEditTask}
               onMoveToLater={handleMoveToLater}
-              onAddToFocus={handleAddToFocus}
             />
           </div>
         </div>
