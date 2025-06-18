@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -84,17 +83,17 @@ export function CalendarView({ tasks, onUpdateTask }) {
   const handleTimeSave = async () => {
     if (selectedDate && sliderTime >= 0) {
       const dayTasks = getDayData(selectedDate).tasks;
-      
+
       // Override the time for all tasks on this day with proportional distribution
       if (dayTasks.length > 0) {
         const totalCurrentTime = dayTasks.reduce((sum, task) => sum + (task.actualTime || 0), 0);
-        
+
         try {
           for (const task of dayTasks) {
             if (task && task.id) {
               const proportion = totalCurrentTime > 0 ? (task.actualTime || 0) / totalCurrentTime : 1 / dayTasks.length;
               const newTaskTime = Math.round(sliderTime * proportion);
-              
+
               if (onUpdateTask) {
                 await onUpdateTask(task.id, { 
                   ...task, 
