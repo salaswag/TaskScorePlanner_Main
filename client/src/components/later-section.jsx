@@ -96,15 +96,15 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
 
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <div className="grid grid-cols-12 gap-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
           <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-3 text-left">Task</div>
+          <div className="col-span-2 text-left">Task</div>
           <div className="col-span-2 text-center">Est Time</div>
           <div className="col-span-2 text-center">Actual Time</div>
-          <div className="col-span-1 text-center">Distract</div>
-          <div className="col-span-1 text-center">Actions</div>
+          <div className="col-span-1 text-center">Dist</div>
+          <div className="col-span-2 text-center">Actions</div>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   : ''
               } opacity-60`}
             >
-              <div className="grid grid-cols-12 gap-3 items-center">
+              <div className="grid grid-cols-12 gap-2 items-center">
                 <div className="col-span-1 flex justify-center">
                   <div
                     draggable={!task.completed}
@@ -153,12 +153,12 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     {task.priority}
                   </span>
                 </div>
-                <div className="col-span-3">
-                  <span className={`font-medium ${
+                <div className="col-span-2">
+                  <span className={`font-medium truncate block ${
                     task.completed 
                       ? 'text-gray-400 dark:text-gray-500 line-through' 
                       : 'text-gray-500 dark:text-gray-400'
-                  }`}>
+                  }`} title={task.title}>
                     {task.title}
                   </span>
                 </div>
@@ -189,7 +189,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                   )}
                 </div>
-                <div className="col-span-1 flex justify-center">
+                <div className="col-span-2 flex justify-center">
                   <div className="flex space-x-1"></div>
                   <Button
                     variant="ghost"
