@@ -24,6 +24,7 @@ export class MongoStorage {
       this.tasksCollection = this.db.collection('Tasks');
       this.archiveCollection = this.db.collection('Archive');
       this.laterTasksCollection = this.db.collection('Later Tasks');
+      this.timeEntriesCollection = this.db.collection('TimeEntries');
 
       // Test the connection with a ping
       await this.db.command({ ping: 1 });
@@ -33,6 +34,7 @@ export class MongoStorage {
       console.log('📦 Main Collection:', this.tasksCollection.collectionName);
       console.log('📦 Archive Collection:', this.archiveCollection.collectionName);
       console.log('📦 Later Tasks Collection:', this.laterTasksCollection.collectionName);
+      console.log('📦 Time Entries Collection:', this.timeEntriesCollection.collectionName);
       return true;
     } catch (error) {
       console.error(`❌ MongoDB connection failed (attempt ${6 - retries}/5):`, error.message);
@@ -48,6 +50,7 @@ export class MongoStorage {
       this.tasksCollection = null;
       this.archiveCollection = null;
       this.laterTasksCollection = null;
+      this.timeEntriesCollection = null;
       return false;
     }
   }
@@ -510,6 +513,83 @@ export class MongoStorage {
     } catch (error) {
       console.error('Error fetching archived tasks:', error);
       return [];
+    }
+  }
+
+  async getTimeEntries() {
+    try {
+      const timeEntries = await this.timeEntriesCollection.find({}).toArray();
+      console.log('Fetched time entries from MongoDB:', timeEntries.length);
+      return timeEntries.map(entry => ({
+        ...entry,
+        id: entry.id || entry._id.toString()
+      }));
+    } catch (error) {
+      console.error('Error fetching time entries:', error);
+      return [];
+    }
+  }
+
+  async createTimeEntry(entryData) {
+    try {
+      console.log('Creating time entry:', entryData);
+      
+      const entry = {
+        ...entryData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const result = await this.timeEntriesCollection.insertOne(entry);
+      console.log('Time entry created with ID:', result.insertedId);
+
+      return {
+        ...entry,
+        id: result.insertedId.toString()
+      };
+    } catch (error) {
+      console.error('Error creating time entry:', error);
+      throw error;
+    }
+  }
+
+  async updateTimeEntry(date, timeInMinutes) {
+    try {
+      console.log('Updating time entry for date:', date, 'time:', timeInMinutes);
+      
+      const result = await this.timeEntriesCollection.findOneAndUpdate(
+        { date: date },
+        { 
+          $set: { 
+            timeInMinutes: timeInMinutes,
+            updatedAt: new Date()
+          }
+        },
+        { 
+          upsert: true,
+          returnDocument: 'after'
+        }
+      );
+
+      console.log('Time entry updated/created:', result);
+      return {
+        ...result,
+        id: result._id.toString()
+      };
+    } catch (error) {
+      console.error('Error updating time entry:', error);
+      throw error;
+    }
+  }
+
+  async deleteTimeEntry(date) {
+    try {
+      const result = await this.timeEntriesCollection.deleteOne({ date: date });
+      console.log('Time entry deleted for date:', date, 'deleted count:', result.deletedCount);
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('Error deleting time entry:', error);
+      return false;
     }
   }
 

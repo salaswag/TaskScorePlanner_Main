@@ -207,6 +207,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get time entries
+  app.get("/api/time-entries", async (req, res) => {
+    try {
+      const mongoAvailable = await testMongoConnection();
+      
+      if (!mongoAvailable) {
+        console.warn("⚠️  Time entries require MongoDB - unavailable");
+        return res.json({});
+      }
+      
+      const timeEntries = await mongoStorage.getTimeEntries();
+      
+      // Convert to date-indexed object for easier frontend usage
+      const timeData = {};
+      timeEntries.forEach(entry => {
+        timeData[entry.date] = entry.timeInMinutes;
+      });
+      
+      res.json(timeData);
+    } catch (error) {
+      console.error("Error fetching time entries:", error);
+      res.status(500).json({ message: "Failed to fetch time entries" });
+    }
+  });
+
+  // Update/create time entry
+  app.post("/api/time-entries", async (req, res) => {
+    try {
+      const { date, timeInMinutes } = req.body;
+      
+      if (!date || timeInMinutes === undefined) {
+        return res.status(400).json({ message: "Date and timeInMinutes are required" });
+      }
+      
+      const mongoAvailable = await testMongoConnection();
+      
+      if (!mongoAvailable) {
+        console.warn("⚠️  Time entries require MongoDB - unavailable");
+        return res.status(503).json({ message: "Time entries require MongoDB" });
+      }
+      
+      const timeEntry = await mongoStorage.updateTimeEntry(date, timeInMinutes);
+      res.json(timeEntry);
+    } catch (error) {
+      console.error("Error updating time entry:", error);
+      res.status(500).json({ message: "Failed to update time entry" });
+    }
+  });
+
+  // Delete time entry
+  app.delete("/api/time-entries/:date", async (req, res) => {
+    try {
+      const { date } = req.params;
+      
+      const mongoAvailable = await testMongoConnection();
+      
+      if (!mongoAvailable) {
+        console.warn("⚠️  Time entries require MongoDB - unavailable");
+        return res.status(503).json({ message: "Time entries require MongoDB" });
+      }
+      
+      const deleted = await mongoStorage.deleteTimeEntry(date);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Time entry not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting time entry:", error);
+      res.status(500).json({ message: "Failed to delete time entry" });
+    }
+  });
+
 
 
 

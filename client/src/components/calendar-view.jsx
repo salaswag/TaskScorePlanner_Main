@@ -11,6 +11,7 @@ export function CalendarView() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [sliderTime, setSliderTime] = useState(0);
   const [timeData, setTimeData] = useState({}); // Store manual time entries
+  const [isLoading, setIsLoading] = useState(false);
 
   const formatTime = (timeInMinutes) => {
     if (!timeInMinutes || timeInMinutes === 0) return '0m';
@@ -36,9 +37,9 @@ export function CalendarView() {
 
   const getTimeColorClasses = (timeInMinutes) => {
     if (!timeInMinutes || timeInMinutes === 0) return '';
-    
+
     const hours = timeInMinutes / 60;
-    
+
     if (hours >= 9) {
       // Green for 9+ hours
       return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200';
@@ -74,6 +75,7 @@ export function CalendarView() {
   };
 
   const handleTimeSave = () => {
+    setIsLoading(true);
     if (selectedDate) {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
       setTimeData(prev => ({
@@ -81,9 +83,12 @@ export function CalendarView() {
         [dateKey]: sliderTime
       }));
     }
-    setShowTimeModal(false);
-    setSelectedDate(null);
-    setSliderTime(0);
+    setTimeout(() => { // Simulate saving delay
+      setShowTimeModal(false);
+      setSelectedDate(null);
+      setSliderTime(0);
+      setIsLoading(false);
+    }, 500);
   };
 
   const handleTimeCancel = () => {
@@ -294,8 +299,9 @@ export function CalendarView() {
               <Button 
                 onClick={handleTimeSave} 
                 className="flex-1 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200"
+                disabled={isLoading}
               >
-                Save Time
+                {isLoading ? 'Saving...' : 'Save Time'}
               </Button>
             </div>
           </div>
