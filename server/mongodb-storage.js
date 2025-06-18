@@ -117,7 +117,8 @@ export class MongoStorage {
 
   async createTask(taskData) {
     try {
-      console.log('Creating task with data:', taskData);
+      console.log('===== CREATING TASK =====');
+      console.log('Original task data:', JSON.stringify(taskData, null, 2));
 
       // Get the next numeric ID from both collections
       const lastMainTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
@@ -128,6 +129,7 @@ export class MongoStorage {
       const nextId = Math.max(lastMainId, lastLaterId) + 1;
 
       console.log('Next task ID:', nextId);
+      console.log('isLater from taskData:', taskData.isLater, 'Type:', typeof taskData.isLater);
 
       const task = {
         ...taskData,
@@ -143,7 +145,8 @@ export class MongoStorage {
         completedAt: null
       };
 
-      console.log('Task object to insert:', task);
+      console.log('Final task object to insert:', JSON.stringify(task, null, 2));
+      console.log('Will insert into collection:', task.isLater ? 'Later Tasks' : 'Main Tasks');
       
       // Choose collection based on isLater flag
       const targetCollection = task.isLater ? this.laterTasksCollection : this.tasksCollection;
@@ -152,6 +155,7 @@ export class MongoStorage {
       const result = await targetCollection.insertOne(task);
       console.log(`MongoDB insert result in ${collectionName}:`, result);
       console.log('Task created successfully with ID:', task.id);
+      console.log('===========================');
 
       return {
         ...task,

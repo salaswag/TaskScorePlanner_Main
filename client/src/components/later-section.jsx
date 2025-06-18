@@ -136,7 +136,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     draggable={!task.completed}
                     onDragStart={(e) => {
                       if (!task.completed) {
-                        e.dataTransfer.setData('text/plain', JSON.stringify(task));
+                        e.dataTransfer.setData('text/plain', JSON.stringify({...task, isLater: true}));
                         e.dataTransfer.effectAllowed = 'move';
                       } else {
                         e.preventDefault();

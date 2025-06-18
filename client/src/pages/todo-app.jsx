@@ -214,13 +214,25 @@ export default function TodoApp() {
     showNotification("Task archive undone", "success");
   };
 
-  const handleCreateTask = async (taskData) => {
-    try {
-      console.log('Creating task with data:', taskData);
-      await createTask.mutateAsync(taskData);
-    } catch (error) {
-      console.error('Failed to create task:', error);
-    }
+  const handleCreateTask = (taskData) => {
+    console.log('Creating task from form:', taskData);
+    createTask.mutate(taskData, {
+      onSuccess: (result) => {
+        console.log('Task created successfully:', result);
+        const section = taskData.isLater ? 'Later Tasks' : 'Main Tasks';
+        showNotification(
+          `Task "${taskData.title}" added to ${section}!`,
+          "success"
+        );
+      },
+      onError: (error) => {
+        console.error('Task creation failed:', error);
+        showNotification(
+          `Failed to create task "${taskData.title}"`,
+          "error"
+        );
+      }
+    });
   };
 
 
@@ -282,26 +294,7 @@ export default function TodoApp() {
                     totalEstimatedTime={totalEstimatedTime}
                   />
                   <TaskForm
-                    onSubmit={(taskData) => {
-                      console.log('Creating task from form:', taskData);
-                      createTask.mutate(taskData, {
-                        onSuccess: (result) => {
-                          console.log('Task created successfully:', result);
-                          const section = taskData.isLater ? 'Later Tasks' : 'Main Tasks';
-                          showNotification(
-                            `Task "${taskData.title}" added to ${section}!`,
-                            "success"
-                          );
-                        },
-                        onError: (error) => {
-                          console.error('Task creation failed:', error);
-                          showNotification(
-                            `Failed to create task "${taskData.title}"`,
-                            "error"
-                          );
-                        }
-                      });
-                    }}
+                    onSubmit={handleCreateTask}
                     isLoading={createTask.isPending}
                   />
                 </div>
@@ -316,6 +309,7 @@ export default function TodoApp() {
                     onEditTask={handleEditTask}
                     onUndoCompletion={handleUndoCompletion}
                     onMoveToLater={handleMoveToLater}
+                    onMoveToMain={handleMoveToMain}
                     onArchive={handleArchive}
                   />
                   <LaterSection

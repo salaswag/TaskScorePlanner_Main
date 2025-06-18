@@ -4,7 +4,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, GripVertical } from "lucide-react";
 import { Archive } from 'lucide-react';
 
-export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTask, onEditTask, onUndoCompletion, onMoveToLater, onArchive }) {
+export default function TaskTable({
+  tasks,
+  isLoading,
+  onCompleteTask,
+  onDeleteTask,
+  onEditTask,
+  onUndoCompletion,
+  onMoveToLater,
+  onMoveToMain,
+  onArchive,
+}) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
