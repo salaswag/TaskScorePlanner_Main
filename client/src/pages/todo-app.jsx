@@ -325,7 +325,7 @@ export default function TodoApp() {
             </TabsContent>
 
             <TabsContent value="dashboard" className="mt-0">
-              <DashboardView tasks={tasks || []} />
+              <DashboardView tasks={tasks || []} onUpdateTask={handleSaveEditedTask} />
             </TabsContent>
           </Tabs>
         </main>

@@ -34,7 +34,7 @@ const chartConfig = {
   }
 };
 
-export function DashboardView({ tasks }) {
+export function DashboardView({ tasks, onUpdateTask }) {
   const [timeRange, setTimeRange] = React.useState("30d")
 
   // Generate chart data from tasks
