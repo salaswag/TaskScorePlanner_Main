@@ -219,9 +219,8 @@ export default function TodoApp() {
     createTask.mutate(taskData, {
       onSuccess: (result) => {
         console.log('Task created successfully:', result);
-        const section = taskData.isLater ? 'Later Tasks' : 'Main Tasks';
         showNotification(
-          `Task "${taskData.title}" added to ${section}!`,
+          `Task "${taskData.title}" added to Main Tasks!`,
           "success"
         );
       },
