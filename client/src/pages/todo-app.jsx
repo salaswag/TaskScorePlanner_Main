@@ -1,11 +1,8 @@
-
 import { useState } from "react";
-import ScoreDisplay from "@/components/score-display";
 import TaskForm from "@/components/task-form";
 import TaskTable from "@/components/task-table";
 import TaskEditModal from "@/components/task-edit-modal";
 import LaterSection from "@/components/later-section";
-import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
 
@@ -86,7 +83,7 @@ export default function TodoApp() {
         completed: true,
         completedAt: new Date().toISOString(),
       };
-      
+
       console.log('Completing task with data:', updatedTask);
       updateTask.mutate(updatedTask);
 
@@ -305,13 +302,6 @@ export default function TodoApp() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
                 {/* Left Sidebar */}
                 <div className="lg:col-span-1 space-y-4 lg:space-y-6">
-                  <ScoreDisplay
-                    totalScore={totalScore}
-                    completedTasks={completedTasks}
-                    totalTasks={mainTasks.length}
-                    pendingTasks={pendingTasks}
-                    totalEstimatedTime={totalEstimatedTime}
-                  />
                   <TaskForm
                     onSubmit={handleCreateTask}
                     isLoading={createTask.isPending}
@@ -347,23 +337,13 @@ export default function TodoApp() {
             </TabsContent>
 
             <TabsContent value="dashboard" className="mt-0">
-              <DashboardView tasks={tasks || []} onUpdateTask={handleSaveEditedTask} />
+              <DashboardView />
             </TabsContent>
           </Tabs>
         </main>
       </div>
 
       {/* Timer Modal */}
-      <TimerModal
-        isOpen={isTimerModalOpen}
-        task={currentTask}
-        onClose={() => {
-          setIsTimerModalOpen(false);
-          setCurrentTask(null);
-        }}
-        onConfirm={handleConfirmCompletion}
-      />
-      {/* Edit Task Modal */}
       <TaskEditModal
         isOpen={isEditModalOpen}
         task={taskToEdit}

@@ -1,8 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { format, subDays, startOfDay } from 'date-fns'
 
 import {
   Card,
@@ -11,188 +9,76 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { BarChart3, Calendar } from "lucide-react"
+import { Calendar, Clock, Info } from "lucide-react"
 import { CalendarView } from "./calendar-view"
 
-const chartConfig = {
-  priorityScore: {
-    label: "Priority Score",
-    color: "var(--chart-1)",
-  }
-};
-
 export function DashboardView({ tasks, onUpdateTask }) {
-  const [timeRange, setTimeRange] = React.useState("30d")
-
-  // Generate chart data from tasks
-  const generateChartData = () => {
-    const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90
-    const chartData = []
-
-    for (let i = days - 1; i >= 0; i--) {
-      const date = startOfDay(subDays(new Date(), i))
-      const dateStr = format(date, 'yyyy-MM-dd')
-
-      // Get completed tasks for this date
-      const dayTasks = tasks.filter(task => {
-        if (!task.completed || !task.completedAt) return false
-        const taskDate = startOfDay(new Date(task.completedAt))
-        return taskDate.getTime() === date.getTime()
-      })
-
-      const priorityScore = dayTasks.reduce((sum, task) => sum + (task.priority || 0), 0)
-
-      chartData.push({
-        date: dateStr,
-        priorityScore
-      })
-    }
-
-    return chartData
-  }
-
-  const chartData = generateChartData()
-
-  // Check if we have enough data (at least 7 days of activity)
-  const activeDays = chartData.filter(day => day.priorityScore > 0).length
-  const hasEnoughData = activeDays >= 7
-
   return (
     <div className="space-y-6">
-      {/* Calendar View */}
+      {/* Info Card */}
+      <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+            <Info className="h-5 w-5" />
+            Manual Time Tracking Dashboard
+          </CardTitle>
+          <CardDescription className="text-blue-700 dark:text-blue-300">
+            This dashboard provides a manual time tracking calendar. The time entries here are independent 
+            of your task management system and are meant for personal time tracking only.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4 text-sm text-blue-700 dark:text-blue-300">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span>Track work hours manually</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>View daily and monthly summaries</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Manual Time Tracking Calendar */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Daily Performance Calendar
+            Time Tracking Calendar
           </CardTitle>
           <CardDescription>
-            Daily priority scores and time tracking
+            Manually track your daily work hours. Double-click any day to enter time.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CalendarView tasks={tasks} onUpdateTask={onUpdateTask} />
+          <CalendarView />
         </CardContent>
       </Card>
 
-      {/* Priority Score Chart */}
+      {/* Usage Instructions */}
       <Card>
-        <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-          <div className="grid flex-1 gap-1">
-            <CardTitle>Priority Score Trends</CardTitle>
-            <CardDescription>
-              Daily priority completion over time
-            </CardDescription>
-          </div>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger
-              className="w-[160px] rounded-lg"
-              aria-label="Select time range"
-            >
-              <SelectValue placeholder="Last 30 days" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="90d" className="rounded-lg">
-                Last 3 months
-              </SelectItem>
-              <SelectItem value="30d" className="rounded-lg">
-                Last 30 days
-              </SelectItem>
-              <SelectItem value="7d" className="rounded-lg">
-                Last 7 days
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <CardHeader>
+          <CardTitle className="text-lg">How to Use</CardTitle>
         </CardHeader>
-        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-          {!hasEnoughData ? (
-            <div className="flex items-center justify-center h-[400px] text-center">
-              <div className="space-y-3">
-                <div className="text-muted-foreground">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                </div>
-                <h3 className="text-lg font-medium text-muted-foreground">Not Enough Data</h3>
-                <p className="text-sm text-muted-foreground max-w-sm">
-                  Complete at least 7 days of tasks to see your priority score trends.
-                </p>
-                <Badge variant="outline" className="mt-2">
-                  {activeDays} of 7 days completed
-                </Badge>
-              </div>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 dark:text-gray-100">Adding Time</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Double-click on any day in the calendar to open the time entry modal. 
+                Use the slider to select how many hours you worked that day.
+              </p>
             </div>
-          ) : (
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-auto h-[400px] w-full"
-            >
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="fillPriorityScore" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-priorityScore)"
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-priorityScore)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={32}
-                tickFormatter={(value) => {
-                  const date = new Date(value)
-                  return date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })
-                }}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    labelFormatter={(value) => {
-                      return new Date(value).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric"
-                      })
-                    }}
-                    indicator="dot"
-                  />
-                }
-              />
-              <Area
-                dataKey="priorityScore"
-                type="natural"
-                fill="url(#fillPriorityScore)"
-                stroke="var(--color-priorityScore)"
-                stackId="a"
-              />
-            </AreaChart>
-          </ChartContainer>
-          )}
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900 dark:text-gray-100">Editing Time</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                You can edit time entries for today and past dates only. 
+                Future dates cannot be edited to maintain accuracy.
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
