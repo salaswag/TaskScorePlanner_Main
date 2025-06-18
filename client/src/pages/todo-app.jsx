@@ -1,6 +1,4 @@
-Refactoring: Corrected the task update handlers to ensure proper JSON objects are sent during task updates.
-```
-```replit_final_file
+
 import { useState } from "react";
 import ScoreDisplay from "@/components/score-display";
 import TaskForm from "@/components/task-form";
@@ -78,7 +76,7 @@ export default function TodoApp() {
 
   const handleConfirmCompletion = (actualTime, distractionLevel) => {
     if (currentTask) {
-      updateTask.mutate({
+      const updatedTask = {
         id: currentTask.id,
         title: currentTask.title,
         priority: currentTask.priority,
@@ -87,7 +85,10 @@ export default function TodoApp() {
         distractionLevel,
         completed: true,
         completedAt: new Date().toISOString(),
-      });
+      };
+      
+      console.log('Completing task with data:', updatedTask);
+      updateTask.mutate(updatedTask);
 
       const hours = Math.floor(actualTime / 60);
       const minutes = actualTime % 60;
@@ -97,7 +98,7 @@ export default function TodoApp() {
         `Task completed successfully! - ${currentTask.title} (${timeStr} actual time)`,
         "success",
         true,
-        () => handleUndoCompletion(currentTask.id),
+        () => handleUndoCompletion(currentTask),
       );
     }
     setIsTimerModalOpen(false);
@@ -105,13 +106,15 @@ export default function TodoApp() {
   };
 
   const handleUndoCompletion = (task) => {
-    updateTask.mutate({
+    const undoTask = {
       ...task,
       actualTime: null,
       distractionLevel: null,
       completed: false,
       completedAt: null,
-    });
+    };
+    console.log('Undoing completion with data:', undoTask);
+    updateTask.mutate(undoTask);
     showNotification("Task completion undone", "success");
   };
 
@@ -135,11 +138,13 @@ export default function TodoApp() {
   };
 
   const handleMoveToLater = (task) => {
-    updateTask.mutate({
+    const updatedTask = {
       ...task,
       isLater: true,
       isFocus: false,
-    });
+    };
+    console.log('Moving to later with data:', updatedTask);
+    updateTask.mutate(updatedTask);
   };
 
   const handleEditTask = (task) => {
@@ -148,6 +153,7 @@ export default function TodoApp() {
   };
 
   const handleSaveEditedTask = (editedTask) => {
+    console.log('Saving edited task:', editedTask);
     updateTask.mutate(editedTask, {
       onSuccess: () => {
         showNotification(
@@ -176,11 +182,13 @@ export default function TodoApp() {
   };
 
   const handleMoveToMain = (task) => {
-    updateTask.mutate({
+    const updatedTask = {
       ...task,
       isLater: false,
       isFocus: false,
-    });
+    };
+    console.log('Moving to main with data:', updatedTask);
+    updateTask.mutate(updatedTask);
   };
 
   const handleArchiveTask = async (task) => {
@@ -246,7 +254,6 @@ export default function TodoApp() {
       }
     });
   };
-
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
@@ -322,6 +329,7 @@ export default function TodoApp() {
                     onMoveToLater={handleMoveToLater}
                     onMoveToMain={handleMoveToMain}
                     onArchive={handleArchive}
+                    onUpdateTask={handleUpdateTask}
                   />
                   <LaterSection
                     tasks={laterTasks}
@@ -332,6 +340,7 @@ export default function TodoApp() {
                     onCompleteTask={handleCompleteTask}
                     onUndoCompletion={handleUndoCompletion}
                     onArchiveTask={handleArchiveTask}
+                    onUpdateTask={handleUpdateTask}
                   />
                 </div>
               </div>
