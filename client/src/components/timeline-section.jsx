@@ -93,45 +93,47 @@ export default function TimelineSection({
   });
 
   return (
-    <div className="w-80 border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-black h-screen overflow-hidden flex flex-col">
+    <div className="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center justify-between mb-3">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Timeline</h3>
+            <Calendar className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Timeline</h3>
           </div>
           <Button
             onClick={() => setIsAddingEvent(true)}
             size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0"
+            variant="outline"
+            className="flex items-center space-x-2"
           >
-            <Plus className="h-3 w-3" />
+            <Plus className="h-4 w-4" />
+            <span>Add Event</span>
           </Button>
         </div>
 
         {isAddingEvent && (
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <Input
-              placeholder="Event title"
-              value={newEvent.title}
-              onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
-              className="h-8 text-xs"
-            />
-            <Input
-              type="date"
-              value={newEvent.dueDate}
-              onChange={(e) => setNewEvent(prev => ({ ...prev, dueDate: e.target.value }))}
-              className="h-8 text-xs"
-            />
-            <div className="flex space-x-1">
-              <Button type="submit" size="sm" className="h-6 text-xs px-2">Add</Button>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                placeholder="Event title"
+                value={newEvent.title}
+                onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
+                className="h-10"
+              />
+              <Input
+                type="date"
+                value={newEvent.dueDate}
+                onChange={(e) => setNewEvent(prev => ({ ...prev, dueDate: e.target.value }))}
+                className="h-10"
+              />
+            </div>
+            <div className="flex space-x-2">
+              <Button type="submit" size="sm">Add Event</Button>
               <Button 
                 type="button" 
                 variant="outline" 
                 size="sm"
-                className="h-6 text-xs px-2"
                 onClick={() => {
                   setIsAddingEvent(false);
                   setNewEvent({ title: "", dueDate: "" });
@@ -145,25 +147,25 @@ export default function TimelineSection({
       </div>
 
       {/* Timeline Area */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-2">
-          {isLoading ? (
-            <div className="text-center py-8 text-gray-500 text-xs">Loading...</div>
-          ) : sortedEvents.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 text-xs">
-              <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No events yet</p>
-            </div>
-          ) : (
-            sortedEvents.map((event) => (
+      <div className="p-6">
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500">Loading...</div>
+        ) : sortedEvents.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No events yet. Click "Add Event" to get started.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sortedEvents.map((event) => (
               <div
                 key={event.id}
-                className={`group relative transition-all duration-200 ${
-                  event.completed ? "opacity-60" : ""
+                className={`group relative p-4 border border-gray-200 dark:border-gray-700 rounded-lg transition-all duration-200 ${
+                  event.completed ? "opacity-60 bg-gray-50 dark:bg-gray-900" : "bg-white dark:bg-gray-800"
                 }`}
               >
                 {/* Event Item */}
-                <div className="flex items-center space-x-2 py-1">
+                <div className="flex items-start space-x-3">
                   <Checkbox
                     checked={event.completed || false}
                     onCheckedChange={(checked) => onUpdateEvent({
@@ -171,32 +173,48 @@ export default function TimelineSection({
                       completed: checked,
                       completedAt: checked ? new Date().toISOString() : null
                     })}
-                    className="h-3 w-3"
+                    className="h-4 w-4 mt-0.5"
                   />
                   <div className="flex-1 min-w-0">
-                    <span className={`text-xs block truncate ${
+                    <h4 className={`font-medium text-sm truncate mb-1 ${
                       event.completed 
                         ? "line-through text-gray-400" 
                         : "text-gray-900 dark:text-gray-100"
                     }`}>
                       {event.title}
-                    </span>
+                    </h4>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {formatDate(event.dueDate)}
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        getDaysFromToday(event.dueDate) < 0
+                          ? "bg-red-100 text-red-600 dark:bg-red-900/20"
+                          : getDaysFromToday(event.dueDate) === 0
+                          ? "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20"
+                          : "bg-blue-100 text-blue-600 dark:bg-blue-900/20"
+                      }`}>
+                        {getDaysFromToday(event.dueDate) === 0 
+                          ? "Today" 
+                          : getDaysFromToday(event.dueDate) < 0 
+                          ? `${Math.abs(getDaysFromToday(event.dueDate))}d ago`
+                          : `${getDaysFromToday(event.dueDate)}d left`
+                        }
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-500 flex-shrink-0">
-                    {formatDate(event.dueDate)}
-                  </span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onDeleteEvent(event.id)}
-                    className="opacity-0 group-hover:opacity-100 h-4 w-4 p-0 text-gray-400 hover:text-red-500"
+                    className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-gray-400 hover:text-red-500"
                   >
-                    <Trash2 className="h-2 w-2" />
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
 
                 {/* Timeline Bar */}
-                <div className="relative h-2 bg-gray-100 dark:bg-gray-800 rounded-full mb-2 overflow-hidden">
+                <div className="relative h-3 bg-gray-100 dark:bg-gray-700 rounded-full mt-3 overflow-hidden">
                   <div 
                     className={`absolute h-full rounded-full cursor-grab active:cursor-grabbing transition-all duration-200 ${
                       event.completed 
@@ -231,9 +249,9 @@ export default function TimelineSection({
                   />
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

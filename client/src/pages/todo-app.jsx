@@ -216,64 +216,63 @@ export default function TodoApp() {
       </header>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-73px)]">
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
-            {/* Main Layout: Left sidebar with scoring/form, Right main area with tasks */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-              {/* Left Sidebar */}
-              <div className="lg:col-span-1 space-y-4 lg:space-y-6">
-                <ScoreDisplay
-                  totalScore={totalScore}
-                  completedTasks={completedTasks}
-                  totalTasks={mainTasks.length}
-                  pendingTasks={pendingTasks}
-                  totalEstimatedTime={totalEstimatedTime}
-                />
-                <TaskForm
-                  onSubmit={(taskData) => {
-                    createTask.mutate(taskData);
-                    showNotification(
-                      `Task "${taskData.title}" added successfully!`,
-                      "success",
-                    );
-                  }}
-                  isLoading={createTask.isPending}
-                />
-              </div>
+      <div className="h-[calc(100vh-73px)] overflow-y-auto">
+        <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
+          {/* Main Layout: Left sidebar with scoring/form, Right main area with tasks */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+            {/* Left Sidebar */}
+            <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+              <ScoreDisplay
+                totalScore={totalScore}
+                completedTasks={completedTasks}
+                totalTasks={mainTasks.length}
+                pendingTasks={pendingTasks}
+                totalEstimatedTime={totalEstimatedTime}
+              />
+              <TaskForm
+                onSubmit={(taskData) => {
+                  createTask.mutate(taskData);
+                  showNotification(
+                    `Task "${taskData.title}" added successfully!`,
+                    "success",
+                  );
+                }}
+                isLoading={createTask.isPending}
+              />
+            </div>
 
-              {/* Right Main Area */}
-              <div className="lg:col-span-2">
-                <TaskTable
-                  tasks={mainTasks}
-                  isLoading={isLoading}
-                  onCompleteTask={handleCompleteTask}
-                  onDeleteTask={handleDeleteTask}
-                  onEditTask={handleEditTask}
-                  onUndoCompletion={handleUndoCompletion}
-                  onMoveToLater={handleMoveToLater}
-                />
-                <LaterSection
-                  tasks={laterTasks}
-                  onMoveToMain={handleMoveToMain}
-                  onDeleteTask={handleDeleteTask}
-                  onEditTask={handleEditTask}
-                  onMoveToLater={handleMoveToLater}
-                />
-              </div>
+            {/* Right Main Area */}
+            <div className="lg:col-span-2">
+              <TaskTable
+                tasks={mainTasks}
+                isLoading={isLoading}
+                onCompleteTask={handleCompleteTask}
+                onDeleteTask={handleDeleteTask}
+                onEditTask={handleEditTask}
+                onUndoCompletion={handleUndoCompletion}
+                onMoveToLater={handleMoveToLater}
+              />
+              <LaterSection
+                tasks={laterTasks}
+                onMoveToMain={handleMoveToMain}
+                onDeleteTask={handleDeleteTask}
+                onEditTask={handleEditTask}
+                onMoveToLater={handleMoveToLater}
+              />
             </div>
           </div>
-        </main>
 
-        {/* Timeline Side Panel */}
-        <TimelineSection
-          events={events}
-          onCreateEvent={handleCreateTimelineEvent}
-          onUpdateEvent={handleUpdateTimelineEvent}
-          onDeleteEvent={handleDeleteTimelineEvent}
-          isLoading={isTimelineLoading}
-        />
+          {/* Timeline Bottom Section */}
+          <div className="mt-8">
+            <TimelineSection
+              events={events}
+              onCreateEvent={handleCreateTimelineEvent}
+              onUpdateEvent={handleUpdateTimelineEvent}
+              onDeleteEvent={handleDeleteTimelineEvent}
+              isLoading={isTimelineLoading}
+            />
+          </div>
+        </main>
       </div>
 
       {/* Timer Modal */}
