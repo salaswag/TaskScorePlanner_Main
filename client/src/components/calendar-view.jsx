@@ -34,6 +34,33 @@ export function CalendarView() {
     }
   };
 
+  const getTimeColorClasses = (timeInMinutes) => {
+    if (!timeInMinutes || timeInMinutes === 0) return '';
+    
+    const hours = timeInMinutes / 60;
+    
+    if (hours >= 9) {
+      // Green for 9+ hours
+      return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200';
+    } else if (hours <= 1) {
+      // Red for 1 hour or less
+      return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
+    } else {
+      // Scale from red to green (2-8 hours)
+      const ratio = (hours - 1) / 8; // 0 to 1 scale
+      if (ratio < 0.33) {
+        // Orange-ish
+        return 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 text-orange-800 dark:text-orange-200';
+      } else if (ratio < 0.66) {
+        // Yellow-ish
+        return 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200';
+      } else {
+        // Light green
+        return 'bg-lime-100 dark:bg-lime-900/30 border-lime-300 dark:border-lime-700 text-lime-800 dark:text-lime-200';
+      }
+    }
+  };
+
   const handleTimeEdit = (date) => {
     // Don't allow editing future dates
     if (isAfter(date, new Date())) {
@@ -86,22 +113,6 @@ export function CalendarView() {
 
   return (
     <div className="w-full space-y-4">
-      {/* Disclaimer */}
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <div className="text-yellow-600 dark:text-yellow-400">
-            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8.485 3.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 3.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Manual Time Tracking</h3>
-            <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-              This calendar is for manual time entry only. Times entered here are not connected to your tasks and do not reflect actual task completion data.
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Calendar Header */}
       <div className="flex items-center justify-between">
@@ -180,22 +191,31 @@ export function CalendarView() {
                   {/* Time Display and Edit */}
                   {isCurrentMonth && !isFuture && (
                     <div className="flex-1 flex flex-col items-center justify-center">
-                      <div 
-                        className="cursor-pointer hover:bg-black/10 dark:hover:bg-white/20 rounded p-3 transition-colors border border-transparent hover:border-gray-300 dark:hover:border-gray-600 w-full text-center"
-                        onClick={() => handleTimeEdit(day)}
-                        title="Double-click to edit time"
-                        onDoubleClick={() => handleTimeEdit(day)}
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                          <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                            {formatTime(timeSpent)}
-                          </span>
+                      {timeSpent > 0 ? (
+                        <div 
+                          className={`cursor-pointer rounded-lg p-3 transition-all duration-200 w-full text-center border-2 hover:scale-105 ${getTimeColorClasses(timeSpent)}`}
+                          onClick={() => handleTimeEdit(day)}
+                          title="Click to edit time"
+                        >
+                          <div className="flex items-center justify-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-lg font-semibold">
+                              {formatTime(timeSpent)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Double-click to edit
+                      ) : (
+                        <div 
+                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-3 transition-colors border-2 border-dashed border-gray-300 dark:border-gray-600 w-full text-center"
+                          onClick={() => handleTimeEdit(day)}
+                          title="Click to add time"
+                        >
+                          <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm">Add time</span>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
 
@@ -211,14 +231,14 @@ export function CalendarView() {
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300">
+      {/* Instructions and Small Disclaimer */}
+      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4" />
-          <span>Double-click any day to manually enter time worked</span>
+          <span>Click any day to manually enter time worked</span>
         </div>
-        <div className="text-xs text-gray-500">
-          Note: You can only edit today and past dates
+        <div className="text-xs text-gray-400 dark:text-gray-500">
+          Manual time tracking - not connected to tasks
         </div>
       </div>
 
