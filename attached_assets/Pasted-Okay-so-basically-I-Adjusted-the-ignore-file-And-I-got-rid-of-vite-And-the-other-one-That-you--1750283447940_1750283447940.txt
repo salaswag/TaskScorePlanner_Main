@@ -1,0 +1,92 @@
+Okay so basically. I. Adjusted the ignore file. And I got rid of. vite. And the other one. That you said is potential red flag. And this is what I get. 
+
+2025-06-18T21:20:34.549132477Z ==> Cloning from https://github.com/salaswag/TaskScorePlanner_Main
+2025-06-18T21:20:34.860284037Z ==> Checking out commit 1d37017873772b23e96682b9e38a0606fcd6e0dd in branch main
+2025-06-18T21:20:36.586123553Z ==> Using Node.js version 22.16.0 (default)
+2025-06-18T21:20:36.611857366Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-06-18T21:20:38.478532482Z ==> Using Bun version 1.1.0 (default)
+2025-06-18T21:20:38.478555052Z ==> Docs on specifying a Bun version: https://render.com/docs/bun-version
+2025-06-18T21:20:38.533427058Z ==> Running build command 'npm install && npm run build'...
+2025-06-18T21:20:45.572251004Z 
+2025-06-18T21:20:45.572276055Z added 515 packages, and audited 516 packages in 7s
+2025-06-18T21:20:45.572285515Z 
+2025-06-18T21:20:45.572288985Z 69 packages are looking for funding
+2025-06-18T21:20:45.572295156Z   run `npm fund` for details
+2025-06-18T21:20:45.586730262Z 
+2025-06-18T21:20:45.586750543Z 4 moderate severity vulnerabilities
+2025-06-18T21:20:45.586754643Z 
+2025-06-18T21:20:45.586758793Z To address all issues (including breaking changes), run:
+2025-06-18T21:20:45.586762903Z   npm audit fix --force
+2025-06-18T21:20:45.586766243Z 
+2025-06-18T21:20:45.586770034Z Run `npm audit` for details.
+2025-06-18T21:20:45.754047947Z 
+2025-06-18T21:20:45.754072378Z > rest-express@1.0.0 build
+2025-06-18T21:20:45.754077678Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T21:20:45.754082658Z 
+2025-06-18T21:20:45.950318848Z vite v6.3.5 building for production...
+2025-06-18T21:20:46.005448691Z transforming...
+2025-06-18T21:20:49.291304481Z ✓ 2023 modules transformed.
+2025-06-18T21:20:49.499086234Z rendering chunks...
+2025-06-18T21:20:49.506974322Z computing gzip size...
+2025-06-18T21:20:49.518814244Z ../dist/public/index.html                   0.63 kB │ gzip:   0.38 kB
+2025-06-18T21:20:49.518833895Z ../dist/public/assets/index-GM1ZNjT9.css   76.55 kB │ gzip:  12.76 kB
+2025-06-18T21:20:49.518879566Z ../dist/public/assets/index-qKGee8g5.js   379.46 kB │ gzip: 119.11 kB
+2025-06-18T21:20:49.519143884Z ✓ built in 3.55s
+2025-06-18T21:20:49.664046231Z 
+2025-06-18T21:20:49.664068361Z   dist/index.js  37.1kb
+2025-06-18T21:20:49.664071521Z 
+2025-06-18T21:20:49.664074951Z ⚡ Done in 5ms
+2025-06-18T21:20:55.664400361Z ==> Uploading build...
+2025-06-18T21:21:05.278392992Z ==> Uploaded in 6.6s. Compression took 3.1s
+2025-06-18T21:21:05.308669816Z ==> Build successful 🎉
+2025-06-18T21:21:07.720778734Z ==> Deploying...
+2025-06-18T21:21:26.246186101Z ==> Running 'npm install && npm run build'
+2025-06-18T21:21:38.436039891Z 
+2025-06-18T21:21:38.436082762Z up to date, audited 462 packages in 11s
+2025-06-18T21:21:38.436089492Z 
+2025-06-18T21:21:38.436111442Z 66 packages are looking for funding
+2025-06-18T21:21:38.436117933Z   run `npm fund` for details
+2025-06-18T21:21:38.437302976Z 
+2025-06-18T21:21:38.437331176Z found 0 vulnerabilities
+2025-06-18T21:21:39.65076394Z 
+2025-06-18T21:21:39.650798301Z > rest-express@1.0.0 build
+2025-06-18T21:21:39.650804931Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T21:21:39.650810971Z 
+2025-06-18T21:21:41.648147318Z failed to load config from /opt/render/project/src/vite.config.ts
+2025-06-18T21:21:41.648525185Z error during build:
+2025-06-18T21:21:41.648531495Z Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@replit/vite-plugin-runtime-error-modal' imported from /opt/render/project/src/node_modules/.vite-temp/vite.config.ts.timestamp-1750281701642-151b1cc183c9e.mjs
+2025-06-18T21:21:41.648538785Z     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+2025-06-18T21:21:41.648543885Z     at packageResolve (node:internal/modules/esm/resolve:768:81)
+2025-06-18T21:21:41.648548776Z     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+2025-06-18T21:21:41.648553236Z     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+2025-06-18T21:21:41.648558026Z     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+2025-06-18T21:21:41.648561336Z     at #cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+2025-06-18T21:21:41.648564236Z     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+2025-06-18T21:21:41.648567096Z     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+2025-06-18T21:21:41.648569926Z     at ModuleJob._link (node:internal/modules/esm/module_job:137:49)
+2025-06-18T21:21:43.014227149Z ==> Exited with status 1
+2025-06-18T21:21:43.080223655Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-06-18T21:21:48.327987983Z ==> Running 'npm install && npm run build'
+2025-06-18T21:22:01.019982714Z 
+2025-06-18T21:22:01.020023345Z up to date, audited 462 packages in 12s
+2025-06-18T21:22:01.020037775Z 
+2025-06-18T21:22:01.020043075Z 66 packages are looking for funding
+2025-06-18T21:22:01.020048025Z   run `npm fund` for details
+2025-06-18T21:22:01.021527264Z 
+2025-06-18T21:22:01.021549354Z found 0 vulnerabilities
+2025-06-18T21:22:02.130802988Z 
+2025-06-18T21:22:02.130832658Z > rest-express@1.0.0 build
+2025-06-18T21:22:02.130839549Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T21:22:02.130848699Z 
+2025-06-18T21:22:03.926976521Z failed to load config from /opt/render/project/src/vite.config.ts
+2025-06-18T21:22:03.927267027Z error during build:
+2025-06-18T21:22:03.927279337Z Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@replit/vite-plugin-runtime-error-modal' imported from /opt/render/project/src/node_modules/.vite-temp/vite.config.ts.timestamp-1750281723920-219c40249a1d1.mjs
+2025-06-18T21:22:03.927284357Z     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+2025-06-18T21:22:03.927287797Z     at packageResolve (node:internal/modules/esm/resolve:768:81)
+2025-06-18T21:22:03.927290608Z     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+2025-06-18T21:22:03.927293388Z     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+2025-06-18T21:22:03.927296597Z     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+2025-06-18T21:22:03.927299398Z     at #cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+2025-06-18T21:22:03.927302128Z     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+2025-06-18T21:22:03.927304908Z     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+2025-06-18T21:22:03.927307568Z     at ModuleJob._link (node:internal/modules/esm/module_job:137:49)
