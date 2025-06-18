@@ -156,6 +156,15 @@ export default function TodoApp() {
     });
   };
 
+  const handleArchiveTask = async (task) => {
+    try {
+      console.log('Archiving task:', task);
+      await archiveTask.mutateAsync(task.id);
+    } catch (error) {
+      console.error('Failed to archive task:', error);
+    }
+  };
+
   const handleArchive = (task) => {
     console.log("Archive task:", task);
     archiveTask.mutate(task.id, {
@@ -189,6 +198,15 @@ export default function TodoApp() {
       isLater: task.isLater
     });
     showNotification("Task archive undone", "success");
+  };
+
+  const handleCreateTask = async (taskData) => {
+    try {
+      console.log('Creating task with data:', taskData);
+      await createTask.mutateAsync(taskData);
+    } catch (error) {
+      console.error('Failed to create task:', error);
+    }
   };
 
 
@@ -275,11 +293,13 @@ export default function TodoApp() {
                   />
                   <LaterSection
                     tasks={laterTasks}
-                    onCompleteTask={handleCompleteTask}
+                    onMoveToMain={handleMoveToMain}
                     onDeleteTask={handleDeleteTask}
                     onEditTask={handleEditTask}
-                    onMoveToMain={handleMoveToMain}
-                    onArchive={handleArchive}
+                    onMoveToLater={handleMoveToLater}
+                    onCompleteTask={handleCompleteTask}
+                    onUndoCompletion={handleUndoCompletion}
+                    onArchiveTask={handleArchiveTask}
                   />
                 </div>
               </div>

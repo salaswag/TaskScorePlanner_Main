@@ -136,9 +136,9 @@ export class MongoStorage {
         completed: false,
         actualTime: null,
         distractionLevel: null,
-        isLater: taskData.isLater || false,
-        isFocus: taskData.isFocus || false,
-        archived: taskData.archived || false,
+        isLater: Boolean(taskData.isLater),
+        isFocus: Boolean(taskData.isFocus),
+        archived: Boolean(taskData.archived),
         createdAt: new Date(),
         completedAt: null
       };

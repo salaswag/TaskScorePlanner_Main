@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle, Archive } from "lucide-react";
 
-function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchive }) {
+function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchiveTask }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -223,7 +223,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onArchive && onArchive(task)}
+                      onClick={() => onArchiveTask && onArchiveTask(task)}
                       className="text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-xs px-2 py-1 h-6"
                       title="Archive Task"
                     >
