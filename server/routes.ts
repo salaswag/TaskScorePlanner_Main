@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { mongoStorage } from "./mongodb-storage.js";
-import { insertTaskSchema, updateTaskSchema, insertUserSchema, loginSchema } from "@shared/schema";
+import { insertTaskSchema, updateTaskSchema, insertUserSchema, loginSchema, insertTimelineSchema, updateTimelineSchema } from "@shared/schema";
 import { z } from "zod";
 import "./types"; // Import session type declarations
 
@@ -198,6 +198,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Timeline events routes
+  app.get("/api/timeline", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id;
+      const events = await activeStorage.getTimelineEvents(userId);
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch timeline events" });
+    }
+  });
+
+  app.post("/api/timeline", async (req, res) => {
+    try {
+      const validatedData = insertTimelineSchema.parse(req.body);
+      const userId = req.session?.user?.id;
+      const event = await activeStorage.createTimelineEvent(validatedData, userId);
+      res.status(201).json(event);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid timeline event data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create timeline event" });
+      }
+    }
+  });
+
+  app.patch("/api/timeline/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const userId = req.session?.user?.id;
+      let updateData;
+
+      if (activeStorage === storage) {
+        updateData = { id: Number(id), ...req.body };
+      } else {
+        updateData = { id: isNaN(Number(id)) ? id : Number(id), ...req.body };
+      }
+
+      const updatedEvent = await activeStorage.updateTimelineEvent(updateData, userId);
+
+      if (!updatedEvent) {
+        return res.status(404).json({ message: "Timeline event not found" });
+      }
+
+      res.json(updatedEvent);
+    } catch (error) {
+      console.error('Timeline update error:', error);
+      res.status(500).json({ message: "Failed to update timeline event" });
+    }
+  });
+
+  app.delete("/api/timeline/:id", async (req, res) => {
+    try {
+      const idParam = req.params.id;
+      let deleted: boolean;
+      if (activeStorage === storage) {
+        const idNum = Number(idParam);
+        if (isNaN(idNum)) {
+          return res.status(400).json({ message: "Invalid timeline event id" });
+        }
+        deleted = await activeStorage.deleteTimelineEvent(idNum);
+      } else {
+        deleted = await activeStorage.deleteTimelineEvent(idParam as string);
+      }
+      if (!deleted) {
+        return res.status(404).json({ message: "Timeline event not found" });
+      }
+
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete timeline event" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
@@ -205,14 +279,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // In-memory storage implementation
 class InMemoryStorage {
   private tasks: Map<number, any> = new Map();
-  private idCounter: number = 1;
+  private timelineEvents: Map<number, any> = new Map();
+  private taskIdCounter: number = 1;
+  private timelineIdCounter: number = 1;
 
   async getTasks() {
     return Array.from(this.tasks.values());
   }
 
   async createTask(taskData: any) {
-    const id = this.idCounter++;
+    const id = this.taskIdCounter++;
     const task = { id, ...taskData };
     this.tasks.set(id, task);
     return task;
@@ -228,6 +304,29 @@ class InMemoryStorage {
 
   async deleteTask(id: number): Promise<boolean> {
     return this.tasks.delete(id);
+  }
+
+  async getTimelineEvents() {
+    return Array.from(this.timelineEvents.values());
+  }
+
+  async createTimelineEvent(eventData: any) {
+    const id = this.timelineIdCounter++;
+    const event = { id, ...eventData };
+    this.timelineEvents.set(id, event);
+    return event;
+  }
+
+  async updateTimelineEvent(eventData: any) {
+    if (!this.timelineEvents.has(eventData.id)) {
+      return null;
+    }
+    this.timelineEvents.set(eventData.id, { ...this.timelineEvents.get(eventData.id), ...eventData });
+    return this.timelineEvents.get(eventData.id);
+  }
+
+  async deleteTimelineEvent(id: number): Promise<boolean> {
+    return this.timelineEvents.delete(id);
   }
 }
 
