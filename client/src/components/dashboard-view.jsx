@@ -15,19 +15,6 @@ import { CalendarView } from "./calendar-view"
 export function DashboardView({ tasks, onUpdateTask }) {
   return (
     <div className="space-y-6">
-      {/* Info Card */}
-      <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200 text-sm">
-            <Info className="h-3 w-3" />
-            Manual Time Tracking
-          </CardTitle>
-          <CardDescription className="text-blue-700 dark:text-blue-300 text-xs">
-            Independent time tracking - not connected to tasks
-          </CardDescription>
-        </CardHeader>
-      </Card>
-
       {/* Manual Time Tracking Calendar */}
       <Card>
         <CardHeader>
