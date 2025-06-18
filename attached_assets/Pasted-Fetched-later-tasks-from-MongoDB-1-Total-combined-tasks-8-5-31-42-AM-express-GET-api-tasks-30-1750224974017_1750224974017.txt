@@ -1,0 +1,61 @@
+Fetched later tasks from MongoDB: 1
+Total combined tasks: 8
+5:31:42 AM [express] GET /api/tasks 304 in 193ms :: [{"_id":"685241bf1754e2533307e2b8","title":"hi",…
+Fetched time entries from MongoDB: 2
+5:31:42 AM [express] GET /api/time-entries 304 in 129ms :: {"2025-06-18":290,"2025-06-17":150}
+5:35:59 AM [vite] (client) hmr update /src/components/calendar-view.jsx, /src/index.css?v=Zc0XiMJ_bFsz6MdOl3m1K
+5:35:59 AM [vite] Internal server error: /home/runner/workspace/client/src/components/calendar-view.jsx: Identifier 'Clock' has already been declared. (8:7)
+
+   6 | import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
+   7 | import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+>  8 | import Clock from 'react-clock';
+     |        ^
+   9 | import 'react-clock/dist/Clock.css';
+  10 |
+  11 | // Professional Clock Time Picker Component using react-clock
+  Plugin: vite:react-babel
+  File: /home/runner/workspace/client/src/components/calendar-view.jsx:8:7
+  6  |  import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
+  7  |  import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+  8  |  import Clock from 'react-clock';
+     |         ^
+  9  |  import 'react-clock/dist/Clock.css';
+  10 |  
+      at toParseError (/home/runner/workspace/node_modules/@babel/parser/src/parse-error.ts:95:45)
+      at raise (/home/runner/workspace/node_modules/@babel/parser/src/tokenizer/index.ts:1503:19)
+      at checkRedeclarationInScope (/home/runner/workspace/node_modules/@babel/parser/src/util/scope.ts:158:19)
+      at declareName (/home/runner/workspace/node_modules/@babel/parser/src/util/scope.ts:112:12)
+      at declareNameFromIdentifier (/home/runner/workspace/node_modules/@babel/parser/src/parser/lval.ts:753:16)
+      at checkIdentifier (/home/runner/workspace/node_modules/@babel/parser/src/parser/lval.ts:748:12)
+      at checkLVal (/home/runner/workspace/node_modules/@babel/parser/src/parser/lval.ts:650:12)
+      at finishImportSpecifier (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:3215:10)
+      at parseImportSpecifierLocal (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:3202:31)
+      at maybeParseDefaultImportSpecifier (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:3387:12)
+      at parseImportSpecifiersAndAfter (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:3149:29)
+      at parseImport (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:3134:17)
+      at parseStatementContent (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:634:25)
+      at parseStatementLike (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:468:17)
+      at parseModuleItem (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:405:17)
+      at parseBlockOrModuleBlockBody (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:1434:16)
+      at parseBlockBody (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:1408:10)
+      at parseProgram (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:225:10)
+      at parseTopLevel (/home/runner/workspace/node_modules/@babel/parser/src/parser/statement.ts:203:25)
+      at parse (/home/runner/workspace/node_modules/@babel/parser/src/parser/index.ts:93:10)
+      at parse (/home/runner/workspace/node_modules/@babel/parser/src/index.ts:92:38)
+      at parser (/home/runner/workspace/node_modules/@babel/core/src/parser/index.ts:28:19)
+      at parser.next (<anonymous>)
+      at normalizeFile (/home/runner/workspace/node_modules/@babel/core/src/transformation/normalize-file.ts:49:24)
+      at normalizeFile.next (<anonymous>)
+      at run (/home/runner/workspace/node_modules/@babel/core/src/transformation/index.ts:40:36)
+      at run.next (<anonymous>)
+      at transform (/home/runner/workspace/node_modules/@babel/core/src/transform.ts:29:20)
+      at transform.next (<anonymous>)
+      at step (/home/runner/workspace/node_modules/gensync/index.js:261:32)
+      at /home/runner/workspace/node_modules/gensync/index.js:273:13
+      at async.call.result.err.err (/home/runner/workspace/node_modules/gensync/index.js:223:11)
+      at /home/runner/workspace/node_modules/gensync/index.js:189:28
+      at <anonymous> (/home/runner/workspace/node_modules/@babel/core/src/gensync-utils/async.ts:90:7)
+      at /home/runner/workspace/node_modules/gensync/index.js:113:33
+      at step (/home/runner/workspace/node_modules/gensync/index.js:287:14)
+      at /home/runner/workspace/node_modules/gensync/index.js:273:13
+      at async.call.result.err.err (/home/runner/workspace/node_modules/gensync/index.js:223:11)
