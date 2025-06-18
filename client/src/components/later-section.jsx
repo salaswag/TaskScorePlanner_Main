@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle } from "lucide-react";
 
-export function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchive }) {
+function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchive }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -235,3 +235,6 @@ export function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, on
     </Card>
   );
 }
+
+export default LaterSection;
+export { LaterSection };
