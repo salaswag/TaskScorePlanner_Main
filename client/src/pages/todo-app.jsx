@@ -6,7 +6,7 @@ import TaskEditModal from "@/components/task-edit-modal";
 import LaterSection from "@/components/later-section";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
-import { CalendarView } from "@/components/calendar-view";
+import { DashboardView } from "@/components/dashboard-view";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
@@ -210,7 +210,7 @@ export default function TodoApp() {
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid grid-cols-2">
                   <TabsTrigger value="tasks">Task Management</TabsTrigger>
-                  <TabsTrigger value="calendar">Calendar</TabsTrigger>
+                  <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -286,8 +286,8 @@ export default function TodoApp() {
               </div>
             </TabsContent>
 
-            <TabsContent value="calendar" className="mt-0">
-              <CalendarView tasks={tasks || []} />
+            <TabsContent value="dashboard" className="mt-0">
+              <DashboardView tasks={tasks || []} />
             </TabsContent>
           </Tabs>
         </main>
