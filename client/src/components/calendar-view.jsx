@@ -63,9 +63,9 @@ export function CalendarView({ tasks, onUpdateTask }) {
   // Get background color based on priority percentage
   const getDayBackgroundColor = (percentage) => {
     if (percentage === 0) return '';
-    if (percentage < 30) return 'bg-red-100 dark:bg-red-950/30';
-    if (percentage < 60) return 'bg-yellow-100 dark:bg-yellow-950/30';
-    return 'bg-green-100 dark:bg-green-950/30';
+    if (percentage < 30) return 'bg-red-100 dark:bg-red-900/50';
+    if (percentage < 60) return 'bg-yellow-100 dark:bg-yellow-900/50';
+    return 'bg-green-100 dark:bg-green-900/50';
   };
 
   // Get priority badge color based on percentage
@@ -96,7 +96,11 @@ export function CalendarView({ tasks, onUpdateTask }) {
               const newTaskTime = Math.round(sliderTime * proportion);
               
               if (onUpdateTask) {
-                await onUpdateTask(task.id, { ...task, actualTime: newTaskTime });
+                await onUpdateTask(task.id, { 
+                  ...task, 
+                  actualTime: newTaskTime,
+                  manualTimeOverride: true // Flag to indicate manual override
+                });
               }
             }
           }
@@ -222,12 +226,13 @@ export function CalendarView({ tasks, onUpdateTask }) {
                       {/* Time Spent - Larger and Editable */}
                       <div className="text-center">
                         <div 
-                          className="cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 rounded p-1 transition-colors"
+                          className="cursor-pointer hover:bg-black/10 dark:hover:bg-white/20 rounded p-2 transition-colors border border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                           onClick={() => handleTimeEdit(day, dayData.timeSpent)}
+                          title="Click to edit time spent"
                         >
                           <div className="flex items-center justify-center gap-1">
-                            <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                            <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                            <Clock className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                            <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                               {formatTime(dayData.timeSpent)}
                             </span>
                           </div>
@@ -280,14 +285,24 @@ export function CalendarView({ tasks, onUpdateTask }) {
                 {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Adjust the total time spent on this day
+                Manually adjust the total time spent on this day. This will override the calculated time.
               </p>
             </div>
+
+            {/* Current vs New Time Display */}
+            {selectedDate && (
+              <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Current time</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {formatTime(getDayData(selectedDate).timeSpent)}
+                </div>
+              </div>
+            )}
 
             {/* Time Slider */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Time spent: {formatSliderTime(sliderTime)}
+                New time: <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">{formatSliderTime(sliderTime)}</span>
               </label>
               <div className="relative">
                 <input
@@ -297,11 +312,13 @@ export function CalendarView({ tasks, onUpdateTask }) {
                   step="15"
                   value={sliderTime}
                   onChange={(e) => setSliderTime(parseInt(e.target.value))}
-                  className="slider w-full"
+                  className="slider w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
                 />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
                   <span>0m</span>
+                  <span>3h</span>
                   <span>6h</span>
+                  <span>9h</span>
                   <span>12h</span>
                 </div>
               </div>
