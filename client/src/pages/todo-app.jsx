@@ -5,7 +5,7 @@ import TaskTable from "@/components/task-table";
 import LaterSection from "@/components/later-section";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
-import UserMenu from "@/components/user-menu";
+
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
 import { Moon, Sun, CheckSquare, GripVertical } from "lucide-react";
@@ -175,7 +175,7 @@ export default function TodoApp() {
                 <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               )}
             </Button>
-            <UserMenu />
+            
           </div>
         </div>
       </header>

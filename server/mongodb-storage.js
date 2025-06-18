@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
-import bcrypt from 'bcrypt';
-import { nanoid } from 'nanoid';
+
 
 const MONGODB_URI = "mongodb+srv://salaswag:Borderbiz8k@clusterfortask.riwouqe.mongodb.net/ClusterforTask";
 
@@ -9,7 +8,6 @@ export class MongoStorage {
     this.client = null;
     this.db = null;
     this.tasksCollection = null;
-    this.usersCollection = null;
   }
 
   async connect(retries = 3) {
@@ -21,8 +19,6 @@ export class MongoStorage {
       await this.client.connect();
       this.db = this.client.db('ClusterforTask');
       this.tasksCollection = this.db.collection('Tasks');
-      this.usersCollection = this.db.collection('User');
-      this.timelineCollection = this.db.collection('Timeline');
       console.log('Connected to MongoDB successfully');
       return true;
     } catch (error) {
@@ -39,10 +35,10 @@ export class MongoStorage {
     }
   }
 
-  async getTasks(userId) {
+  async getTasks() {
     try {
-      const filter = userId ? { userId } : { $or: [{ userId: null }, { userId: { $exists: false } }] };
-      const tasks = await this.tasksCollection.find(filter).sort({ createdAt: -1 }).toArray();
+      const tasks = await this.tasksCollection.find({}).sort({ createdAt: -1 }).toArray();
+      console.log('Raw tasks from MongoDB:', JSON.stringify(tasks, null, 2));
       console.log('Fetched tasks from MongoDB:', tasks.length);
       return tasks.map(task => ({
         ...task,
@@ -51,8 +47,7 @@ export class MongoStorage {
         completedAt: task.completedAt || null,
         actualTime: task.actualTime,
         distractionLevel: task.distractionLevel,
-        isLater: task.isLater || false,
-        userId: task.userId || null
+        isLater: task.isLater || false
       }));
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -77,9 +72,9 @@ export class MongoStorage {
     }
   }
 
-  async createTask(taskData, userId) {
+  async createTask(taskData) {
     try {
-      console.log('Creating task with data:', taskData, 'userId:', userId);
+      console.log('Creating task with data:', taskData);
       
       // Get the next numeric ID
       const lastTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
@@ -97,8 +92,7 @@ export class MongoStorage {
         isLater: taskData.isLater || false,
         isFocus: taskData.isFocus || false,
         createdAt: new Date(),
-        completedAt: null,
-        userId: userId
+        completedAt: null
       };
 
       console.log('Task object to insert:', task);
@@ -116,7 +110,7 @@ export class MongoStorage {
     }
   }
 
-  async updateTask(updateData, userId) {
+  async updateTask(updateData) {
     try {
       const { id, ...updateFields } = updateData;
 
@@ -149,11 +143,8 @@ export class MongoStorage {
 
       console.log('Updating task:', id, updateFields);
 
-      // Build the query with user filter if userId exists
+      // Build the query
       const baseQuery = { id: Number(id) };
-      if (userId) {
-        baseQuery.userId = userId;
-      }
 
       // Try to update by numeric id first
       let result = await this.tasksCollection.findOneAndUpdate(
@@ -168,9 +159,6 @@ export class MongoStorage {
         try {
           const objectId = new ObjectId(id);
           const objectIdQuery = { _id: objectId };
-          if (userId) {
-            objectIdQuery.userId = userId;
-          }
           result = await this.tasksCollection.findOneAndUpdate(
             objectIdQuery,
             { $set: updateFields },
@@ -215,175 +203,7 @@ export class MongoStorage {
     }
   }
 
-  // User authentication methods
-  async getUser(id) {
-    try {
-      const user = await this.usersCollection.findOne({ id });
-      if (!user) return null;
-      return {
-        id: user.id,
-        username: user.username,
-        createdAt: user.createdAt
-      };
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      return null;
-    }
-  }
-
-  async createUser(userData) {
-    try {
-      if (!userData.username || !userData.password) {
-        throw new Error('Username and password are required');
-      }
-
-      if (userData.password.length < 6) {
-        throw new Error('Password must be at least 6 characters long');
-      }
-
-      // Check if username is already taken
-      const existingUser = await this.getUserByUsername(userData.username);
-      if (existingUser) {
-        throw new Error('Username already exists');
-      }
-
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
-      const user = {
-        id: nanoid(),
-        username: userData.username.trim().toLowerCase(),
-        password: hashedPassword,
-        createdAt: new Date()
-      };
-
-      await this.usersCollection.insertOne(user);
-      return {
-        id: user.id,
-        username: user.username,
-        createdAt: user.createdAt
-      };
-    } catch (error) {
-      console.error('Error creating user:', error);
-      if (error.message.includes('already exists') ||
-        error.message.includes('required') ||
-        error.message.includes('characters long')) {
-        throw error;
-      }
-      throw new Error('Failed to create user account');
-    }
-  }
-
-  async getUserByUsername(username) {
-    try {
-      if (!username) {
-        throw new Error('Username is required');
-      }
-      const user =  await this.usersCollection.findOne({ username: username.trim().toLowerCase() });
-      return user
-    } catch (error) {
-      console.error('Error finding user:', error);
-      if (error.message.includes('required')) {
-        throw error;
-      }
-      throw new Error('Failed to find user');
-    }
-  }
-
-  async verifyUser(username, password) {
-    try {
-      if (!username || !password) {
-        throw new Error('Username and password are required');
-      }
-
-      const user = await this.getUserByUsername(username);
-      if (!user) return null;
-
-      const isValid = await bcrypt.compare(password, user.password);
-      if (!isValid) return null;
-
-      return {
-        id: user.id,
-        username: user.username,
-        createdAt: user.createdAt
-      };
-    } catch (error) {
-      console.error('Error verifying user:', error);
-      if (error.message.includes('required')) {
-        throw error;
-      }
-      return null;
-    }
-  }
-
-  // Timeline methods
-  async getTimelineEvents(userId) {
-    try {
-      const filter = userId ? { userId } : { $or: [{ userId: null }, { userId: { $exists: false } }] };
-      const events = await this.timelineCollection.find(filter).sort({ createdAt: -1 }).toArray();
-      return events.map(event => ({
-        ...event,
-        id: event.id || event._id.toString(),
-        createdAt: event.createdAt || new Date(),
-        userId: event.userId || null
-      }));
-    } catch (error) {
-      console.error('Error fetching timeline events:', error);
-      return [];
-    }
-  }
-
-  async createTimelineEvent(eventData, userId) {
-    try {
-      const lastEvent = await this.timelineCollection.findOne({}, { sort: { id: -1 } });
-      const nextId = lastEvent ? (lastEvent.id || 0) + 1 : 1;
-
-      const event = {
-        ...eventData,
-        id: nextId,
-        createdAt: new Date(),
-        userId: userId
-      };
-
-      await this.timelineCollection.insertOne(event);
-      return event;
-    } catch (error) {
-      console.error('Error creating timeline event:', error);
-      throw error;
-    }
-  }
-
-  async updateTimelineEvent(updateData, userId) {
-    try {
-      const { id, ...updateFields } = updateData;
-      const baseQuery = { id: Number(id) };
-      if (userId) {
-        baseQuery.userId = userId;
-      }
-
-      const result = await this.timelineCollection.findOneAndUpdate(
-        baseQuery,
-        { $set: updateFields },
-        { returnDocument: 'after' }
-      );
-
-      return result.value ? {
-        ...result.value,
-        id: result.value.id || result.value._id.toString()
-      } : undefined;
-    } catch (error) {
-      console.error('Error updating timeline event:', error);
-      return undefined;
-    }
-  }
-
-  async deleteTimelineEvent(id) {
-    try {
-      const result = await this.timelineCollection.deleteOne({ id: Number(id) });
-      return result.deletedCount > 0;
-    } catch (error) {
-      console.error('Error deleting timeline event:', error);
-      return false;
-    }
-  }
+  
 }
 
 export const mongoStorage = new MongoStorage();
