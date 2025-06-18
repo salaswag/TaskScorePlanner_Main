@@ -38,11 +38,11 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
   const getDistractionBackgroundColor = (level) => {
     if (!level) return '';
     const colors = [
-      'bg-green-50', // 1
-      'bg-green-50', // 2
-      'bg-yellow-50', // 3
-      'bg-orange-50', // 4
-      'bg-red-50'    // 5
+      'bg-green-50 dark:bg-green-900/20', // 1
+      'bg-green-50 dark:bg-green-900/20', // 2
+      'bg-yellow-50 dark:bg-yellow-900/20', // 3
+      'bg-orange-50 dark:bg-orange-900/20', // 4
+      'bg-red-50 dark:bg-red-900/20'    // 5
     ];
     return colors[level - 1];
   };
@@ -143,7 +143,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   </div>
                   <div className="col-span-1">
                     <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                      getPriorityColor(task.priority, task.completed)
+                      task.completed ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' : getPriorityColor(task.priority, false)
                     }`}>
                       {task.priority}
                     </span>
