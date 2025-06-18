@@ -89,13 +89,19 @@ export function CalendarView({ tasks, onUpdateTask }) {
       if (dayTasks.length > 0) {
         const totalCurrentTime = dayTasks.reduce((sum, task) => sum + (task.actualTime || 0), 0);
         
-        for (const task of dayTasks) {
-          const proportion = totalCurrentTime > 0 ? (task.actualTime || 0) / totalCurrentTime : 1 / dayTasks.length;
-          const newTaskTime = Math.round(sliderTime * proportion);
-          
-          if (onUpdateTask) {
-            await onUpdateTask(task.id, { ...task, actualTime: newTaskTime });
+        try {
+          for (const task of dayTasks) {
+            if (task && task.id) {
+              const proportion = totalCurrentTime > 0 ? (task.actualTime || 0) / totalCurrentTime : 1 / dayTasks.length;
+              const newTaskTime = Math.round(sliderTime * proportion);
+              
+              if (onUpdateTask) {
+                await onUpdateTask(task.id, { ...task, actualTime: newTaskTime });
+              }
+            }
           }
+        } catch (error) {
+          console.error('Error updating task time:', error);
         }
       }
     }
@@ -263,7 +269,7 @@ export function CalendarView({ tasks, onUpdateTask }) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-blue-600" />
+              <Clock className="h-5 w-5" />
               <span>Edit Time Spent</span>
             </DialogTitle>
           </DialogHeader>
@@ -307,7 +313,7 @@ export function CalendarView({ tasks, onUpdateTask }) {
               </Button>
               <Button 
                 onClick={handleTimeSave} 
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                className="flex-1 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200"
               >
                 Save Time
               </Button>
