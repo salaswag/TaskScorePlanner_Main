@@ -1,0 +1,104 @@
+2025-06-18T21:53:25.82888401Z ==> Cloning from https://github.com/salaswag/TaskScorePlanner_Main
+2025-06-18T21:53:26.101999937Z ==> Checking out commit 41ab9a747e344e1fd6473c4cc34b289864bd9c05 in branch main
+2025-06-18T21:53:27.8622964Z ==> Using Node.js version 22.16.0 (default)
+2025-06-18T21:53:27.887615452Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-06-18T21:53:29.795192579Z ==> Using Bun version 1.1.0 (default)
+2025-06-18T21:53:29.795208639Z ==> Docs on specifying a Bun version: https://render.com/docs/bun-version
+2025-06-18T21:53:29.847772403Z ==> Running build command 'npm install && npm run build'...
+2025-06-18T21:53:37.333006522Z 
+2025-06-18T21:53:37.333041463Z added 515 packages, and audited 516 packages in 7s
+2025-06-18T21:53:37.333056094Z 
+2025-06-18T21:53:37.333061654Z 69 packages are looking for funding
+2025-06-18T21:53:37.333164996Z   run `npm fund` for details
+2025-06-18T21:53:37.346143309Z 
+2025-06-18T21:53:37.346158419Z 4 moderate severity vulnerabilities
+2025-06-18T21:53:37.346162539Z 
+2025-06-18T21:53:37.346167019Z To address all issues (including breaking changes), run:
+2025-06-18T21:53:37.346171129Z   npm audit fix --force
+2025-06-18T21:53:37.346174499Z 
+2025-06-18T21:53:37.346178449Z Run `npm audit` for details.
+2025-06-18T21:53:37.515562597Z 
+2025-06-18T21:53:37.515583948Z > rest-express@1.0.0 build
+2025-06-18T21:53:37.515589868Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T21:53:37.515594208Z 
+2025-06-18T21:53:37.717359995Z vite v6.3.5 building for production...
+2025-06-18T21:53:37.777042369Z transforming...
+2025-06-18T21:53:41.351700551Z ✓ 2023 modules transformed.
+2025-06-18T21:53:41.579313271Z rendering chunks...
+2025-06-18T21:53:41.589298551Z computing gzip size...
+2025-06-18T21:53:41.603254984Z ../dist/public/index.html                   0.63 kB │ gzip:   0.38 kB
+2025-06-18T21:53:41.603278945Z ../dist/public/assets/index-GM1ZNjT9.css   76.55 kB │ gzip:  12.76 kB
+2025-06-18T21:53:41.603378267Z ../dist/public/assets/index-qKGee8g5.js   379.46 kB │ gzip: 119.11 kB
+2025-06-18T21:53:41.603678813Z ✓ built in 3.86s
+2025-06-18T21:53:41.704674984Z 
+2025-06-18T21:53:41.704712945Z   dist/index.js  37.1kb
+2025-06-18T21:53:41.704717396Z 
+2025-06-18T21:53:41.704721245Z ⚡ Done in 7ms
+2025-06-18T21:53:42.946426976Z ==> Uploading build...
+2025-06-18T21:53:56.86641985Z ==> Uploaded in 10.9s. Compression took 3.0s
+2025-06-18T21:53:56.898519684Z ==> Build successful 🎉
+2025-06-18T21:54:03.161542251Z ==> Deploying...
+2025-06-18T21:54:21.99008041Z ==> Running 'npm install && npm run build'
+2025-06-18T21:54:35.688362603Z 
+2025-06-18T21:54:35.688396573Z up to date, audited 462 packages in 13s
+2025-06-18T21:54:35.688412324Z 
+2025-06-18T21:54:35.688423594Z 66 packages are looking for funding
+2025-06-18T21:54:35.688428505Z   run `npm fund` for details
+2025-06-18T21:54:35.689650519Z 
+2025-06-18T21:54:35.689668979Z found 0 vulnerabilities
+2025-06-18T21:54:37.082672663Z 
+2025-06-18T21:54:37.082696604Z > rest-express@1.0.0 build
+2025-06-18T21:54:37.082699854Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T21:54:37.082703414Z 
+2025-06-18T21:54:39.690626779Z vite v6.3.5 building for production...
+2025-06-18T21:54:40.385459414Z transforming...
+2025-06-18T21:54:44.584481686Z ✓ 3 modules transformed.
+2025-06-18T21:54:44.585618578Z ✗ Build failed in 4.60s
+2025-06-18T21:54:44.585733381Z error during build:
+2025-06-18T21:54:44.585739142Z [vite:css] [postcss] Cannot find module '@tailwindcss/typography'
+2025-06-18T21:54:44.585741411Z Require stack:
+2025-06-18T21:54:44.585743752Z - /opt/render/project/src/tailwind.config.ts
+2025-06-18T21:54:44.585746142Z file: /opt/render/project/src/client/src/index.css:undefined:NaN
+2025-06-18T21:54:44.585747812Z     at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+2025-06-18T21:54:44.585749472Z     at Function.resolve (node:internal/modules/helpers:145:19)
+2025-06-18T21:54:44.585751692Z     at _resolve (/opt/render/project/src/node_modules/tailwindcss/node_modules/jiti/dist/jiti.js:1:246378)
+2025-06-18T21:54:44.585754902Z     at jiti (/opt/render/project/src/node_modules/tailwindcss/node_modules/jiti/dist/jiti.js:1:249092)
+2025-06-18T21:54:44.585757052Z     at /opt/render/project/src/tailwind.config.ts:89:45
+2025-06-18T21:54:44.585758792Z     at evalModule (/opt/render/project/src/node_modules/tailwindcss/node_modules/jiti/dist/jiti.js:1:251913)
+2025-06-18T21:54:44.585760462Z     at jiti (/opt/render/project/src/node_modules/tailwindcss/node_modules/jiti/dist/jiti.js:1:249841)
+2025-06-18T21:54:44.585762802Z     at /opt/render/project/src/node_modules/tailwindcss/lib/lib/load-config.js:52:26
+2025-06-18T21:54:44.585764462Z     at loadConfig (/opt/render/project/src/node_modules/tailwindcss/lib/lib/load-config.js:62:6)
+2025-06-18T21:54:44.585766942Z     at getTailwindConfig (/opt/render/project/src/node_modules/tailwindcss/lib/lib/setupTrackingContext.js:71:116)
+2025-06-18T21:54:46.411082731Z ==> Exited with status 1
+2025-06-18T21:54:46.477320166Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-06-18T21:54:52.106614977Z ==> Running 'npm install && npm run build'
+2025-06-18T21:55:05.503736443Z 
+2025-06-18T21:55:05.503766923Z up to date, audited 462 packages in 13s
+2025-06-18T21:55:05.503779834Z 
+2025-06-18T21:55:05.503783734Z 66 packages are looking for funding
+2025-06-18T21:55:05.503813475Z   run `npm fund` for details
+2025-06-18T21:55:05.504841154Z 
+2025-06-18T21:55:05.504853314Z found 0 vulnerabilities
+2025-06-18T21:55:06.500884554Z 
+2025-06-18T21:55:06.500915844Z > rest-express@1.0.0 build
+2025-06-18T21:55:06.500921084Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T21:55:06.500926465Z 
+2025-06-18T21:55:08.604585854Z vite v6.3.5 building for production...
+2025-06-18T21:55:08.996871123Z transforming...
+2025-06-18T21:55:12.393002432Z ✓ 4 modules transformed.
+2025-06-18T21:55:12.393747703Z ✗ Build failed in 3.69s
+2025-06-18T21:55:12.393836626Z error during build:
+2025-06-18T21:55:12.393848436Z [vite:css] [postcss] Cannot find module '@tailwindcss/typography'
+2025-06-18T21:55:12.393853276Z Require stack:
+2025-06-18T21:55:12.393858496Z - /opt/render/project/src/tailwind.config.ts
+2025-06-18T21:55:12.393863307Z file: /opt/render/project/src/client/src/index.css:undefined:NaN
+2025-06-18T21:55:12.393867527Z     at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+2025-06-18T21:55:12.393871347Z     at Function.resolve (node:internal/modules/helpers:145:19)
+2025-06-18T21:55:12.393875887Z     at _resolve (/opt/render/project/src/node_modules/tailwindcss/node_modules/jiti/dist/jiti.js:1:246378)
+2025-06-18T21:55:12.393881157Z     at jiti (/opt/render/project/src/node_modules/tailwindcss/node_modules/jiti/dist/jiti.js:1:249092)
+2025-06-18T21:55:12.393885467Z     at /opt/render/project/src/tailwind.config.ts:89:45
+2025-06-18T21:55:12.393889607Z     at evalModule (/opt/render/project/src/node_modules/tailwindcss/node_modules/jiti/dist/jiti.js:1:251913)
+2025-06-18T21:55:12.393893417Z     at jiti (/opt/render/project/src/node_modules/tailwindcss/node_modules/jiti/dist/jiti.js:1:249841)
+2025-06-18T21:55:12.393898717Z     at /opt/render/project/src/node_modules/tailwindcss/lib/lib/load-config.js:52:26
+2025-06-18T21:55:12.393902608Z     at loadConfig (/opt/render/project/src/node_modules/tailwindcss/lib/lib/load-config.js:62:6)
+2025-06-18T21:55:12.393907018Z     at getTailwindConfig (/opt/render/project/src/node_modules/tailwindcss/lib/lib/setupTrackingContext.js:71:116)
