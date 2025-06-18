@@ -163,13 +163,24 @@ export default function TodoApp() {
       {/* Header */}
       <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <CheckSquare className="h-8 w-8 text-black dark:text-white" />
               <h1 className="text-xl font-semibold text-black dark:text-white">
                 Task Master Pro
               </h1>
             </div>
+            
+            {/* Navigation Tabs - Center */}
+            <div className="flex-1 flex justify-center">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-2">
+                  <TabsTrigger value="tasks">Task Management</TabsTrigger>
+                  <TabsTrigger value="calendar">Calendar</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            
             <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
@@ -185,14 +196,6 @@ export default function TodoApp() {
               </Button>
             </div>
           </div>
-          
-          {/* Navigation Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md">
-              <TabsTrigger value="tasks">Task Management</TabsTrigger>
-              <TabsTrigger value="calendar">Calendar</TabsTrigger>
-            </TabsList>
-          </Tabs>
         </div>
       </header>
 
