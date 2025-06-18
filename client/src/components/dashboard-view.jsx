@@ -84,7 +84,7 @@ export function DashboardView({ tasks }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CalendarView tasks={tasks} />
+          <CalendarView tasks={tasks} onUpdateTask={onUpdateTask} />
         </CardContent>
       </Card>
 
