@@ -52,6 +52,19 @@ export function useTasks() {
     },
   });
 
+   const archiveTask = useMutation({
+    mutationFn: async (taskId) => {
+      const response = await apiRequest(`/api/tasks/${taskId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ isArchived: true }),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
   const mainTasks = tasks?.filter(task => !task.isLater && !task.isFocus) || [];
   const laterTasks = tasks?.filter(task => Boolean(task.isLater)) || [];
   const focusTasks = tasks?.filter(task => Boolean(task.isFocus)) || [];
@@ -63,6 +76,7 @@ export function useTasks() {
     createTask,
     updateTask,
     deleteTask,
+    archiveTask,
     mainTasks,
     laterTasks,
     focusTasks,

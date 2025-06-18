@@ -1,10 +1,9 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle } from "lucide-react";
 
-export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion }) {
+export function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchive }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -51,19 +50,19 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.completed && !b.completed) return 1;
     if (!a.completed && b.completed) return -1;
-    
+
     // If both completed, sort by completion time (most recent first)
     if (a.completed && b.completed) {
       if (a.completedAt && b.completedAt) {
         return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
       }
     }
-    
+
     // If both incomplete, sort by priority (highest first)
     if (!a.completed && !b.completed) {
       return (b.priority || 0) - (a.priority || 0);
     }
-    
+
     return 0;
   });
 
@@ -80,7 +79,7 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
       onDrop={(e) => {
         e.preventDefault();
         e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50');
-        
+
         try {
           const taskData = JSON.parse(e.dataTransfer.getData('text/plain'));
           if (taskData && taskData.id) {
@@ -94,7 +93,7 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
       <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 border-dashed">
         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Later (Not counted in score)</h3>
       </div>
-      
+
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
         <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -215,6 +214,15 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
                     onClick={() => onDeleteTask(task)}
                     className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-2 py-1 h-6"
                     title="Delete Task"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                   <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onArchive(task)}
+                    className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-2 py-1 h-6"
+                    title="Archive Task"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>

@@ -102,6 +102,7 @@ export class MongoStorage {
         distractionLevel: null,
         isLater: taskData.isLater || false,
         isFocus: taskData.isFocus || false,
+        archived: false,
         createdAt: new Date(),
         completedAt: null
       };
@@ -127,6 +128,13 @@ export class MongoStorage {
 
       if (updateFields.completedAt && typeof updateFields.completedAt === 'string') {
         updateFields.completedAt = new Date(updateFields.completedAt);
+      }
+
+      // If marking as completed, add completedAt timestamp
+      if (updateFields.completed === true) {
+          updateFields.completedAt = new Date();
+      } else if (updateFields.completed === false) {
+          updateFields.completedAt = null;
       }
 
       // Ensure all fields are properly handled
