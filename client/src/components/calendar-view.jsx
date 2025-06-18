@@ -1,158 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Clock, Check, X } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import ReactClock from 'react-clock';
-import 'react-clock/dist/Clock.css';
-
-// Professional Clock Time Picker Component using react-clock
-function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
-  const [startTime, setStartTime] = useState(new Date(2023, 0, 1, 9, 0)); // 9:00 AM
-  const [endTime, setEndTime] = useState(new Date(2023, 0, 1, 9, 0)); // Initial end time
-  const [isSettingStart, setIsSettingStart] = useState(true); // Toggle between setting start/end
-
-  // Convert minutes to Date object for today
-  const minutesToDate = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return new Date(2023, 0, 1, hours, mins);
-  };
-
-  // Convert Date object to minutes
-  const dateToMinutes = (date) => {
-    return date.getHours() * 60 + date.getMinutes();
-  };
-
-  // Initialize times based on initialMinutes
-  useEffect(() => {
-    if (initialMinutes === 0) {
-      setStartTime(new Date(2023, 0, 1, 9, 0)); // 9:00 AM
-      setEndTime(new Date(2023, 0, 1, 9, 0)); // 9:00 AM
-    } else {
-      const start = new Date(2023, 0, 1, 9, 0); // 9:00 AM
-      const end = new Date(start.getTime() + initialMinutes * 60000); // Add minutes
-      setStartTime(start);
-      setEndTime(end);
-    }
-  }, [initialMinutes]);
-
-  // Calculate and notify parent of total work time
-  useEffect(() => {
-    const startMinutes = dateToMinutes(startTime);
-    const endMinutes = dateToMinutes(endTime);
-    let totalMinutes = endMinutes - startMinutes;
-
-    // Handle case where end time is next day
-    if (totalMinutes < 0) {
-      totalMinutes += 24 * 60; // Add 24 hours
-    }
-
-    onTimeChange(totalMinutes);
-  }, [startTime, endTime, onTimeChange]);
-
-  const handleTimeChange = (newTime) => {
-    if (isSettingStart) {
-      setStartTime(newTime);
-      // If start time is after end time, adjust end time
-      if (newTime >= endTime) {
-        const newEndTime = new Date(newTime.getTime() + 60000); // Add 1 minute
-        setEndTime(newEndTime);
-      }
-    } else {
-      setEndTime(newTime);
-      // If end time is before start time, adjust start time
-      if (newTime <= startTime) {
-        const newStartTime = new Date(newTime.getTime() - 60000); // Subtract 1 minute
-        setStartTime(newStartTime);
-      }
-    }
-  };
-
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const getTotalWorkTime = () => {
-    const startMinutes = dateToMinutes(startTime);
-    const endMinutes = dateToMinutes(endTime);
-    let totalMinutes = endMinutes - startMinutes;
-
-    if (totalMinutes < 0) {
-      totalMinutes += 24 * 60;
-    }
-
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-
-    if (hours === 0) return `${minutes}m`;
-    if (minutes === 0) return `${hours}h`;
-    return `${hours}h ${minutes}m`;
-  };
-
-  return (
-    <div className="flex flex-col items-center space-y-4">
-      <div className="text-center space-y-2">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Click to set {isSettingStart ? 'start' : 'end'} time
-        </h4>
-
-        {/* Toggle buttons */}
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setIsSettingStart(true)}
-            className={`px-3 py-1 rounded text-sm ${
-              isSettingStart 
-                ? 'bg-green-500 text-white' 
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-            }`}
-          >
-            Start Time
-          </button>
-          <button
-            onClick={() => setIsSettingStart(false)}
-            className={`px-3 py-1 rounded text-sm ${
-              !isSettingStart 
-                ? 'bg-red-500 text-white' 
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-            }`}
-          >
-            End Time
-          </button>
-        </div>
-      </div>
-
-      {/* Professional Clock */}
-      <div className="flex justify-center">
-        <ReactClock
-          value={isSettingStart ? startTime : endTime}
-          onChange={handleTimeChange}
-          size={200}
-          className="react-clock"
-        />
-      </div>
-
-      {/* Time Display */}
-      <div className="text-center space-y-2">
-        <div className="flex items-center space-x-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-gray-600 dark:text-gray-300">Start: {formatTime(startTime)}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span className="text-gray-600 dark:text-gray-300">End: {formatTime(endTime)}</span>
-          </div>
-        </div>
-        <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-          Total: {getTotalWorkTime()}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function CalendarView() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -259,7 +111,7 @@ export function CalendarView() {
     setIsLoading(true);
     if (selectedDate) {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
-
+      
       try {
         // Save to MongoDB via API
         const response = await apiRequest('/api/time-entries', {
@@ -279,11 +131,11 @@ export function CalendarView() {
             ...prev,
             [dateKey]: sliderTime
           }));
-
+          
           // Also update localStorage as backup
           const newTimeData = { ...timeData, [dateKey]: sliderTime };
           localStorage.setItem('timeData', JSON.stringify(newTimeData));
-
+          
           console.log('Time entry saved successfully to MongoDB');
         } else {
           console.error('Failed to save time entry to MongoDB');
@@ -304,7 +156,7 @@ export function CalendarView() {
         localStorage.setItem('timeData', JSON.stringify({ ...timeData, [dateKey]: sliderTime }));
       }
     }
-
+    
     setShowTimeModal(false);
     setSelectedDate(null);
     setSliderTime(0);
@@ -498,32 +350,10 @@ export function CalendarView() {
               </p>
             </div>
 
-            {/* Clock Time Picker */}
-            <div className="space-y-4">
-              <div className="text-center">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Drag to set work hours
-                </h4>
-                <div className="flex justify-center">
-                  <ClockTimePicker 
-                    onTimeChange={(minutes) => setSliderTime(minutes)}
-                    initialMinutes={sliderTime}
-                  />
-                </div>
-              </div>
-
-              {/* Time Display */}
-              <div className="text-center">
-                <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                  Total: {formatSliderTime(sliderTime)}
-                </span>
-              </div>
-            </div>
-
-            {/* Alternative: Direct Time Slider */}
+            {/* Time Slider */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Or use slider: <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">{formatSliderTime(sliderTime)}</span>
+                Time worked: <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">{formatSliderTime(sliderTime)}</span>
               </label>
               <div className="relative">
                 <input
