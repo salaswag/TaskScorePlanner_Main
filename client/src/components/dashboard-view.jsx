@@ -37,7 +37,7 @@ const chartConfig = {
     label: "Tasks Completed", 
     color: "var(--chart-2)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 export function DashboardView({ tasks }) {
   const [timeRange, setTimeRange] = React.useState("30d")
