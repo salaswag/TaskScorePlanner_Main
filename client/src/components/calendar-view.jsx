@@ -251,16 +251,16 @@ export function CalendarView({ tasks, onUpdateTask }) {
                     </div>
                   )}
                 </div>
-                 <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                 <div className="absolute bottom-1 right-1">
                 {dayData.timeSpent > 0 && (
-                  <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-1 py-0.5 rounded">
-                    <span className="font-medium">Total: {dayData.timeSpent}m</span>
+                  <div className="flex items-center gap-1 bg-gray-100/80 dark:bg-gray-800/80 px-1 py-0.5 rounded text-xs">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">{formatTime(dayData.timeSpent)}</span>
                     <button
                       onClick={() => handleTimeEdit(day, dayData.timeSpent)}
-                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 p-0.5"
+                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
                       title="Edit total time"
                     >
-                      <Clock className="h-3 w-3" />
+                      <Clock className="h-2.5 w-2.5" />
                     </button>
                   </div>
                 )}
