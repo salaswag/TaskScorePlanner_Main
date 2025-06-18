@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 
-const MONGODB_URI = "mongodb+srv://salaswag:Borderbiz8k@clusterfortask.riwouqe.mongodb.net/ClusterforTask";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://salaswag:Borderbiz8k@clusterfortask.riwouqe.mongodb.net/ClusterforTask";
 
 export class MongoStorage {
   constructor() {
