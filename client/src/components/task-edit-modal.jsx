@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
@@ -37,7 +36,7 @@ export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
     onClose();
   };
 
-  const formatTimeMinutes = (minutes) => {
+  const formatTime = (minutes) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
@@ -51,51 +50,62 @@ export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 pt-4">
-          {/* Task Title */}
+        <div className="space-y-6 p-4">
+          {/* Task Input */}
           <div>
-            <Label htmlFor="edit-title" className="text-sm font-medium">
-              Task Title
-            </Label>
             <Input
-              id="edit-title"
+              type="text"
+              placeholder="Edit task title..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter task title"
-              className="mt-1"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
             />
           </div>
 
-          {/* Priority */}
-          <div>
-            <Label htmlFor="edit-priority" className="text-sm font-medium">
-              Priority (1-10)
-            </Label>
-            <Input
-              id="edit-priority"
-              type="number"
-              min="1"
-              max="10"
-              value={priority}
-              onChange={(e) => setPriority(Number(e.target.value))}
-              className="mt-1"
-            />
-          </div>
+          {/* Priority and Time Controls */}
+          <div className="space-y-4">
+            {/* Priority Slider */}
+            <div>
+              <label className="block text-sm font-medium text-black dark:text-white mb-2">
+                Priority: {priority}
+              </label>
+              <div className="relative">
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={priority}
+                  onChange={(e) => setPriority(parseInt(e.target.value))}
+                  className="slider w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <span>Low (1)</span>
+                  <span>High (10)</span>
+                </div>
+              </div>
+            </div>
 
-          {/* Estimated Time */}
-          <div>
-            <Label htmlFor="edit-time" className="text-sm font-medium">
-              Estimated Time (minutes) - {formatTimeMinutes(estimatedTime)}
-            </Label>
-            <Input
-              id="edit-time"
-              type="number"
-              min="5"
-              step="5"
-              value={estimatedTime}
-              onChange={(e) => setEstimatedTime(Number(e.target.value))}
-              className="mt-1"
-            />
+            {/* Estimated Time Slider */}
+            <div>
+              <label className="block text-sm font-medium text-black dark:text-white mb-2">
+                Estimated Time: {formatTime(estimatedTime)}
+              </label>
+              <div className="relative">
+                <input
+                  type="range"
+                  min="5"
+                  max="120"
+                  step="5"
+                  value={estimatedTime}
+                  onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
+                  className="slider w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <span>5m</span>
+                  <span>2h</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">
@@ -104,7 +114,7 @@ export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
             </Button>
             <Button 
               onClick={handleSave} 
-              className="flex-1"
+              className="flex-1 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200"
               disabled={!title.trim() || priority < 1 || priority > 10 || estimatedTime <= 0}
             >
               Save Changes
