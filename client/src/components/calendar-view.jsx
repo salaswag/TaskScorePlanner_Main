@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Clock, Check, X } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export function CalendarView() {
@@ -12,6 +13,28 @@ export function CalendarView() {
   const [sliderTime, setSliderTime] = useState(0);
   const [timeData, setTimeData] = useState({}); // Store manual time entries
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    fetchTimeEntries();
+  }, []);
+
+  const fetchTimeEntries = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiRequest('/api/time-entries');
+      const data = await response.json();
+      setTimeData(data);
+    } catch (error) {
+      console.error('Error fetching time entries:', error);
+      // Fallback to localStorage for offline functionality
+      const saved = localStorage.getItem('timeData');
+      if (saved) {
+        setTimeData(JSON.parse(saved));
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const formatTime = (timeInMinutes) => {
     if (!timeInMinutes || timeInMinutes === 0) return '0m';
@@ -40,24 +63,32 @@ export function CalendarView() {
 
     const hours = timeInMinutes / 60;
 
-    if (hours >= 9) {
-      // Green for 9+ hours
+    if (hours >= 8) {
+      // Green for 8+ hours
       return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200';
     } else if (hours <= 1) {
       // Red for 1 hour or less
       return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
     } else {
-      // Scale from red to green (2-8 hours)
-      const ratio = (hours - 1) / 8; // 0 to 1 scale
-      if (ratio < 0.33) {
+      // Scale from red to green (2-7 hours)
+      const ratio = (hours - 1) / 7; // 0 to 1 scale
+      if (ratio < 0.16) {
+        // Red-ish
+        return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
+      }
+      else if (ratio < 0.33) {
         // Orange-ish
         return 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 text-orange-800 dark:text-orange-200';
-      } else if (ratio < 0.66) {
+      } else if (ratio < 0.5) {
         // Yellow-ish
         return 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200';
-      } else {
-        // Light green
+      } else if (ratio < 0.66) {
+        // Lime-ish
         return 'bg-lime-100 dark:bg-lime-900/30 border-lime-300 dark:border-lime-700 text-lime-800 dark:text-lime-200';
+      }
+       else {
+        // Light green
+        return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200';
       }
     }
   };
@@ -153,29 +184,39 @@ export function CalendarView() {
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        {/* Days of Week Header */}
-        <div className="grid grid-cols-7 bg-gray-50 dark:bg-gray-800">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="p-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300">
-              {day}
+      {isLoading ? (
+        <Card className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <CardContent className="p-6">
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-500 dark:text-gray-400 mt-4">Loading calendar...</p>
             </div>
-          ))}
-        </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          {/* Days of Week Header */}
+          <div className="grid grid-cols-7 bg-gray-50 dark:bg-gray-800">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="p-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300">
+                {day}
+              </div>
+            ))}
+          </div>
 
-        {/* Calendar Days */}
-        <div className="grid grid-cols-7">
-          {calendarDays.map((day, index) => {
-            const dateKey = format(day, 'yyyy-MM-dd');
-            const timeSpent = timeData[dateKey] || 0;
-            const isCurrentMonth = isSameMonth(day, currentMonth);
-            const isToday = isSameDay(day, new Date());
-            const isFuture = isAfter(day, new Date());
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7">
+            {calendarDays.map((day, index) => {
+              const dateKey = format(day, 'yyyy-MM-dd');
+              const timeSpent = timeData[dateKey] || 0;
+              const isCurrentMonth = isSameMonth(day, currentMonth);
+              const isToday = isSameDay(day, new Date());
+              const isFuture = isAfter(day, new Date());
 
-            return (
-              <div
-                key={index}
-                className={`
+              return (
+                <div
+                  key={index}
+                  className={`
                   min-h-[120px] p-2 border-b border-r border-gray-200 dark:border-gray-600 relative cursor-pointer
                   ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30 text-gray-400' : ''}
                   ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
@@ -183,58 +224,59 @@ export function CalendarView() {
                   ${isCurrentMonth && !isFuture && timeSpent > 0 ? getTimeColorClasses(timeSpent) : ''}
                   ${isCurrentMonth && !isFuture && timeSpent === 0 ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800' : ''}
                 `}
-                onClick={() => !isFuture && isCurrentMonth && handleTimeEdit(day)}
-                title={!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked - Click to edit` : "Click to add time") : ""}
-              >
-                <div className="flex flex-col h-full relative z-10">
-                  {/* Date Number */}
-                  <div className={`
+                  onClick={() => !isFuture && isCurrentMonth && handleTimeEdit(day)}
+                  title={!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked - Click to edit` : "Click to add time") : ""}
+                >
+                  <div className="flex flex-col h-full relative z-10">
+                    {/* Date Number */}
+                    <div className={`
                     text-sm font-medium mb-2
                     ${isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}
                     ${!isCurrentMonth ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100'}
                   `}>
-                    {format(day, 'd')}
-                  </div>
+                      {format(day, 'd')}
+                    </div>
 
-                  {/* Time Display and Edit */}
-                  {isCurrentMonth && !isFuture && timeSpent === 0 && (
-                    <div className="flex-1 flex flex-col items-center justify-center">
-                      <div 
-                        className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-3 transition-colors border-2 border-dashed border-gray-300 dark:border-gray-600 w-full text-center"
-                        onClick={() => handleTimeEdit(day)}
-                        title="Click to add time"
-                      >
-                        <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
-                          <Clock className="w-4 h-4" />
-                          <span className="text-sm">Add time</span>
+                    {/* Time Display and Edit */}
+                    {isCurrentMonth && !isFuture && timeSpent === 0 && (
+                      <div className="flex-1 flex flex-col items-center justify-center">
+                        <div
+                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-3 transition-colors border-2 border-dashed border-gray-300 dark:border-gray-600 w-full text-center"
+                          onClick={() => handleTimeEdit(day)}
+                          title="Click to add time"
+                        >
+                          <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm">Add time</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Time display for cells with time */}
-                  {isCurrentMonth && !isFuture && timeSpent > 0 && (
-                    <div className="flex-1 flex items-center justify-center">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-lg font-semibold">
-                          {formatTime(timeSpent)}
-                        </span>
+                    {/* Time display for cells with time */}
+                    {isCurrentMonth && !isFuture && timeSpent > 0 && (
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-lg font-semibold">
+                            {formatTime(timeSpent)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {isFuture && isCurrentMonth && (
-                    <div className="flex-1 flex items-center justify-center">
-                      <span className="text-xs text-gray-400">Future date</span>
-                    </div>
-                  )}
+                    {isFuture && isCurrentMonth && (
+                      <div className="flex-1 flex items-center justify-center">
+                        <span className="text-xs text-gray-400">Future date</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Instructions and Small Disclaimer */}
       <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
@@ -296,8 +338,8 @@ export function CalendarView() {
               <Button onClick={handleTimeCancel} variant="outline" className="flex-1">
                 Cancel
               </Button>
-              <Button 
-                onClick={handleTimeSave} 
+              <Button
+                onClick={handleTimeSave}
                 className="flex-1 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200"
                 disabled={isLoading}
               >
