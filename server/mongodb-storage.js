@@ -154,33 +154,49 @@ export class MongoStorage {
 
       console.log('Updating task:', id, updateFields);
 
-      // Build the query
-      const baseQuery = { id: Number(id) };
+      let result = null;
 
-      // Try to update by numeric id first
-      let result = await this.tasksCollection.findOneAndUpdate(
-        baseQuery,
-        { $set: updateFields },
-        { returnDocument: 'after' }
-      );
+      // Try to find by numeric id first
+      if (!isNaN(Number(id))) {
+        result = await this.tasksCollection.findOneAndUpdate(
+          { id: Number(id) },
+          { $set: updateFields },
+          { returnDocument: 'after' }
+        );
+        console.log('Update result by numeric id:', result.value ? 'Found' : 'Not found');
+      }
 
-      // If not found and id looks like ObjectId, try _id
-      if (!result.value && typeof id === 'string' && id.length === 24) {
-        const { ObjectId } = await import('mongodb');
+      // If not found by numeric id, try by _id (ObjectId)
+      if (!result || !result.value) {
         try {
-          const objectId = new ObjectId(id);
-          const objectIdQuery = { _id: objectId };
-          result = await this.tasksCollection.findOneAndUpdate(
-            objectIdQuery,
-            { $set: updateFields },
-            { returnDocument: 'after' }
-          );
+          const { ObjectId } = await import('mongodb');
+          let objectId;
+          
+          // If id looks like ObjectId string, convert it
+          if (typeof id === 'string' && id.length === 24) {
+            objectId = new ObjectId(id);
+          } else {
+            // Search for any task with this numeric id and get its _id
+            const task = await this.tasksCollection.findOne({ id: Number(id) });
+            if (task) {
+              objectId = task._id;
+            }
+          }
+          
+          if (objectId) {
+            result = await this.tasksCollection.findOneAndUpdate(
+              { _id: objectId },
+              { $set: updateFields },
+              { returnDocument: 'after' }
+            );
+            console.log('Update result by ObjectId:', result.value ? 'Found' : 'Not found');
+          }
         } catch (objectIdError) {
           console.error('Error with ObjectId conversion:', objectIdError);
         }
       }
 
-      if (!result.value) {
+      if (!result || !result.value) {
         console.error('Task not found for update:', id);
         return undefined;
       }

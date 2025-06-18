@@ -30,10 +30,23 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
     return colors[level - 1];
   };
 
-  // Sort tasks: incomplete first, then completed at the bottom
+  // Sort tasks: incomplete first (by priority desc), then completed at the bottom (by completion time desc)
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.completed && !b.completed) return 1;
     if (!a.completed && b.completed) return -1;
+    
+    // If both completed, sort by completion time (most recent first)
+    if (a.completed && b.completed) {
+      if (a.completedAt && b.completedAt) {
+        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
+      }
+    }
+    
+    // If both incomplete, sort by priority (highest first)
+    if (!a.completed && !b.completed) {
+      return (b.priority || 0) - (a.priority || 0);
+    }
+    
     return 0;
   });
 
@@ -135,17 +148,17 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                   </div>
                   <div className="col-span-2">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
-                      <div className="flex items-center text-sm text-gray-400 dark:text-gray-500">
+                      <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                         <CheckCircle className="h-4 w-4 mr-1" />
-                        <span>{formatTime(task.actualTime)}</span>
+                        <span className="font-medium">{formatTime(task.actualTime)}</span>
                       </div>
                     ) : (
                       <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
                     )}
                   </div>
                   <div className="col-span-1">
-                    {task.completed && task.distractionLevel && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
-                      <span className={`text-sm font-medium ${getDistractionColor(task.distractionLevel)}`}>
+                    {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
+                      <span className={`text-sm font-bold ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
                       </span>
                     ) : (
