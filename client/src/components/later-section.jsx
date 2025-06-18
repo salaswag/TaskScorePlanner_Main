@@ -68,21 +68,26 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
 
   return (
     <Card 
-      className="bg-gray-50/50 dark:bg-gray-900/50 shadow-sm border border-gray-200 dark:border-gray-700 border-dashed overflow-hidden mt-4"
+      className="bg-gray-50/50 dark:bg-gray-900/50 shadow-sm border border-gray-200 dark:border-gray-700 border-dashed overflow-hidden mt-4 transition-colors"
       onDragOver={(e) => {
         e.preventDefault();
-        e.currentTarget.classList.add('border-blue-400', 'bg-blue-50/50');
+        e.dataTransfer.dropEffect = 'move';
+        e.currentTarget.classList.add('border-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/20');
       }}
       onDragLeave={(e) => {
-        e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50');
+        // Only remove classes if we're actually leaving the card
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+          e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/20');
+        }
       }}
       onDrop={(e) => {
         e.preventDefault();
-        e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50');
+        e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/20');
 
         try {
           const taskData = JSON.parse(e.dataTransfer.getData('text/plain'));
-          if (taskData && taskData.id) {
+          console.log('Dropped task data:', taskData);
+          if (taskData && taskData.id && !taskData.completed) {
             onMoveToLater && onMoveToLater(taskData);
           }
         } catch (error) {
@@ -112,7 +117,8 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
       <div className="divide-y divide-gray-200 dark:divide-gray-700 divide-dashed">
         {sortedTasks.length === 0 ? (
           <div className="px-6 py-8 text-center text-gray-400 dark:text-gray-500">
-            <p className="text-sm">Drag tasks here for later</p>
+            <p className="text-sm">Drag incomplete tasks here for later</p>
+            <p className="text-xs mt-1 opacity-75">Completed tasks cannot be moved</p>
           </div>
         ) : (
           sortedTasks.map((task) => (
@@ -131,10 +137,13 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     onDragStart={(e) => {
                       if (!task.completed) {
                         e.dataTransfer.setData('text/plain', JSON.stringify(task));
-                        e.dataTransfer.effectAllowed = 'copy';
+                        e.dataTransfer.effectAllowed = 'move';
+                      } else {
+                        e.preventDefault();
                       }
                     }}
-                    className={`${!task.completed ? 'cursor-grab active:cursor-grabbing opacity-50 group-hover:opacity-100' : 'opacity-30'} transition-opacity`}
+                    className={`${!task.completed ? 'cursor-grab active:cursor-grabbing opacity-50 group-hover:opacity-100' : 'opacity-30 cursor-not-allowed'} transition-opacity`}
+                    title={task.completed ? "Completed tasks cannot be dragged" : "Drag to move"}
                   >
                     <GripVertical className="h-4 w-4 text-gray-400" />
                   </div>

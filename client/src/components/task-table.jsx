@@ -80,10 +80,39 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
     );
   }
 
-    
+
 
   return (
-    <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <Card 
+      className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden transition-colors"
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        e.currentTarget.classList.add('border-green-400', 'bg-green-50/50', 'dark:bg-green-900/20');
+      }}
+      onDragLeave={(e) => {
+        // Only remove classes if we're actually leaving the card
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+          e.currentTarget.classList.remove('border-green-400', 'bg-green-50/50', 'dark:bg-green-900/20');
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('border-green-400', 'bg-green-50/50', 'dark:bg-green-900/20');
+
+        try {
+          const taskData = JSON.parse(e.dataTransfer.getData('text/plain'));
+          console.log('Dropped task data to main:', taskData);
+          if (taskData && taskData.id && taskData.isLater && !taskData.completed) {
+            // This would need to be passed as a prop from the parent
+            // For now, we'll just log it
+            console.log('Task should be moved to main section');
+          }
+        } catch (error) {
+          console.error('Error parsing dropped task data:', error);
+        }
+      }}
+    >
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
         <h3 className="text-lg font-semibold text-black dark:text-white">Main Tasks</h3>
       </div>
@@ -127,8 +156,8 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       draggable={!task.completed}
                       onDragStart={(e) => {
                         if (!task.completed) {
-                          e.dataTransfer.setData('text/plain', JSON.stringify(task));
-                          e.dataTransfer.effectAllowed = 'copy';
+                          e.dataTransfer.setData('text/plain', JSON.stringify({...task, isLater: false}));
+                          e.dataTransfer.effectAllowed = 'move';
                         }
                       }}
                       className={`${!task.completed ? 'cursor-grab active:cursor-grabbing opacity-50 group-hover:opacity-100' : 'opacity-30'} transition-opacity`}
@@ -196,7 +225,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    
+
                     {/* Show Archive for completed tasks, Delete for incomplete tasks */}
                     {task.completed ? (
                       <Button
