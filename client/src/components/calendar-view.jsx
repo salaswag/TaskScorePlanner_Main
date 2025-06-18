@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Clock, Check, X } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import Clock from 'react-clock';
+import ReactClock from 'react-clock';
 import 'react-clock/dist/Clock.css';
 
 // Professional Clock Time Picker Component using react-clock
@@ -44,12 +44,12 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
     const startMinutes = dateToMinutes(startTime);
     const endMinutes = dateToMinutes(endTime);
     let totalMinutes = endMinutes - startMinutes;
-    
+
     // Handle case where end time is next day
     if (totalMinutes < 0) {
       totalMinutes += 24 * 60; // Add 24 hours
     }
-    
+
     onTimeChange(totalMinutes);
   }, [startTime, endTime, onTimeChange]);
 
@@ -79,14 +79,14 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
     const startMinutes = dateToMinutes(startTime);
     const endMinutes = dateToMinutes(endTime);
     let totalMinutes = endMinutes - startMinutes;
-    
+
     if (totalMinutes < 0) {
       totalMinutes += 24 * 60;
     }
-    
+
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
-    
+
     if (hours === 0) return `${minutes}m`;
     if (minutes === 0) return `${hours}h`;
     return `${hours}h ${minutes}m`;
@@ -98,7 +98,7 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
           Click to set {isSettingStart ? 'start' : 'end'} time
         </h4>
-        
+
         {/* Toggle buttons */}
         <div className="flex space-x-2">
           <button
@@ -126,7 +126,7 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
 
       {/* Professional Clock */}
       <div className="flex justify-center">
-        <Clock
+        <ReactClock
           value={isSettingStart ? startTime : endTime}
           onChange={handleTimeChange}
           size={200}
@@ -259,7 +259,7 @@ export function CalendarView() {
     setIsLoading(true);
     if (selectedDate) {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
-      
+
       try {
         // Save to MongoDB via API
         const response = await apiRequest('/api/time-entries', {
@@ -279,11 +279,11 @@ export function CalendarView() {
             ...prev,
             [dateKey]: sliderTime
           }));
-          
+
           // Also update localStorage as backup
           const newTimeData = { ...timeData, [dateKey]: sliderTime };
           localStorage.setItem('timeData', JSON.stringify(newTimeData));
-          
+
           console.log('Time entry saved successfully to MongoDB');
         } else {
           console.error('Failed to save time entry to MongoDB');
@@ -304,7 +304,7 @@ export function CalendarView() {
         localStorage.setItem('timeData', JSON.stringify({ ...timeData, [dateKey]: sliderTime }));
       }
     }
-    
+
     setShowTimeModal(false);
     setSelectedDate(null);
     setSliderTime(0);
@@ -511,7 +511,7 @@ export function CalendarView() {
                   />
                 </div>
               </div>
-              
+
               {/* Time Display */}
               <div className="text-center">
                 <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
