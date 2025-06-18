@@ -1,9 +1,10 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Edit, Trash2, ArrowUp, GripVertical } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle } from "lucide-react";
 
-export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onAddToFocus }) {
+export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -12,10 +13,54 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
   };
 
   const getPriorityColor = (priority) => {
-    if (priority >= 8) return "border-red-200 text-red-400";
-    if (priority >= 5) return "border-yellow-200 text-yellow-400";
-    return "border-green-200 text-green-400";
+    if (priority >= 8) return "bg-red-100 text-red-800";
+    if (priority >= 5) return "bg-yellow-100 text-yellow-800";
+    return "bg-green-100 text-green-800";
   };
+
+  const getDistractionColor = (level) => {
+    if (!level) return '';
+    const colors = [
+      'text-green-600', // 1
+      'text-green-500', // 2
+      'text-yellow-500', // 3
+      'text-orange-500', // 4
+      'text-red-500'    // 5
+    ];
+    return colors[level - 1];
+  };
+
+  const getDistractionBackgroundColor = (level) => {
+    if (!level) return '';
+    const colors = [
+      'bg-green-50', // 1
+      'bg-green-50', // 2
+      'bg-yellow-50', // 3
+      'bg-orange-50', // 4
+      'bg-red-50'    // 5
+    ];
+    return colors[level - 1];
+  };
+
+  // Sort tasks: incomplete first (by priority desc), then completed at the bottom (by completion time desc)
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.completed && !b.completed) return 1;
+    if (!a.completed && b.completed) return -1;
+    
+    // If both completed, sort by completion time (most recent first)
+    if (a.completed && b.completed) {
+      if (a.completedAt && b.completedAt) {
+        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
+      }
+    }
+    
+    // If both incomplete, sort by priority (highest first)
+    if (!a.completed && !b.completed) {
+      return (b.priority || 0) - (a.priority || 0);
+    }
+    
+    return 0;
+  });
 
   return (
     <Card 
@@ -46,58 +91,101 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
       </div>
       
       {/* Table Header */}
-      <div className="px-6 py-2 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 dark:text-gray-400">
+      <div className="px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
+        <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1"></div>
+          <div className="col-span-1">Done</div>
           <div className="col-span-1">Priority</div>
-          <div className="col-span-4">Task</div>
+          <div className="col-span-2">Task</div>
           <div className="col-span-2">Est Time</div>
-          <div className="col-span-4">Actions</div>
+          <div className="col-span-2">Actual Time</div>
+          <div className="col-span-1">Distract</div>
+          <div className="col-span-2">Actions</div>
         </div>
       </div>
 
       {/* Task Rows */}
       <div className="divide-y divide-gray-200 dark:divide-gray-700 divide-dashed">
-        {tasks.length === 0 ? (
+        {sortedTasks.length === 0 ? (
           <div className="px-6 py-8 text-center text-gray-400 dark:text-gray-500">
             <p className="text-sm">Drag tasks here for later</p>
           </div>
         ) : (
-          tasks.map((task) => (
+          sortedTasks.map((task) => (
             <div 
               key={task.id} 
-              className="px-6 py-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors opacity-60 group"
+              className={`px-6 py-4 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors group ${
+                task.completed 
+                  ? `opacity-60 ${getDistractionBackgroundColor(task.distractionLevel)}` 
+                  : 'opacity-60'
+              }`}
             >
               <div className="grid grid-cols-12 gap-4 items-center">
                 <div className="col-span-1">
                   <div
-                    draggable
+                    draggable={!task.completed}
                     onDragStart={(e) => {
-                      e.dataTransfer.setData('text/plain', JSON.stringify(task));
-                      e.dataTransfer.effectAllowed = 'copy';
+                      if (!task.completed) {
+                        e.dataTransfer.setData('text/plain', JSON.stringify(task));
+                        e.dataTransfer.effectAllowed = 'copy';
+                      }
                     }}
-                    className="cursor-grab active:cursor-grabbing opacity-50 group-hover:opacity-100 transition-opacity"
+                    className={`${!task.completed ? 'cursor-grab active:cursor-grabbing opacity-50 group-hover:opacity-100' : 'opacity-30'} transition-opacity`}
                   >
-                    <GripVertical className="h-3 w-3 text-gray-400" />
+                    <GripVertical className="h-4 w-4 text-gray-400" />
                   </div>
                 </div>
                 <div className="col-span-1">
-                  <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}>
+                  <Checkbox 
+                    checked={task.completed} 
+                    onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
+                    className="cursor-pointer"
+                  />
+                </div>
+                <div className="col-span-1">
+                  <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                    task.completed ? 'bg-gray-300 text-gray-500' : getPriorityColor(task.priority)
+                  }`}>
                     {task.priority}
                   </span>
                 </div>
-                <div className="col-span-4">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="col-span-2">
+                  <span className={`font-medium ${
+                    task.completed 
+                      ? 'text-gray-400 dark:text-gray-500 line-through' 
+                      : 'text-gray-500 dark:text-gray-400'
+                  }`}>
                     {task.title}
                   </span>
                 </div>
                 <div className="col-span-2">
-                  <div className="flex items-center text-xs text-gray-400">
-                    <Clock className="h-3 w-3 mr-1" />
+                  <div className={`flex items-center text-sm ${
+                    task.completed ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'
+                  }`}>
+                    <Clock className="h-4 w-4 mr-1" />
                     <span>{formatTime(task.estimatedTime)}</span>
                   </div>
                 </div>
-                <div className="col-span-4 flex space-x-1">
+                <div className="col-span-2">
+                  {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
+                    <div className="flex items-center text-sm text-green-600 dark:text-green-400">
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      <span className="font-medium">{formatTime(task.actualTime)}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                  )}
+                </div>
+                <div className="col-span-1">
+                  {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
+                    <span className={`text-sm font-bold ${getDistractionColor(task.distractionLevel)}`}>
+                      {task.distractionLevel}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
+                  )}
+                </div>
+                <div className="col-span-2 flex space-x-1">
                   <Button
                     variant="ghost"
                     size="sm"

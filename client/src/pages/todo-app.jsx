@@ -2,6 +2,7 @@ import { useState } from "react";
 import ScoreDisplay from "@/components/score-display";
 import TaskForm from "@/components/task-form";
 import TaskTable from "@/components/task-table";
+import TaskEditModal from "@/components/task-edit-modal";
 import LaterSection from "@/components/later-section";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
@@ -12,8 +13,10 @@ import { Moon, Sun, CheckSquare, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function TodoApp() {
-  const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
+  const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
@@ -125,28 +128,29 @@ export default function TodoApp() {
     showNotification("Task deletion undone", "success");
   };
 
-  const handleEditTask = (task) => {
-    // For now, just show a notification that edit functionality is coming
-    showNotification("Edit functionality coming soon!", "info");
-  };
-
   const handleMoveToLater = (task) => {
     updateTask.mutate({
       ...task,
       isLater: true,
+      isFocus: false,
     });
-    showNotification(`Task "${task.title}" moved to Later section`, "success");
+  };
+
+  const handleEditTask = (task) => {
+    setTaskToEdit(task);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEditedTask = (editedTask) => {
+    updateTask.mutate(editedTask);
   };
 
   const handleMoveToMain = (task) => {
     updateTask.mutate({
       ...task,
       isLater: false,
+      isFocus: false,
     });
-    showNotification(
-      `Task "${task.title}" moved back to main tasks`,
-      "success",
-    );
   };
 
 
@@ -175,7 +179,7 @@ export default function TodoApp() {
                 <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               )}
             </Button>
-            
+
           </div>
         </div>
       </header>
@@ -222,6 +226,8 @@ export default function TodoApp() {
                 onMoveToMain={handleMoveToMain}
                 onDeleteTask={handleDeleteTask}
                 onEditTask={handleEditTask}
+                onCompleteTask={handleCompleteTask}
+                onUndoCompletion={handleUndoCompletion}
                 onMoveToLater={handleMoveToLater}
               />
             </div>
@@ -241,6 +247,16 @@ export default function TodoApp() {
           setCurrentTask(null);
         }}
         onConfirm={handleConfirmCompletion}
+      />
+      {/* Edit Task Modal */}
+      <TaskEditModal
+        isOpen={isEditModalOpen}
+        task={taskToEdit}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setTaskToEdit(null);
+        }}
+        onSave={handleSaveEditedTask}
       />
 
       {/* Notifications */}

@@ -30,6 +30,18 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
     return colors[level - 1];
   };
 
+  const getDistractionBackgroundColor = (level) => {
+    if (!level) return '';
+    const colors = [
+      'bg-green-50', // 1
+      'bg-green-50', // 2
+      'bg-yellow-50', // 3
+      'bg-orange-50', // 4
+      'bg-red-50'    // 5
+    ];
+    return colors[level - 1];
+  };
+
   // Sort tasks: incomplete first (by priority desc), then completed at the bottom (by completion time desc)
   const sortedTasks = [...tasks].sort((a, b) => {
     if (a.completed && !b.completed) return 1;
@@ -97,7 +109,9 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
               <div 
                 key={task.id}
                 className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group ${
-                  task.completed ? 'bg-gray-50 dark:bg-gray-800 opacity-60' : ''
+                  task.completed 
+                    ? `bg-gray-50 dark:bg-gray-800 opacity-60 ${getDistractionBackgroundColor(task.distractionLevel)}` 
+                    : ''
                 }`}
               >
                 <div className="grid grid-cols-12 gap-4 items-center">
