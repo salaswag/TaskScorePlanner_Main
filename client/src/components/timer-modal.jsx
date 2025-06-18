@@ -1,5 +1,7 @@
-
-import { useState } from "react";
+The code adds the React import to the component to fix the missing import issue.
+```
+```replit_final_file
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CheckCircle } from "lucide-react";
@@ -132,3 +134,4 @@ export default function TimerModal({ isOpen, task, onClose, onConfirm }) {
     </Dialog>
   );
 }
+`
