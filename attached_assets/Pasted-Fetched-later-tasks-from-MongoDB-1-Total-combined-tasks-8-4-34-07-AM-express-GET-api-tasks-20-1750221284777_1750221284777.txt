@@ -1,0 +1,49 @@
+Fetched later tasks from MongoDB: 1
+Total combined tasks: 8
+4:34:07 AM [express] GET /api/tasks 200 in 88ms :: [{"_id":"685241bf1754e2533307e2b8","title":"hi","…
+SyntaxError: Unexpected token '1', "14" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at createStrictSyntaxError (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:169:10)
+    at parse (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:86:15)
+    at /home/runner/workspace/node_modules/body-parser/lib/read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (/home/runner/workspace/node_modules/raw-body/index.js:238:16)
+    at done (/home/runner/workspace/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/home/runner/workspace/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:518:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+SyntaxError: Unexpected token '1', "12" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at createStrictSyntaxError (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:169:10)
+    at parse (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:86:15)
+    at /home/runner/workspace/node_modules/body-parser/lib/read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (/home/runner/workspace/node_modules/raw-body/index.js:238:16)
+    at done (/home/runner/workspace/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/home/runner/workspace/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:518:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+SyntaxError: Unexpected token '8', "8" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at createStrictSyntaxError (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:169:10)
+    at parse (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:86:15)
+    at /home/runner/workspace/node_modules/body-parser/lib/read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (/home/runner/workspace/node_modules/raw-body/index.js:238:16)
+    at done (/home/runner/workspace/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/home/runner/workspace/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:518:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+BadRequestError: request aborted
+    at IncomingMessage.onAborted (/home/runner/workspace/node_modules/raw-body/index.js:245:10)
+    at IncomingMessage.emit (node:events:518:28)
+    at IncomingMessage._destroy (node:_http_incoming:221:10)
+    at _destroy (node:internal/streams/destroy:121:10)
+    at IncomingMessage.destroy (node:internal/streams/destroy:83:5)
+    at abortIncoming (node:_http_server:796:9)
+    at socketOnClose (node:_http_server:790:3)
+    at Socket.emit (node:events:530:35)
+    at TCP.<anonymous> (node:net:343:12)
