@@ -130,9 +130,11 @@ export class MongoStorage {
 
       console.log('Next task ID:', nextId);
       console.log('isLater from taskData:', taskData.isLater, 'Type:', typeof taskData.isLater);
+      console.log('Raw isLater value:', taskData.isLater);
 
-      // Ensure isLater is properly preserved
-      const isLaterFlag = Boolean(taskData.isLater);
+      // Ensure isLater is properly preserved - explicitly check for truthy values
+      const isLaterFlag = taskData.isLater === true || taskData.isLater === 'true' || taskData.isLater === 1;
+      console.log('Processed isLater flag:', isLaterFlag);
 
       const task = {
         ...taskData,

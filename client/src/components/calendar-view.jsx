@@ -27,10 +27,11 @@ export function CalendarView({ tasks }) {
     );
   };
 
-  // Get created tasks for the selected date
+  // Get created tasks for the selected date (main tasks only, not later tasks)
   const getCreatedTasksForDate = (date) => {
     return tasks.filter(task => 
       task.createdAt && 
+      !task.isLater && // Only count main tasks
       isSameDay(new Date(task.createdAt), date)
     );
   };
@@ -41,8 +42,10 @@ export function CalendarView({ tasks }) {
 
   // Calculate metrics for selected date
   const totalPriorityPoints = completedTasks.reduce((sum, task) => sum + task.priority, 0);
+  const totalCreatedPriorityPoints = createdTasks.reduce((sum, task) => sum + task.priority, 0);
   const totalTimeSpent = completedTasks.reduce((sum, task) => sum + (task.actualTime || 0), 0);
   const completionRate = createdTasks.length > 0 ? (completedTasks.length / createdTasks.length) * 100 : 0;
+  const priorityCompletionRate = totalCreatedPriorityPoints > 0 ? (totalPriorityPoints / totalCreatedPriorityPoints) * 100 : 0;
 
   // Check if a date has any tasks
   const hasTasksOnDate = (date) => {
@@ -115,28 +118,45 @@ export function CalendarView({ tasks }) {
               <Badge variant="secondary">{completedTasks.length}</Badge>
             </div>
 
-            {/* Completion Rate */}
+            {/* Task Completion Rate */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Completion Rate</span>
+                <span className="text-sm font-medium">Task Completion Rate</span>
                 <span className="text-sm text-muted-foreground">{completionRate.toFixed(0)}%</span>
               </div>
               <Progress value={completionRate} className="h-2" />
             </div>
 
+            {/* Priority Completion Rate */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Priority Completion Rate</span>
+                <span className="text-sm text-muted-foreground">{priorityCompletionRate.toFixed(0)}%</span>
+              </div>
+              <Progress value={priorityCompletionRate} className="h-2" />
+            </div>
+
             {/* Priority Points */}
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Priority Points Completed</span>
-              <Badge variant="outline">{totalPriorityPoints}</Badge>
+              <span className="text-sm font-medium">Priority Points</span>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{totalPriorityPoints}</Badge>
+                <span className="text-xs text-muted-foreground">of {totalCreatedPriorityPoints}</span>
+              </div>
             </div>
 
             {/* Time Spent */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-orange-500" />
-                <span className="text-sm font-medium">Time Spent</span>
+                <span className="text-sm font-medium">Time Spent Working</span>
               </div>
-              <Badge variant="outline">{Math.round(totalTimeSpent / 60)} min</Badge>
+              <Badge variant="outline">
+                {totalTimeSpent >= 60 
+                  ? `${Math.floor(totalTimeSpent / 60)}h ${totalTimeSpent % 60}m`
+                  : `${totalTimeSpent}m`
+                }
+              </Badge>
             </div>
           </CardContent>
         </Card>

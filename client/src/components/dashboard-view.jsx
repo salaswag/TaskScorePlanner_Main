@@ -25,7 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { BarChart3, TrendingUp, Clock, Target } from "lucide-react"
+import { BarChart3, TrendingUp, Clock, Target, Calendar } from "lucide-react"
+import { CalendarView } from "./calendar-view"
 
 const chartConfig = {
   priorityScore: {
@@ -83,6 +84,10 @@ export function DashboardView({ tasks }) {
   const recentAvg = recentDays.reduce((sum, day) => sum + day.priorityScore, 0) / 7
   const oldAvg = oldDays.reduce((sum, day) => sum + day.priorityScore, 0) / 7
   const trendPercent = oldAvg > 0 ? Math.round(((recentAvg - oldAvg) / oldAvg) * 100) : 0
+
+  // Check if we have enough data (at least 7 days of activity)
+  const activeDays = chartData.filter(day => day.priorityScore > 0 || day.tasksCompleted > 0).length
+  const hasEnoughData = activeDays >= 7
 
   return (
     <div className="space-y-6">
@@ -142,6 +147,22 @@ export function DashboardView({ tasks }) {
         </Card>
       </div>
 
+      {/* Calendar View */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Task Calendar & Daily Analytics
+          </CardTitle>
+          <CardDescription>
+            Daily completion rates and time tracking
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CalendarView tasks={tasks} />
+        </CardContent>
+      </Card>
+
       {/* Priority Score Chart */}
       <Card>
         <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
@@ -172,10 +193,26 @@ export function DashboardView({ tasks }) {
           </Select>
         </CardHeader>
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-          <ChartContainer
-            config={chartConfig}
-            className="aspect-auto h-[400px] w-full"
-          >
+          {!hasEnoughData ? (
+            <div className="flex items-center justify-center h-[400px] text-center">
+              <div className="space-y-3">
+                <div className="text-muted-foreground">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                </div>
+                <h3 className="text-lg font-medium text-muted-foreground">Not Enough Data</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  Complete at least 7 days of tasks to see your priority score trends and analytics.
+                </p>
+                <Badge variant="outline" className="mt-2">
+                  {activeDays} of 7 days completed
+                </Badge>
+              </div>
+            </div>
+          ) : (
+            <ChartContainer
+              config={chartConfig}
+              className="aspect-auto h-[400px] w-full"
+            >
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="fillPriorityScore" x1="0" y1="0" x2="0" y2="1">
@@ -249,6 +286,7 @@ export function DashboardView({ tasks }) {
               />
             </AreaChart>
           </ChartContainer>
+          )}
         </CardContent>
       </Card>
     </div>

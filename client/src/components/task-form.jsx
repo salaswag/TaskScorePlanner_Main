@@ -21,6 +21,7 @@ export default function TaskForm({ onSubmit, isLoading }) {
         isFocus: false,
       };
       console.log('Submitting task with data:', taskData);
+      console.log('isLater flag being sent:', Boolean(isLater));
       onSubmit(taskData);
       setTitle("");
       setPriority(5);
