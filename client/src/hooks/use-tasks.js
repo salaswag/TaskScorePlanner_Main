@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 
+const API_BASE_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL || '/api';
+
 export function useTasks() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
