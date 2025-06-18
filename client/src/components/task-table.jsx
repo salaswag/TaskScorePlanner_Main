@@ -98,15 +98,15 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
 
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 dark:text-gray-300">
-          <div className="col-span-1"></div>
-          <div className="col-span-1">Done</div>
-          <div className="col-span-1">Priority</div>
-          <div className="col-span-2">Task</div>
-          <div className="col-span-2">Est Time</div>
-          <div className="col-span-2">Actual Time</div>
-          <div className="col-span-1">Distract</div>
-          <div className="col-span-2">Actions</div>
+        <div className="grid grid-cols-12 gap-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="col-span-1 text-center"></div>
+          <div className="col-span-1 text-center">Done</div>
+          <div className="col-span-1 text-center">Priority</div>
+          <div className="col-span-3 text-left">Task</div>
+          <div className="col-span-2 text-center">Est Time</div>
+          <div className="col-span-2 text-center">Actual Time</div>
+          <div className="col-span-1 text-center">Distract</div>
+          <div className="col-span-1 text-center">Actions</div>
         </div>
       </div>
 
@@ -129,8 +129,8 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                     : ''
                 }`}
               >
-                <div className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-1">
+                <div className="grid grid-cols-12 gap-3 items-center">
+                  <div className="col-span-1 flex justify-center">
                     <div
                       draggable={!task.completed}
                       onDragStart={(e) => {
@@ -144,21 +144,21 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       <GripVertical className="h-4 w-4 text-gray-400" />
                     </div>
                   </div>
-                  <div className="col-span-1">
+                  <div className="col-span-1 flex justify-center">
                     <Checkbox 
                       checked={task.completed} 
                       onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
                       className="cursor-pointer"
                     />
                   </div>
-                  <div className="col-span-1">
+                  <div className="col-span-1 flex justify-center">
                     <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
                       task.completed ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' : getPriorityColor(task.priority, false)
                     }`}>
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-3">
                     <span className={`font-medium ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
@@ -167,7 +167,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       {task.title}
                     </span>
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-2 flex justify-center">
                     <div className={`flex items-center text-sm ${
                       task.completed ? 'text-gray-400' : 'text-gray-600 dark:text-gray-400'
                     }`}>
@@ -175,7 +175,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       <span>{formatTime(task.estimatedTime)}</span>
                     </div>
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-2 flex justify-center">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
                       <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                         <CheckCircle className="h-4 w-4 mr-1" />
@@ -185,7 +185,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
                     )}
                   </div>
-                  <div className="col-span-1">
+                  <div className="col-span-1 flex justify-center">
                     {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
                       <span className={`text-sm font-bold ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
@@ -194,7 +194,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                       <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                     )}
                   </div>
-                  <div className="col-span-2 flex space-x-2">
+                  <div className="col-span-1 flex justify-center space-x-1">
                     <Button
                       variant="ghost"
                       size="sm"
