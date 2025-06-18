@@ -1,14 +1,13 @@
 import { useState } from "react";
 import ScoreDisplay from "@/components/score-display";
 import TaskForm from "@/components/task-form";
-import TaskTable from "@/components/task-table";
+import NotionStyleTable from "@/components/notion-style-table";
 import LaterSection from "@/components/later-section";
-import TimelineSection from "@/components/timeline-section";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
 import UserMenu from "@/components/user-menu";
 import { useTasks } from "@/hooks/use-tasks";
-import { useTimeline } from "@/hooks/use-timeline";
+
 import { useTheme } from "@/components/theme-provider";
 import { Moon, Sun, CheckSquare, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ export default function TodoApp() {
   const [notifications, setNotifications] = useState([]);
 
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
-  const { events, isLoading: isTimelineLoading, createEvent, updateEvent, deleteEvent } = useTimeline();
+  
   const { theme, setTheme } = useTheme();
 
   const handleCompleteTask = (task) => {
@@ -154,37 +153,7 @@ export default function TodoApp() {
 
   
 
-  const handleCreateTimelineEvent = (eventData) => {
-    createEvent.mutate(eventData);
-    showNotification(`Timeline event "${eventData.title}" created successfully!`, "success");
-  };
-
-  const handleUpdateTimelineEvent = (eventData) => {
-    updateEvent.mutate(eventData);
-    const action = eventData.completed ? "completed" : "updated";
-    showNotification(`Timeline event "${eventData.title}" ${action}!`, "success");
-  };
-
-  const handleDeleteTimelineEvent = (eventId) => {
-    const event = events.find(e => e.id === eventId);
-    deleteEvent.mutate(eventId);
-    showNotification(
-      `Timeline event "${event?.title}" deleted successfully!`,
-      "success",
-      true,
-      () => handleUndoTimelineDelete(event)
-    );
-  };
-
-  const handleUndoTimelineDelete = (event) => {
-    createEvent.mutate({
-      title: event.title,
-      description: event.description,
-      dueDate: event.dueDate,
-      priority: event.priority,
-    });
-    showNotification("Timeline event deletion undone", "success");
-  };
+  
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
@@ -243,34 +212,37 @@ export default function TodoApp() {
 
             {/* Right Main Area */}
             <div className="lg:col-span-2">
-              <TaskTable
+              <NotionStyleTable
                 tasks={mainTasks}
                 isLoading={isLoading}
                 onCompleteTask={handleCompleteTask}
                 onDeleteTask={handleDeleteTask}
                 onEditTask={handleEditTask}
-                onUndoCompletion={handleUndoCompletion}
-                onMoveToLater={handleMoveToLater}
+                onCreateTask={(taskData) => {
+                  createTask.mutate(taskData);
+                  showNotification(
+                    `Task "${taskData.title}" added successfully!`,
+                    "success",
+                  );
+                }}
+                onUpdateTask={(taskData) => {
+                  updateTask.mutate(taskData);
+                  showNotification(
+                    `Task "${taskData.title}" updated!`,
+                    "success",
+                  );
+                }}
               />
-              <LaterSection
-                tasks={laterTasks}
-                onMoveToMain={handleMoveToMain}
-                onDeleteTask={handleDeleteTask}
-                onEditTask={handleEditTask}
-                onMoveToLater={handleMoveToLater}
-              />
+              <div className="mt-6">
+                <LaterSection
+                  tasks={laterTasks}
+                  onMoveToMain={handleMoveToMain}
+                  onDeleteTask={handleDeleteTask}
+                  onEditTask={handleEditTask}
+                  onMoveToLater={handleMoveToLater}
+                />
+              </div>
             </div>
-          </div>
-
-          {/* Timeline Bottom Section */}
-          <div className="mt-8">
-            <TimelineSection
-              events={events}
-              onCreateEvent={handleCreateTimelineEvent}
-              onUpdateEvent={handleUpdateTimelineEvent}
-              onDeleteEvent={handleDeleteTimelineEvent}
-              isLoading={isTimelineLoading}
-            />
           </div>
         </main>
       </div>
