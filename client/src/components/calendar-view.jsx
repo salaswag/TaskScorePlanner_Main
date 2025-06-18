@@ -94,17 +94,28 @@ export function CalendarView({ tasks, onUpdateTask }) {
               const proportion = totalCurrentTime > 0 ? (task.actualTime || 0) / totalCurrentTime : 1 / dayTasks.length;
               const newTaskTime = Math.round(sliderTime * proportion);
 
-              if (onUpdateTask) {
-                await onUpdateTask(task.id, { 
-                  ...task, 
-                  actualTime: newTaskTime,
-                  manualTimeOverride: true // Flag to indicate manual override
-                });
-              }
+              // Send the complete task object with updated time
+              const updatedTask = {
+                id: task.id,
+                title: task.title,
+                priority: task.priority,
+                estimatedTime: task.estimatedTime,
+                actualTime: newTaskTime,
+                distractionLevel: task.distractionLevel,
+                completed: task.completed,
+                completedAt: task.completedAt,
+                isLater: task.isLater,
+                isFocus: task.isFocus,
+                archived: task.archived,
+                createdAt: task.createdAt
+              };
+
+              console.log('Updating task with complete object:', updatedTask);
+              await onUpdateTask(updatedTask);
             }
           }
         } catch (error) {
-          console.error('Error updating task time:', error);
+          console.error('Error updating task times:', error);
         }
       }
     }
@@ -240,6 +251,20 @@ export function CalendarView({ tasks, onUpdateTask }) {
                     </div>
                   )}
                 </div>
+                 <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                {dayData.timeSpent > 0 && (
+                  <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-1 py-0.5 rounded">
+                    <span className="font-medium">Total: {dayData.timeSpent}m</span>
+                    <button
+                      onClick={() => handleTimeEdit(day, dayData.timeSpent)}
+                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 p-0.5"
+                      title="Edit total time"
+                    >
+                      <Clock className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
               </div>
             );
           })}
