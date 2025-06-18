@@ -2,10 +2,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, GripVertical } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Archive, ArchiveRestore } from 'lucide-react';
+import { Archive } from 'lucide-react';
 
-export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTask, onEditTask, onUndoCompletion, onMoveToLater }) {
+export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTask, onEditTask, onUndoCompletion, onMoveToLater, onArchive }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -81,14 +80,7 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
     );
   }
 
-    const handleDelete = (taskId) => {
-        onDeleteTask(taskId);
-    };
-
-    const handleArchive = (taskId) => {
-        // Implement archive functionality here
-        console.log(`Archive task with ID: ${taskId}`);
-    };
+    
 
   return (
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
@@ -204,43 +196,29 @@ export default function TaskTable({ tasks, isLoading, onCompleteTask, onDeleteTa
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    {/* Archive/Unarchive Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleArchive(task.id)}
-                      className={task.archived ? "text-blue-600 hover:text-blue-700" : "text-orange-600 hover:text-orange-700"}
-                    >
-                      {task.archived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                    </Button>
-
-                    {/* Delete Button with Confirmation */}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          title="Delete Task"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the task "{task.title}" and remove all associated data.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(task.id)} className="bg-red-600 hover:bg-red-700">
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    
+                    {/* Show Archive for completed tasks, Delete for incomplete tasks */}
+                    {task.completed ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onArchive && onArchive(task)}
+                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                        title="Archive Task"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteTask && onDeleteTask(task)}
+                        className="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        title="Delete Task"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

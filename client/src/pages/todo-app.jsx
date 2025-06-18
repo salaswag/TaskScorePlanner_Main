@@ -115,7 +115,7 @@ export default function TodoApp() {
   const handleDeleteTask = (task) => {
     deleteTask.mutate(task.id);
     showNotification(
-      `Task "${task.title}" deleted successfully!`,
+      `Task "${task.title}" deleted`,
       "success",
       true,
       () => handleUndoDelete(task),
@@ -156,6 +156,10 @@ export default function TodoApp() {
     });
   };
 
+  const handleArchive = (task) => {
+    // Implement archive functionality here
+    console.log("Archive task:", task);
+  };
 
 
   return (
@@ -170,7 +174,7 @@ export default function TodoApp() {
                 Task Master Pro
               </h1>
             </div>
-            
+
             {/* Navigation Tabs - Center */}
             <div className="flex-1 flex justify-center">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -180,7 +184,7 @@ export default function TodoApp() {
                 </TabsList>
               </Tabs>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
@@ -237,6 +241,7 @@ export default function TodoApp() {
                     onEditTask={handleEditTask}
                     onUndoCompletion={handleUndoCompletion}
                     onMoveToLater={handleMoveToLater}
+                    onArchive={handleArchive}
                   />
                   <LaterSection
                     tasks={laterTasks}
@@ -250,7 +255,7 @@ export default function TodoApp() {
                 </div>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="calendar" className="mt-0">
               <CalendarView tasks={tasks || []} />
             </TabsContent>

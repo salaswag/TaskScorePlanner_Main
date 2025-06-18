@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle } from "lucide-react";
+import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle, Archive } from "lucide-react";
 
 function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchive }) {
   const formatTime = (minutes) => {
@@ -189,8 +189,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                   )}
                 </div>
-                <div className="col-span-2 flex justify-center">
-                  <div className="flex space-x-1"></div>
+                <div className="col-span-2 flex justify-center space-x-1">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -209,24 +208,29 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   >
                     <Edit className="h-3 w-3" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDeleteTask(task)}
-                    className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-2 py-1 h-6"
-                    title="Delete Task"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onArchive(task)}
-                    className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-2 py-1 h-6"
-                    title="Archive Task"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                  
+                  {/* Show Archive for completed tasks, Delete for incomplete tasks */}
+                  {task.completed ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onArchive && onArchive(task)}
+                      className="text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-xs px-2 py-1 h-6"
+                      title="Archive Task"
+                    >
+                      <Archive className="h-3 w-3" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDeleteTask(task)}
+                      className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-2 py-1 h-6"
+                      title="Delete Task"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

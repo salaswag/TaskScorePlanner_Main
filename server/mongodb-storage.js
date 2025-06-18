@@ -102,7 +102,7 @@ export class MongoStorage {
         distractionLevel: null,
         isLater: taskData.isLater || false,
         isFocus: taskData.isFocus || false,
-        archived: false,
+        archived: taskData.archived || false,
         createdAt: new Date(),
         completedAt: null
       };
@@ -158,6 +158,9 @@ export class MongoStorage {
       }
       if (updateFields.estimatedTime !== undefined) {
         updateFields.estimatedTime = Number(updateFields.estimatedTime);
+      }
+      if (updateFields.archived !== undefined) {
+        updateFields.archived = Boolean(updateFields.archived);
       }
 
       console.log('Updating task:', id, updateFields);
