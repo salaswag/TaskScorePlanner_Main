@@ -54,9 +54,8 @@ export function useTasks() {
 
    const archiveTask = useMutation({
     mutationFn: async (taskId) => {
-      const response = await apiRequest(`/api/tasks/${taskId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ isArchived: true }),
+      const response = await apiRequest(`/api/tasks/${taskId}/archive`, {
+        method: "POST",
       });
       return response.json();
     },

@@ -22,13 +22,17 @@ export class MongoStorage {
       await this.client.connect();
       this.db = this.client.db('ClusterforTask');
       this.tasksCollection = this.db.collection('Tasks');
+      this.archiveCollection = this.db.collection('Archive');
+      this.laterTasksCollection = this.db.collection('Later Tasks');
 
       // Test the connection with a ping
       await this.db.command({ ping: 1 });
 
       console.log('✅ Connected to MongoDB successfully');
       console.log('📊 Database:', this.db.databaseName);
-      console.log('📦 Collection:', this.tasksCollection.collectionName);
+      console.log('📦 Main Collection:', this.tasksCollection.collectionName);
+      console.log('📦 Archive Collection:', this.archiveCollection.collectionName);
+      console.log('📦 Later Tasks Collection:', this.laterTasksCollection.collectionName);
       return true;
     } catch (error) {
       console.error(`❌ MongoDB connection failed (attempt ${6 - retries}/5):`, error.message);
@@ -42,6 +46,8 @@ export class MongoStorage {
       this.client = null;
       this.db = null;
       this.tasksCollection = null;
+      this.archiveCollection = null;
+      this.laterTasksCollection = null;
       return false;
     }
   }
@@ -238,6 +244,117 @@ export class MongoStorage {
     } catch (error) {
       console.error('Error deleting task:', error);
       return false;
+    }
+  }
+
+  async archiveTask(id) {
+    try {
+      console.log('Archive task with ID:', id);
+      
+      // First, find the task to archive
+      let task = null;
+
+      // Try to find by numeric id first
+      if (!isNaN(Number(id))) {
+        task = await this.tasksCollection.findOne({ id: Number(id) });
+        console.log('Found task by numeric id:', task ? 'Yes' : 'No');
+      }
+
+      // If not found by numeric id, try by _id (ObjectId)
+      if (!task) {
+        try {
+          const { ObjectId } = await import('mongodb');
+          let objectId;
+
+          if (typeof id === 'string' && id.length === 24) {
+            objectId = new ObjectId(id);
+          } else {
+            // Search for any task with this numeric id and get its _id
+            const foundTask = await this.tasksCollection.findOne({ id: Number(id) });
+            if (foundTask) {
+              objectId = foundTask._id;
+            }
+          }
+
+          if (objectId) {
+            task = await this.tasksCollection.findOne({ _id: objectId });
+            console.log('Found task by ObjectId:', task ? 'Yes' : 'No');
+          }
+        } catch (objectIdError) {
+          console.error('Error with ObjectId conversion:', objectIdError);
+        }
+      }
+
+      if (!task) {
+        console.error('Task not found for archiving:', id);
+        return false;
+      }
+
+      console.log('Task to archive:', JSON.stringify(task, null, 2));
+
+      // Add archived timestamp
+      const archivedTask = {
+        ...task,
+        archived: true,
+        archivedAt: new Date()
+      };
+
+      // Insert into archive collection
+      const insertResult = await this.archiveCollection.insertOne(archivedTask);
+      console.log('Archive insert result:', insertResult);
+
+      if (insertResult.acknowledged) {
+        // Remove from main tasks collection
+        let deleteResult = null;
+
+        if (!isNaN(Number(id))) {
+          deleteResult = await this.tasksCollection.deleteOne({ id: Number(id) });
+        }
+
+        if (!deleteResult || deleteResult.deletedCount === 0) {
+          try {
+            const { ObjectId } = await import('mongodb');
+            const objectId = task._id;
+            deleteResult = await this.tasksCollection.deleteOne({ _id: objectId });
+          } catch (error) {
+            console.error('Error deleting from main collection:', error);
+          }
+        }
+
+        console.log('Delete from main collection result:', deleteResult);
+        
+        if (deleteResult && deleteResult.deletedCount > 0) {
+          console.log('✅ Task successfully archived');
+          return true;
+        } else {
+          console.error('❌ Failed to remove task from main collection after archiving');
+          // Remove from archive since main deletion failed
+          await this.archiveCollection.deleteOne({ _id: insertResult.insertedId });
+          return false;
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error archiving task:', error);
+      return false;
+    }
+  }
+
+  async getArchivedTasks() {
+    try {
+      const archivedTasks = await this.archiveCollection.find({}).sort({ archivedAt: -1 }).toArray();
+      console.log('Fetched archived tasks:', archivedTasks.length);
+      console.log('Archived tasks:', JSON.stringify(archivedTasks, null, 2));
+      return archivedTasks.map(task => ({
+        ...task,
+        id: task.id || task._id.toString(),
+        archived: true,
+        archivedAt: task.archivedAt || new Date()
+      }));
+    } catch (error) {
+      console.error('Error fetching archived tasks:', error);
+      return [];
     }
   }
 

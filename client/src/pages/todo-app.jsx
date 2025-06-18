@@ -22,7 +22,7 @@ export default function TodoApp() {
   const [notifications, setNotifications] = useState([]);
   const [activeTab, setActiveTab] = useState("tasks");
 
-  const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
+  const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } = useTasks();
   const { theme, setTheme } = useTheme();
 
   const handleCompleteTask = (task) => {
@@ -61,9 +61,9 @@ export default function TodoApp() {
       ? tasks.filter((task) => Boolean(task.isLater))
       : [];
 
-  // Calculate statistics (only from main tasks)
-  const completedTasks = mainTasks.filter((task) => task.completed) || [];
-  const pendingTasks = mainTasks.filter((task) => !task.completed) || [];
+  // Calculate statistics (only from main tasks, excluding later tasks and archived tasks)
+  const completedTasks = mainTasks.filter((task) => task.completed && !task.isLater && !task.archived) || [];
+  const pendingTasks = mainTasks.filter((task) => !task.completed && !task.isLater && !task.archived) || [];
   const totalScore = completedTasks.reduce(
     (sum, task) => sum + (task.priority || 0),
     0,
@@ -157,8 +157,38 @@ export default function TodoApp() {
   };
 
   const handleArchive = (task) => {
-    // Implement archive functionality here
     console.log("Archive task:", task);
+    archiveTask.mutate(task.id, {
+      onSuccess: () => {
+        showNotification(
+          `Task "${task.title}" archived successfully!`,
+          "success",
+          true,
+          () => handleUndoArchive(task),
+        );
+      },
+      onError: (error) => {
+        console.error("Archive error:", error);
+        showNotification(
+          `Failed to archive task "${task.title}"`,
+          "error"
+        );
+      }
+    });
+  };
+
+  const handleUndoArchive = (task) => {
+    // Recreate the task to undo archive
+    createTask.mutate({
+      title: task.title,
+      priority: task.priority,
+      estimatedTime: task.estimatedTime,
+      completed: task.completed,
+      actualTime: task.actualTime,
+      distractionLevel: task.distractionLevel,
+      isLater: task.isLater
+    });
+    showNotification("Task archive undone", "success");
   };
 
 

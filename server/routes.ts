@@ -156,6 +156,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Archive a task
+  app.post("/api/tasks/:id/archive", async (req, res) => {
+    try {
+      const idParam = req.params.id;
+      
+      // Always try MongoDB first
+      const mongoAvailable = await testMongoConnection();
+      const storageToUse = mongoAvailable ? mongoStorage : storage;
+      
+      if (!mongoAvailable) {
+        console.warn("⚠️  Archiving task in in-memory storage - MongoDB unavailable");
+        return res.status(503).json({ message: "Archive functionality requires MongoDB" });
+      } else {
+        console.log("✅ Archiving task in MongoDB storage");
+      }
+      
+      const archived = await storageToUse.archiveTask(idParam);
+      
+      if (!archived) {
+        return res.status(404).json({ message: "Task not found or failed to archive" });
+      }
+
+      res.status(200).json({ message: "Task archived successfully" });
+    } catch (error) {
+      console.error("Error archiving task:", error);
+      res.status(500).json({ message: "Failed to archive task" });
+    }
+  });
+
+  // Get archived tasks
+  app.get("/api/tasks/archived", async (req, res) => {
+    try {
+      // Always try MongoDB first
+      const mongoAvailable = await testMongoConnection();
+      const storageToUse = mongoAvailable ? mongoStorage : storage;
+      
+      if (!mongoAvailable) {
+        console.warn("⚠️  Getting archived tasks from in-memory storage - MongoDB unavailable");
+        return res.json([]);
+      } else {
+        console.log("✅ Getting archived tasks from MongoDB storage");
+      }
+      
+      const archivedTasks = await storageToUse.getArchivedTasks();
+      res.json(archivedTasks);
+    } catch (error) {
+      console.error("Error fetching archived tasks:", error);
+      res.status(500).json({ message: "Failed to fetch archived tasks" });
+    }
+  });
+
 
 
 
@@ -192,6 +243,17 @@ class InMemoryStorage {
 
   async deleteTask(id: number): Promise<boolean> {
     return this.tasks.delete(id);
+  }
+
+  async archiveTask(id: number): Promise<boolean> {
+    // In-memory storage doesn't support archive - just return false
+    console.log('Archive not supported in in-memory storage');
+    return false;
+  }
+
+  async getArchivedTasks() {
+    // In-memory storage doesn't support archive
+    return [];
   }
 
   async getTimelineEvents() {

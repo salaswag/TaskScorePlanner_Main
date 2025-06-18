@@ -208,7 +208,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   >
                     <Edit className="h-3 w-3" />
                   </Button>
-                  
+
                   {/* Show Archive for completed tasks, Delete for incomplete tasks */}
                   {task.completed ? (
                     <Button
