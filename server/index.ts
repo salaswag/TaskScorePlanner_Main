@@ -7,17 +7,7 @@ import { MongoStorage } from "./mongodb-storage.js";
 export const mongoStorage = new MongoStorage();
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
-// Add error handling for JSON parsing
-app.use((err: any, req: any, res: any, next: any) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    console.error('JSON Parse Error:', err.message);
-    return res.status(400).json({ error: 'Invalid JSON in request body' });
-  }
-  next();
-});
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Session configuration

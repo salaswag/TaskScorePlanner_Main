@@ -9,7 +9,7 @@ import "./types"; // Import session type declarations
 export async function registerRoutes(app: Express): Promise<Server> {
   // Always try to use MongoDB storage, only fallback to in-memory if MongoDB is completely unavailable
   let activeStorage = mongoStorage;
-
+  
   // Test MongoDB connection before each request by trying a simple operation
   const testMongoConnection = async () => {
     try {
@@ -28,7 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return false;
     }
   };
-
+  
   console.log("MongoDB storage prioritized - in-memory storage will only be used if MongoDB is completely unavailable");
 
   // Get all tasks
@@ -37,13 +37,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
-
+      
       if (!mongoAvailable) {
         console.warn("⚠️  Using in-memory storage - MongoDB unavailable");
       } else {
         console.log("✅ Using MongoDB storage");
       }
-
+      
       const tasks = await storageToUse.getTasks();
       res.json(tasks);
     } catch (error) {
@@ -56,17 +56,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/tasks", async (req, res) => {
     try {
       const validatedData = insertTaskSchema.parse(req.body);
-
+      
       // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
-
+      
       if (!mongoAvailable) {
         console.warn("⚠️  Creating task in in-memory storage - MongoDB unavailable");
       } else {
         console.log("✅ Creating task in MongoDB storage");
       }
-
+      
       const task = await storageToUse.createTask(validatedData);
       res.status(201).json(task);
     } catch (error) {
@@ -88,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
-
+      
       if (!mongoAvailable) {
         console.warn("⚠️  Updating task in in-memory storage - MongoDB unavailable");
       } else {
@@ -122,17 +122,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/tasks/:id", async (req, res) => {
     try {
       const idParam = req.params.id;
-
+      
       // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
-
+      
       if (!mongoAvailable) {
         console.warn("⚠️  Deleting task from in-memory storage - MongoDB unavailable");
       } else {
         console.log("✅ Deleting task from MongoDB storage");
       }
-
+      
       let deleted: boolean;
       if (storageToUse === storage) {
         // In-memory storage expects a number
@@ -160,20 +160,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/tasks/:id/archive", async (req, res) => {
     try {
       const idParam = req.params.id;
-
+      
       // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
-
+      
       if (!mongoAvailable) {
         console.warn("⚠️  Archiving task in in-memory storage - MongoDB unavailable");
         return res.status(503).json({ message: "Archive functionality requires MongoDB" });
       } else {
         console.log("✅ Archiving task in MongoDB storage");
       }
-
+      
       const archived = await storageToUse.archiveTask(idParam);
-
+      
       if (!archived) {
         return res.status(404).json({ message: "Task not found or failed to archive" });
       }
@@ -191,37 +191,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
-
+      
       if (!mongoAvailable) {
         console.warn("⚠️  Getting archived tasks from in-memory storage - MongoDB unavailable");
         return res.json([]);
       } else {
         console.log("✅ Getting archived tasks from MongoDB storage");
       }
-
+      
       const archivedTasks = await storageToUse.getArchivedTasks();
       res.json(archivedTasks);
     } catch (error) {
       console.error("Error fetching archived tasks:", error);
       res.status(500).json({ message: "Failed to fetch archived tasks" });
-    }
-  });
-
-  // Update task
-  app.put('/api/tasks/:id', async (req, res) => {
-    try {
-      const taskId = parseInt(req.params.id);
-
-      // Validate request body
-      if (!req.body || typeof req.body !== 'object') {
-        return res.status(400).json({ error: 'Invalid request body' });
-      }
-
-      const updatedTask = await storage.updateTask(taskId, req.body);
-      res.json(updatedTask);
-    } catch (error) {
-      console.error('Error updating task:', error);
-      res.status(500).json({ error: 'Failed to update task' });
     }
   });
 

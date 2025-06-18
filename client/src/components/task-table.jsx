@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, GripVertical, Play } from "lucide-react";
+import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, GripVertical } from "lucide-react";
 import { Archive } from 'lucide-react';
 
 export default function TaskTable({
@@ -14,7 +14,6 @@ export default function TaskTable({
   onMoveToLater,
   onMoveToMain,
   onArchive,
-  onStartStopwatch,
 }) {
   const formatTime = (minutes) => {
     if (!minutes) return "-";

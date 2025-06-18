@@ -5,7 +5,6 @@ import TaskTable from "@/components/task-table";
 import TaskEditModal from "@/components/task-edit-modal";
 import LaterSection from "@/components/later-section";
 import TimerModal from "@/components/timer-modal";
-import TaskStopwatch from "@/components/task-stopwatch";
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
 
@@ -22,9 +21,6 @@ export default function TodoApp() {
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [activeTab, setActiveTab] = useState("tasks");
-  const [stopwatchTask, setStopwatchTask] = useState(null);
-  const [isStopwatchOpen, setIsStopwatchOpen] = useState(false);
-  const [trackedTimes, setTrackedTimes] = useState({}); // Store tracked time for each task
 
   const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } = useTasks();
   const { theme, setTheme } = useTheme();
@@ -77,23 +73,6 @@ export default function TodoApp() {
     0,
   );
 
-  const handleStartStopwatch = (task) => {
-    setStopwatchTask(task);
-    setIsStopwatchOpen(true);
-  };
-
-  const handleStopwatchTimeUpdate = (taskId, minutes) => {
-    setTrackedTimes(prev => ({
-      ...prev,
-      [taskId]: minutes
-    }));
-  };
-
-  const handleStopwatchClose = () => {
-    setIsStopwatchOpen(false);
-    setStopwatchTask(null);
-  };
-
   const handleConfirmCompletion = (actualTime, distractionLevel) => {
     if (currentTask) {
       updateTask.mutate({
@@ -117,19 +96,6 @@ export default function TodoApp() {
         true,
         () => handleUndoCompletion(currentTask.id),
       );
-
-      // Clear tracked time for this task
-      setTrackedTimes(prev => {
-        const updated = { ...prev };
-        delete updated[currentTask.id];
-        return updated;
-      });
-
-      // Close stopwatch if it's open for this task
-      if (stopwatchTask && stopwatchTask.id === currentTask.id) {
-        setIsStopwatchOpen(false);
-        setStopwatchTask(null);
-      }
     }
     setIsTimerModalOpen(false);
     setCurrentTask(null);
@@ -343,7 +309,6 @@ export default function TodoApp() {
                     onMoveToLater={handleMoveToLater}
                     onMoveToMain={handleMoveToMain}
                     onArchive={handleArchive}
-                    onStartStopwatch={handleStartStopwatch}
                   />
                   <LaterSection
                     tasks={laterTasks}
@@ -370,20 +335,11 @@ export default function TodoApp() {
       <TimerModal
         isOpen={isTimerModalOpen}
         task={currentTask}
-        trackedTime={currentTask ? trackedTimes[currentTask.id] || 30 : 30}
         onClose={() => {
           setIsTimerModalOpen(false);
           setCurrentTask(null);
         }}
         onConfirm={handleConfirmCompletion}
-      />
-
-      {/* Task Stopwatch */}
-      <TaskStopwatch
-        task={stopwatchTask}
-        isOpen={isStopwatchOpen}
-        onClose={handleStopwatchClose}
-        onTimeUpdate={handleStopwatchTimeUpdate}
       />
       {/* Edit Task Modal */}
       <TaskEditModal
