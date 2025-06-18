@@ -5,229 +5,149 @@ import { ChevronLeft, ChevronRight, Clock, Check, X } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import Clock from 'react-clock';
+import 'react-clock/dist/Clock.css';
 
-// Clock Time Picker Component
+// Professional Clock Time Picker Component using react-clock
 function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
-  const [startTime, setStartTime] = useState(540); // 9:00 AM in minutes
-  const [endTime, setEndTime] = useState(540 + initialMinutes); // start + duration
-  const [isDragging, setIsDragging] = useState(null);
-  const clockRef = useRef(null);
+  const [startTime, setStartTime] = useState(new Date(2023, 0, 1, 9, 0)); // 9:00 AM
+  const [endTime, setEndTime] = useState(new Date(2023, 0, 1, 9, 0)); // Initial end time
+  const [isSettingStart, setIsSettingStart] = useState(true); // Toggle between setting start/end
 
-  // Update end time when initial minutes changes
+  // Convert minutes to Date object for today
+  const minutesToDate = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return new Date(2023, 0, 1, hours, mins);
+  };
+
+  // Convert Date object to minutes
+  const dateToMinutes = (date) => {
+    return date.getHours() * 60 + date.getMinutes();
+  };
+
+  // Initialize times based on initialMinutes
   useEffect(() => {
     if (initialMinutes === 0) {
-      setStartTime(540); // Reset to 9:00 AM
-      setEndTime(540);
+      setStartTime(new Date(2023, 0, 1, 9, 0)); // 9:00 AM
+      setEndTime(new Date(2023, 0, 1, 9, 0)); // 9:00 AM
     } else {
-      setEndTime(startTime + initialMinutes);
+      const start = new Date(2023, 0, 1, 9, 0); // 9:00 AM
+      const end = new Date(start.getTime() + initialMinutes * 60000); // Add minutes
+      setStartTime(start);
+      setEndTime(end);
     }
-  }, [initialMinutes, startTime]);
+  }, [initialMinutes]);
 
-  // Calculate total work time and notify parent
+  // Calculate and notify parent of total work time
   useEffect(() => {
-    const totalMinutes = Math.max(0, endTime - startTime);
+    const startMinutes = dateToMinutes(startTime);
+    const endMinutes = dateToMinutes(endTime);
+    let totalMinutes = endMinutes - startMinutes;
+    
+    // Handle case where end time is next day
+    if (totalMinutes < 0) {
+      totalMinutes += 24 * 60; // Add 24 hours
+    }
+    
     onTimeChange(totalMinutes);
   }, [startTime, endTime, onTimeChange]);
 
-  // Convert time in minutes to angle (12 o'clock = 0 degrees, clockwise)
-  const getAngleFromTime = (timeInMinutes) => {
-    const hours = (timeInMinutes / 60) % 12; // Convert to 12-hour format
-    return hours * 30; // Each hour is 30 degrees
-  };
-
-  // Convert angle to time in minutes (12 o'clock = 0 degrees)
-  const getTimeFromAngle = (angle) => {
-    const hours = (angle / 30) % 12; // Convert to hours (0-11)
-    const timeInMinutes = Math.round(hours * 60 / 15) * 15; // Round to nearest 15 minutes
-    return timeInMinutes;
-  };
-
-  const getMouseAngle = (e) => {
-    if (!clockRef.current) return 0;
-    
-    const rect = clockRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    
-    const x = e.clientX - centerX;
-    const y = e.clientY - centerY;
-    
-    // Calculate angle from 12 o'clock position (top), clockwise
-    let angle = Math.atan2(x, -y) * (180 / Math.PI);
-    if (angle < 0) angle += 360;
-    return angle;
-  };
-
-  const handleMouseDown = (e, type) => {
-    e.preventDefault();
-    setIsDragging(type);
-    document.body.style.userSelect = 'none'; // Prevent text selection
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    
-    const angle = getMouseAngle(e);
-    const newTime = getTimeFromAngle(angle);
-    
-    if (isDragging === 'start') {
-      const maxStart = endTime - 15; // Minimum 15 minutes duration
-      setStartTime(Math.min(newTime, maxStart >= 0 ? maxStart : 0));
-    } else if (isDragging === 'end') {
-      const minEnd = startTime + 15; // Minimum 15 minutes duration
-      setEndTime(Math.max(newTime, minEnd <= 720 ? minEnd : 720)); // Max 12 hours
+  const handleTimeChange = (newTime) => {
+    if (isSettingStart) {
+      setStartTime(newTime);
+      // If start time is after end time, adjust end time
+      if (newTime >= endTime) {
+        const newEndTime = new Date(newTime.getTime() + 60000); // Add 1 minute
+        setEndTime(newEndTime);
+      }
+    } else {
+      setEndTime(newTime);
+      // If end time is before start time, adjust start time
+      if (newTime <= startTime) {
+        const newStartTime = new Date(newTime.getTime() - 60000); // Subtract 1 minute
+        setStartTime(newStartTime);
+      }
     }
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(null);
-    document.body.style.userSelect = ''; // Restore text selection
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
+  const getTotalWorkTime = () => {
+    const startMinutes = dateToMinutes(startTime);
+    const endMinutes = dateToMinutes(endTime);
+    let totalMinutes = endMinutes - startMinutes;
+    
+    if (totalMinutes < 0) {
+      totalMinutes += 24 * 60;
     }
-  }, [isDragging, startTime, endTime]);
-
-  const formatTimeDisplay = (timeInMinutes) => {
-    const hours = Math.floor(timeInMinutes / 60);
-    const minutes = timeInMinutes % 60;
-    const displayHours = hours === 0 ? 12 : hours;
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHour12 = displayHours > 12 ? displayHours - 12 : displayHours;
-    return `${displayHour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-  };
-
-  const startAngle = getAngleFromTime(startTime);
-  const endAngle = getAngleFromTime(endTime);
-  const workDuration = endTime - startTime;
-
-  // Calculate arc path for work duration
-  const createArcPath = () => {
-    if (workDuration <= 0) return '';
     
-    const centerX = 96;
-    const centerY = 96;
-    const radius = 60;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
     
-    const startX = centerX + radius * Math.sin(startAngle * Math.PI / 180);
-    const startY = centerY - radius * Math.cos(startAngle * Math.PI / 180);
-    
-    const endX = centerX + radius * Math.sin(endAngle * Math.PI / 180);
-    const endY = centerY - radius * Math.cos(endAngle * Math.PI / 180);
-    
-    const largeArcFlag = Math.abs(endAngle - startAngle) > 180 ? 1 : 0;
-    
-    return `M ${centerX} ${centerY} L ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+    return `${hours}h ${minutes}m`;
   };
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <div 
-        ref={clockRef}
-        className="relative w-48 h-48 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-full select-none"
-        style={{ userSelect: 'none' }}
-      >
-        {/* Clock face with hour markers */}
-        {Array.from({ length: 12 }, (_, i) => {
-          const angle = i * 30; // 30 degrees per hour
-          const isMainHour = i % 3 === 0; // Every 3 hours (12, 3, 6, 9)
-          const radius = isMainHour ? 85 : 90;
-          const x = 96 + radius * Math.sin(angle * Math.PI / 180);
-          const y = 96 - radius * Math.cos(angle * Math.PI / 180);
-          
-          return (
-            <div
-              key={i}
-              className={`absolute ${isMainHour ? 'w-1 h-4 bg-gray-600 dark:bg-gray-400' : 'w-0.5 h-2 bg-gray-400 dark:bg-gray-500'} transform -translate-x-1/2 -translate-y-1/2`}
-              style={{ 
-                left: x, 
-                top: y, 
-                transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-                transformOrigin: 'center'
-              }}
-            />
-          );
-        })}
-
-        {/* Hour labels - normal clock positions */}
-        {[
-          { hour: 12, angle: 0 },
-          { hour: 3, angle: 90 },
-          { hour: 6, angle: 180 },
-          { hour: 9, angle: 270 }
-        ].map(({ hour, angle }) => {
-          const x = 96 + 70 * Math.sin(angle * Math.PI / 180);
-          const y = 96 - 70 * Math.cos(angle * Math.PI / 180);
-          
-          return (
-            <div
-              key={hour}
-              className="absolute text-sm font-bold text-gray-700 dark:text-gray-300 transform -translate-x-1/2 -translate-y-1/2"
-              style={{ left: x, top: y }}
-            >
-              {hour}
-            </div>
-          );
-        })}
-
-        {/* Work duration arc */}
-        {workDuration > 0 && (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
-            <path
-              d={createArcPath()}
-              fill="rgba(59, 130, 246, 0.2)"
-              stroke="rgb(59, 130, 246)"
-              strokeWidth="2"
-            />
-          </svg>
-        )}
-
-        {/* Start time handle */}
-        <div
-          className="absolute w-5 h-5 bg-green-500 border-3 border-white rounded-full cursor-grab active:cursor-grabbing transform -translate-x-1/2 -translate-y-1/2 hover:bg-green-600 transition-colors shadow-lg z-10"
-          style={{
-            left: 96 + 75 * Math.sin(startAngle * Math.PI / 180),
-            top: 96 - 75 * Math.cos(startAngle * Math.PI / 180),
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-          }}
-          onMouseDown={(e) => handleMouseDown(e, 'start')}
-          title="Drag to set start time"
-        />
-
-        {/* End time handle */}
-        <div
-          className="absolute w-5 h-5 bg-red-500 border-3 border-white rounded-full cursor-grab active:cursor-grabbing transform -translate-x-1/2 -translate-y-1/2 hover:bg-red-600 transition-colors shadow-lg z-10"
-          style={{
-            left: 96 + 75 * Math.sin(endAngle * Math.PI / 180),
-            top: 96 - 75 * Math.cos(endAngle * Math.PI / 180),
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-          }}
-          onMouseDown={(e) => handleMouseDown(e, 'end')}
-          title="Drag to set end time"
-        />
-
-        {/* Center dot */}
-        <div className="absolute w-3 h-3 bg-gray-600 dark:bg-gray-400 rounded-full transform -translate-x-1/2 -translate-y-1/2" style={{ left: 96, top: 96 }} />
+      <div className="text-center space-y-2">
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Click to set {isSettingStart ? 'start' : 'end'} time
+        </h4>
+        
+        {/* Toggle buttons */}
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setIsSettingStart(true)}
+            className={`px-3 py-1 rounded text-sm ${
+              isSettingStart 
+                ? 'bg-green-500 text-white' 
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            Start Time
+          </button>
+          <button
+            onClick={() => setIsSettingStart(false)}
+            className={`px-3 py-1 rounded text-sm ${
+              !isSettingStart 
+                ? 'bg-red-500 text-white' 
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            End Time
+          </button>
+        </div>
       </div>
 
-      {/* Time display */}
-      <div className="text-center space-y-1">
+      {/* Professional Clock */}
+      <div className="flex justify-center">
+        <Clock
+          value={isSettingStart ? startTime : endTime}
+          onChange={handleTimeChange}
+          size={200}
+          className="react-clock"
+        />
+      </div>
+
+      {/* Time Display */}
+      <div className="text-center space-y-2">
         <div className="flex items-center space-x-4 text-sm">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-gray-600 dark:text-gray-300">Start: {formatTimeDisplay(startTime)}</span>
+            <span className="text-gray-600 dark:text-gray-300">Start: {formatTime(startTime)}</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span className="text-gray-600 dark:text-gray-300">End: {formatTimeDisplay(endTime)}</span>
+            <span className="text-gray-600 dark:text-gray-300">End: {formatTime(endTime)}</span>
           </div>
+        </div>
+        <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+          Total: {getTotalWorkTime()}
         </div>
       </div>
     </div>
