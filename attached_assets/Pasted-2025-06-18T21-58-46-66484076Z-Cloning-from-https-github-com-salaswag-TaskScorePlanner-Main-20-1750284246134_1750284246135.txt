@@ -1,0 +1,112 @@
+2025-06-18T21:58:46.66484076Z ==> Cloning from https://github.com/salaswag/TaskScorePlanner_Main
+2025-06-18T21:58:46.949633018Z ==> Checking out commit 8e236012858de4a843fb52818e90b6012608e3dd in branch main
+2025-06-18T21:58:48.710215787Z ==> Using Node.js version 22.16.0 (default)
+2025-06-18T21:58:48.73674473Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-06-18T21:58:50.644452416Z ==> Using Bun version 1.1.0 (default)
+2025-06-18T21:58:50.644474216Z ==> Docs on specifying a Bun version: https://render.com/docs/bun-version
+2025-06-18T21:58:50.702515479Z ==> Running build command 'npm install && npm run build'...
+2025-06-18T21:58:57.447820089Z 
+2025-06-18T21:58:57.44784946Z added 515 packages, and audited 516 packages in 7s
+2025-06-18T21:58:57.44786064Z 
+2025-06-18T21:58:57.44786505Z 69 packages are looking for funding
+2025-06-18T21:58:57.44786978Z   run `npm fund` for details
+2025-06-18T21:58:57.460822299Z 
+2025-06-18T21:58:57.460837969Z 4 moderate severity vulnerabilities
+2025-06-18T21:58:57.460842359Z 
+2025-06-18T21:58:57.46084725Z To address all issues (including breaking changes), run:
+2025-06-18T21:58:57.46085197Z   npm audit fix --force
+2025-06-18T21:58:57.46085576Z 
+2025-06-18T21:58:57.46086072Z Run `npm audit` for details.
+2025-06-18T21:58:57.634471208Z 
+2025-06-18T21:58:57.634497468Z > rest-express@1.0.0 build
+2025-06-18T21:58:57.634502368Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T21:58:57.634510429Z 
+2025-06-18T21:58:57.832006245Z vite v6.3.5 building for production...
+2025-06-18T21:58:57.886840872Z transforming...
+2025-06-18T21:59:01.317878955Z ✓ 2023 modules transformed.
+2025-06-18T21:59:01.548707226Z rendering chunks...
+2025-06-18T21:59:01.559675567Z computing gzip size...
+2025-06-18T21:59:01.572419971Z ../dist/public/index.html                   0.63 kB │ gzip:   0.38 kB
+2025-06-18T21:59:01.572458562Z ../dist/public/assets/index-GM1ZNjT9.css   76.55 kB │ gzip:  12.76 kB
+2025-06-18T21:59:01.572521024Z ../dist/public/assets/index-qKGee8g5.js   379.46 kB │ gzip: 119.11 kB
+2025-06-18T21:59:01.57280341Z ✓ built in 3.72s
+2025-06-18T21:59:01.680060676Z 
+2025-06-18T21:59:01.680082937Z   dist/index.js  37.1kb
+2025-06-18T21:59:01.680086477Z 
+2025-06-18T21:59:01.680089517Z ⚡ Done in 5ms
+2025-06-18T21:59:17.874493607Z ==> Uploading build...
+2025-06-18T21:59:27.238210502Z ==> Uploaded in 6.2s. Compression took 3.1s
+2025-06-18T21:59:27.274229981Z ==> Build successful 🎉
+2025-06-18T21:59:41.626762945Z ==> Deploying...
+2025-06-18T22:00:00.284661996Z ==> Running 'npm install && npm run build'
+2025-06-18T22:00:13.883250782Z 
+2025-06-18T22:00:13.883280103Z up to date, audited 467 packages in 13s
+2025-06-18T22:00:13.883296973Z 
+2025-06-18T22:00:13.883310323Z 66 packages are looking for funding
+2025-06-18T22:00:13.883326574Z   run `npm fund` for details
+2025-06-18T22:00:13.884339617Z 
+2025-06-18T22:00:13.884352308Z found 0 vulnerabilities
+2025-06-18T22:00:15.18938452Z 
+2025-06-18T22:00:15.18941544Z > rest-express@1.0.0 build
+2025-06-18T22:00:15.18942244Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T22:00:15.189429201Z 
+2025-06-18T22:00:17.685722935Z vite v6.3.5 building for production...
+2025-06-18T22:00:20.880571026Z transforming...
+2025-06-18T22:00:46.989774387Z ==> No open ports detected, continuing to scan...
+2025-06-18T22:00:47.237136084Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-06-18T22:01:21.081712185Z ✓ 2023 modules transformed.
+2025-06-18T22:01:25.778361371Z rendering chunks...
+2025-06-18T22:01:26.479179398Z computing gzip size...
+2025-06-18T22:01:26.584632305Z ../dist/public/index.html                   0.63 kB │ gzip:   0.38 kB
+2025-06-18T22:01:26.584667156Z ../dist/public/assets/index-GM1ZNjT9.css   76.55 kB │ gzip:  12.76 kB
+2025-06-18T22:01:26.584680906Z ../dist/public/assets/index-qKGee8g5.js   379.46 kB │ gzip: 119.11 kB
+2025-06-18T22:01:26.585062555Z ✓ built in 1m 9s
+2025-06-18T22:01:26.984966437Z 
+2025-06-18T22:01:26.984995928Z   dist/index.js  37.1kb
+2025-06-18T22:01:26.985001148Z 
+2025-06-18T22:01:26.985005908Z ⚡ Done in 97ms
+2025-06-18T22:01:33.146276271Z ==> Running 'npm install && npm run build'
+2025-06-18T22:01:48.698120419Z ==> No open ports detected, continuing to scan...
+2025-06-18T22:01:48.881566351Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-06-18T22:01:46.346939138Z 
+2025-06-18T22:01:46.346974279Z up to date, audited 467 packages in 13s
+2025-06-18T22:01:46.34703407Z 
+2025-06-18T22:01:46.347041881Z 66 packages are looking for funding
+2025-06-18T22:01:46.347046201Z   run `npm fund` for details
+2025-06-18T22:01:46.348148766Z 
+2025-06-18T22:01:46.348156736Z found 0 vulnerabilities
+2025-06-18T22:01:47.260382788Z 
+2025-06-18T22:01:47.260409879Z > rest-express@1.0.0 build
+2025-06-18T22:01:47.260417059Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T22:01:47.260424129Z 
+2025-06-18T22:01:49.45469065Z vite v6.3.5 building for production...
+2025-06-18T22:01:52.777555313Z transforming...
+2025-06-18T22:02:50.258100842Z ==> No open ports detected, continuing to scan...
+2025-06-18T22:02:50.471050034Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-06-18T22:02:58.7494893Z ✓ 2023 modules transformed.
+2025-06-18T22:03:02.254909888Z rendering chunks...
+2025-06-18T22:03:02.353833544Z computing gzip size...
+2025-06-18T22:03:02.460573061Z ../dist/public/index.html                   0.63 kB │ gzip:   0.38 kB
+2025-06-18T22:03:02.460635752Z ../dist/public/assets/index-GM1ZNjT9.css   76.55 kB │ gzip:  12.76 kB
+2025-06-18T22:03:02.460698804Z ../dist/public/assets/index-qKGee8g5.js   379.46 kB │ gzip: 119.11 kB
+2025-06-18T22:03:02.461039722Z ✓ built in 1m 13s
+2025-06-18T22:03:02.959405039Z 
+2025-06-18T22:03:02.959428059Z   dist/index.js  37.1kb
+2025-06-18T22:03:02.959432429Z 
+2025-06-18T22:03:02.959436599Z ⚡ Done in 112ms
+2025-06-18T22:03:22.589113033Z ==> Running 'npm install && npm run build'
+2025-06-18T22:03:35.59400909Z 
+2025-06-18T22:03:35.594037361Z up to date, audited 467 packages in 12s
+2025-06-18T22:03:35.594047491Z 
+2025-06-18T22:03:35.594057811Z 66 packages are looking for funding
+2025-06-18T22:03:35.594067612Z   run `npm fund` for details
+2025-06-18T22:03:35.681068352Z 
+2025-06-18T22:03:35.681103223Z found 0 vulnerabilities
+2025-06-18T22:03:36.591223095Z 
+2025-06-18T22:03:36.591251275Z > rest-express@1.0.0 build
+2025-06-18T22:03:36.591255886Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-06-18T22:03:36.591260356Z 
+2025-06-18T22:03:38.582231305Z vite v6.3.5 building for production...
+2025-06-18T22:03:41.6834687Z transforming...
+2025-06-18T22:03:51.73286474Z ==> No open ports detected, continuing to scan...
+2025-06-18T22:03:51.913692797Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
