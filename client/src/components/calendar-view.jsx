@@ -45,29 +45,29 @@ export function CalendarView({ tasks, onUpdateTask }) {
   const getCellBackgroundColor = (percentage) => {
     if (percentage === 0) return 'bg-gray-50 dark:bg-gray-900';
 
-    // More vibrant colors for full cell background
-    if (percentage < 25) return 'bg-red-200 dark:bg-red-800/50';
-    if (percentage < 50) return 'bg-orange-200 dark:bg-orange-800/50';
-    if (percentage < 75) return 'bg-yellow-200 dark:bg-yellow-800/50';
-    return 'bg-green-200 dark:bg-green-800/50';
+    // More subtle colors for better dark mode contrast
+    if (percentage < 25) return 'bg-red-100 dark:bg-red-900/30';
+    if (percentage < 50) return 'bg-orange-100 dark:bg-orange-900/30';
+    if (percentage < 75) return 'bg-yellow-100 dark:bg-yellow-900/30';
+    return 'bg-green-100 dark:bg-green-900/30';
   };
 
   const getCellBorderColor = (percentage) => {
     if (percentage === 0) return 'border-gray-300 dark:border-gray-600';
 
-    if (percentage < 25) return 'border-red-400 dark:border-red-600';
-    if (percentage < 50) return 'border-orange-400 dark:border-orange-600';
-    if (percentage < 75) return 'border-yellow-400 dark:border-yellow-600';
-    return 'border-green-400 dark:border-green-600';
+    if (percentage < 25) return 'border-red-300 dark:border-red-700';
+    if (percentage < 50) return 'border-orange-300 dark:border-orange-700';
+    if (percentage < 75) return 'border-yellow-300 dark:border-yellow-700';
+    return 'border-green-300 dark:border-green-700';
   };
 
   const getTextColor = (percentage) => {
     if (percentage === 0) return 'text-gray-600 dark:text-gray-300';
 
-    if (percentage < 25) return 'text-red-800 dark:text-red-200';
-    if (percentage < 50) return 'text-orange-800 dark:text-orange-200';
-    if (percentage < 75) return 'text-yellow-800 dark:text-yellow-200';
-    return 'text-green-800 dark:text-green-200';
+    if (percentage < 25) return 'text-red-700 dark:text-red-300';
+    if (percentage < 50) return 'text-orange-700 dark:text-orange-300';
+    if (percentage < 75) return 'text-yellow-700 dark:text-yellow-300';
+    return 'text-green-700 dark:text-green-300';
   };
 
   const handleTimeEdit = (dateKey, currentTime) => {
@@ -178,58 +178,20 @@ export function CalendarView({ tasks, onUpdateTask }) {
             const dateKey = day.toISOString();
 
             return (
-              
-            
-                
-                  
-                    {format(day, 'd')}
-                  
-                  {isCurrentMonth && dayData.hasData && (
-                    
-                      
-                        
-                          {Math.round(dayData.priorityPercentage)}%
-                        
-                        
-                          
-                          {formatTime(dayData.timeSpent)}
-                        
-                      
-                    
-                  )}
-                
-              
-              
-                
-                  {format(day, 'd')}
-                
-                {dayData.hasData && (
-                  
-                    
-                      {Math.round(dayData.priorityPercentage)}%
-                    
-                    
-                      
-                        {formatTime(dayData.timeSpent)}
-                      
-                    
-                  
-                )}
-              
-            
               <div
                 key={index}
                 className={`
-                  min-h-[90px] p-2 border-b border-r border-gray-200 dark:border-gray-600
-                  ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30 text-gray-400' : 'bg-white dark:bg-gray-900'}
-                  ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
-                  ${isCurrentMonth && dayData.hasData ? getCellBackgroundColor(dayData.priorityPercentage) : ''}
+                  min-h-[120px] p-3 border-b border-r border-gray-200 dark:border-gray-600
+                  ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30 text-gray-400' : ''}
+                  ${isToday ? 'ring-2 ring-blue-500 ring-inset' : ''}
+                  ${isCurrentMonth && dayData.hasData ? getCellBackgroundColor(dayData.priorityPercentage) : 'bg-white dark:bg-gray-900'}
+                  ${isCurrentMonth && dayData.hasData ? getCellBorderColor(dayData.priorityPercentage) : ''}
                 `}
               >
                 <div className="flex flex-col h-full">
                   {/* Date Number */}
                   <div className={`
-                    text-sm font-medium mb-1
+                    text-sm font-semibold mb-2
                     ${isToday ? 'text-blue-600 dark:text-blue-400' : ''}
                     ${!isCurrentMonth ? 'text-gray-400' : 'text-gray-900 dark:text-gray-100'}
                   `}>
@@ -238,12 +200,15 @@ export function CalendarView({ tasks, onUpdateTask }) {
 
                   {/* Day Data */}
                   {isCurrentMonth && dayData.hasData && (
-                    <div className="flex-1 space-y-1">
+                    <div className="flex-1 space-y-2">
                       {/* Priority Percentage */}
                       <div className="flex items-center justify-center">
-                        
+                        <div className={`
+                          text-lg font-bold px-2 py-1 rounded
+                          ${getTextColor(dayData.priorityPercentage)}
+                        `}>
                           {Math.round(dayData.priorityPercentage)}%
-                        
+                        </div>
                       </div>
 
                       {/* Time Spent - Editable */}
@@ -260,17 +225,22 @@ export function CalendarView({ tasks, onUpdateTask }) {
                                   if (e.key === 'Escape') handleTimeCancel();
                                 }}
                                 onBlur={() => handleTimeSave(dateKey)}
-                                className="w-12 h-6 text-xs p-1 text-center"
+                                className="w-16 h-8 text-xs p-1 text-center"
                                 autoFocus
                               />
-                              
+                              <span className="text-xs">m</span>
                             </div>
                           ) : (
-                            
-                              
-                              
+                            <button
+                              onClick={() => handleTimeEdit(dateKey, dayData.timeSpent)}
+                              className={`
+                                flex items-center gap-1 text-sm font-medium px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800
+                                ${getTextColor(dayData.priorityPercentage)}
+                              `}
+                            >
+                              <Clock className="h-3 w-3" />
                               {formatTime(dayData.timeSpent)}
-                            
+                            </button>
                           )}
                         </div>
                       )}
@@ -286,34 +256,22 @@ export function CalendarView({ tasks, onUpdateTask }) {
       {/* Legend */}
       <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-300">
         <div className="flex items-center gap-4">
-          
-            
-              
-            
-            
-              
-            
-          
-          
-            
-              
-            
-            
-              
-            
-          
-          
-            
-              
-            
-            
-              
-            
-          
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded"></div>
+            <span>Low Priority</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded"></div>
+            <span>Medium Priority</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded"></div>
+            <span>High Priority</span>
+          </div>
         </div>
-        
-          
-        
+        <div className="text-xs">
+          Click time to edit manually
+        </div>
       </div>
     </div>
   );
