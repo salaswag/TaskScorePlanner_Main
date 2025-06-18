@@ -145,7 +145,21 @@ export default function TodoApp() {
   };
 
   const handleSaveEditedTask = (editedTask) => {
-    updateTask.mutate(editedTask);
+    updateTask.mutate(editedTask, {
+      onSuccess: () => {
+        showNotification(
+          `Task "${editedTask.title}" updated successfully!`,
+          "success"
+        );
+      },
+      onError: (error) => {
+        console.error('Update error:', error);
+        showNotification(
+          `Failed to update task "${editedTask.title}"`,
+          "error"
+        );
+      }
+    });
   };
 
   const handleMoveToMain = (task) => {
@@ -269,11 +283,24 @@ export default function TodoApp() {
                   />
                   <TaskForm
                     onSubmit={(taskData) => {
-                      createTask.mutate(taskData);
-                      showNotification(
-                        `Task "${taskData.title}" added successfully!`,
-                        "success",
-                      );
+                      console.log('Creating task from form:', taskData);
+                      createTask.mutate(taskData, {
+                        onSuccess: (result) => {
+                          console.log('Task created successfully:', result);
+                          const section = taskData.isLater ? 'Later Tasks' : 'Main Tasks';
+                          showNotification(
+                            `Task "${taskData.title}" added to ${section}!`,
+                            "success"
+                          );
+                        },
+                        onError: (error) => {
+                          console.error('Task creation failed:', error);
+                          showNotification(
+                            `Failed to create task "${taskData.title}"`,
+                            "error"
+                          );
+                        }
+                      });
                     }}
                     isLoading={createTask.isPending}
                   />

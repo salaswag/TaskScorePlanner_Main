@@ -8,6 +8,7 @@ export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -17,15 +18,22 @@ export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
     }
   }, [task]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (title.trim() && priority >= 1 && priority <= 10 && estimatedTime > 0) {
-      onSave({
-        ...task,
-        title: title.trim(),
-        priority: Number(priority),
-        estimatedTime: Number(estimatedTime),
-      });
-      handleClose();
+      setIsSaving(true);
+      try {
+        await onSave({
+          ...task,
+          title: title.trim(),
+          priority: Number(priority),
+          estimatedTime: Number(estimatedTime),
+        });
+        handleClose();
+      } catch (error) {
+        console.error('Save failed:', error);
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -115,9 +123,9 @@ export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
             <Button 
               onClick={handleSave} 
               className="flex-1 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200"
-              disabled={!title.trim() || priority < 1 || priority > 10 || estimatedTime <= 0}
+              disabled={!title.trim() || priority < 1 || priority > 10 || estimatedTime <= 0 || isSaving}
             >
-              Save Changes
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>

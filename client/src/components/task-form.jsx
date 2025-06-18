@@ -12,17 +12,19 @@ export default function TaskForm({ onSubmit, isLoading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (title.trim()) {
-      onSubmit({
+    if (title.trim() && priority >= 1 && priority <= 10 && estimatedTime > 0) {
+      const taskData = {
         title: title.trim(),
-        priority,
-        estimatedTime,
-        isLater,
-      });
+        priority: Number(priority),
+        estimatedTime: Number(estimatedTime),
+        isLater: Boolean(isLater),
+        isFocus: false,
+      };
+      console.log('Submitting task with data:', taskData);
+      onSubmit(taskData);
       setTitle("");
       setPriority(5);
       setEstimatedTime(30);
-      setIsLater(false);
     }
   };
 

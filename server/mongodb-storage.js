@@ -299,19 +299,19 @@ export class MongoStorage {
           { returnDocument: 'after' }
         );
 
-        if (!result || !result.value) {
+        if (!result) {
           console.error('Task update failed:', id);
           return undefined;
         }
 
-        console.log('Task updated successfully:', result.value);
+        console.log('Task updated successfully:', result);
         return {
-          ...result.value,
-          id: result.value.id || result.value._id.toString(),
-          actualTime: result.value.actualTime,
-          distractionLevel: result.value.distractionLevel,
-          isLater: Boolean(result.value.isLater),
-          isFocus: Boolean(result.value.isFocus)
+          ...result,
+          id: result.id || result._id.toString(),
+          actualTime: result.actualTime,
+          distractionLevel: result.distractionLevel,
+          isLater: Boolean(result.isLater),
+          isFocus: Boolean(result.isFocus)
         };
       }
     } catch (error) {
