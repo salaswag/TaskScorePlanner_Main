@@ -1,11 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3, Clock } from "lucide-react";
 
-export default function ScoreDisplay({ totalScore, completedTasks, totalTasks, pendingTasks, totalEstimatedTime }) {
+export default function ScoreDisplay({ totalScore, totalPossibleScore, completedTasks, pendingTasks, totalEstimatedTime }) {
   const completedCount = completedTasks?.length || 0;
   const pendingCount = (pendingTasks || []).length;
-  const allTasks = [...(pendingTasks || []), ...(completedTasks || [])];
-  const totalPossibleScore = allTasks.reduce((sum, task) => sum + (task.priority || 0), 0);
   const scorePercentage = totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0;
 
   const formatTime = (minutes) => {

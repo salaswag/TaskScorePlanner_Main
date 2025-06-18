@@ -11,8 +11,6 @@ export default function TaskTable({
   onDeleteTask,
   onEditTask,
   onUndoCompletion,
-  onMoveToLater,
-  onMoveToMain,
   onArchive,
 }) {
   const formatTime = (minutes) => {
@@ -160,26 +158,19 @@ export default function TaskTable({
               >
                 <div className="grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-1 flex justify-center">
-                    {!task.completed ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onMoveToLater(task)}
-                        className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900/20 text-xs px-3 py-2 h-8 font-medium"
-                        title="Move to Later"
-                      >
-                        ↓ Later
-                      </Button>
-                    ) : (
-                      <div className="w-8 h-8 flex items-center justify-center">
-                        <span className="text-gray-400 text-xs">✓</span>
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <GripVertical className="h-4 w-4 text-gray-400" /></div>
                       </div>
-                    )}
-                  </div>
                   <div className="col-span-1 flex justify-center">
                     <Checkbox 
                       checked={task.completed} 
-                      onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
+                      onCheckedChange={(checked) => {
+                        if (checked && !task.completed) {
+                          onCompleteTask(task);
+                        } else if (!checked && task.completed) {
+                          onUndoCompletion(task);
+                        }
+                      }}
                       className="cursor-pointer"
                     />
                   </div>
