@@ -12,7 +12,12 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = (priority, isCompleted = false) => {
+    if (isCompleted) {
+      if (priority >= 8) return "bg-red-200 text-red-900";
+      if (priority >= 5) return "bg-yellow-200 text-yellow-900";
+      return "bg-green-200 text-green-900";
+    }
     if (priority >= 8) return "bg-red-100 text-red-800";
     if (priority >= 5) return "bg-yellow-100 text-yellow-800";
     return "bg-green-100 text-green-800";
@@ -116,9 +121,9 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
               key={task.id} 
               className={`px-6 py-4 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors group ${
                 task.completed 
-                  ? `opacity-60 ${getDistractionBackgroundColor(task.distractionLevel)}` 
-                  : 'opacity-60'
-              }`}
+                  ? `${getDistractionBackgroundColor(task.distractionLevel) || ''}` 
+                  : ''
+              } opacity-60`}
             >
               <div className="grid grid-cols-12 gap-4 items-center">
                 <div className="col-span-1">
@@ -144,7 +149,7 @@ export default function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEdit
                 </div>
                 <div className="col-span-1">
                   <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                    task.completed ? 'bg-gray-300 text-gray-500' : getPriorityColor(task.priority)
+                    getPriorityColor(task.priority, task.completed)
                   }`}>
                     {task.priority}
                   </span>

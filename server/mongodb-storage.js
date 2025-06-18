@@ -22,10 +22,10 @@ export class MongoStorage {
       await this.client.connect();
       this.db = this.client.db('ClusterforTask');
       this.tasksCollection = this.db.collection('Tasks');
-      
+
       // Test the connection with a ping
       await this.db.command({ ping: 1 });
-      
+
       console.log('✅ Connected to MongoDB successfully');
       console.log('📊 Database:', this.db.databaseName);
       console.log('📦 Collection:', this.tasksCollection.collectionName);
@@ -86,11 +86,11 @@ export class MongoStorage {
   async createTask(taskData) {
     try {
       console.log('Creating task with data:', taskData);
-      
+
       // Get the next numeric ID
       const lastTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
       const nextId = lastTask ? (lastTask.id || 0) + 1 : 1;
-      
+
       console.log('Next task ID:', nextId);
 
       const task = {
@@ -110,7 +110,7 @@ export class MongoStorage {
       const result = await this.tasksCollection.insertOne(task);
       console.log('MongoDB insert result:', result);
       console.log('Task created successfully with ID:', task.id);
-      
+
       return {
         ...task,
         id: task.id
@@ -171,7 +171,7 @@ export class MongoStorage {
         try {
           const { ObjectId } = await import('mongodb');
           let objectId;
-          
+
           // If id looks like ObjectId string, convert it
           if (typeof id === 'string' && id.length === 24) {
             objectId = new ObjectId(id);
@@ -182,7 +182,7 @@ export class MongoStorage {
               objectId = task._id;
             }
           }
-          
+
           if (objectId) {
             result = await this.tasksCollection.findOneAndUpdate(
               { _id: objectId },
@@ -230,7 +230,7 @@ export class MongoStorage {
     }
   }
 
-  
+
 }
 
 export const mongoStorage = new MongoStorage();
