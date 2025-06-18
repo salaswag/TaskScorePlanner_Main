@@ -10,27 +10,38 @@ export class MongoStorage {
     this.tasksCollection = null;
   }
 
-  async connect(retries = 3) {
+  async connect(retries = 5) {
     try {
       this.client = new MongoClient(MONGODB_URI, {
-        connectTimeoutMS: 5000,
-        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 10000,
+        maxPoolSize: 10,
+        retryWrites: true,
+        retryReads: true,
       });
       await this.client.connect();
       this.db = this.client.db('ClusterforTask');
       this.tasksCollection = this.db.collection('Tasks');
-      console.log('Connected to MongoDB successfully');
+      
+      // Test the connection with a ping
+      await this.db.command({ ping: 1 });
+      
+      console.log('✅ Connected to MongoDB successfully');
+      console.log('📊 Database:', this.db.databaseName);
+      console.log('📦 Collection:', this.tasksCollection.collectionName);
       return true;
     } catch (error) {
-      console.error(`MongoDB connection failed (attempt ${4 - retries}/3):`, error.message);
+      console.error(`❌ MongoDB connection failed (attempt ${6 - retries}/5):`, error.message);
 
       if (retries > 1) {
-        console.log(`Retrying connection in 2 seconds...`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log(`🔄 Retrying connection in 3 seconds...`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
         return this.connect(retries - 1);
       }
-      console.error('MongoDB connection error:', error);
+      console.error('💥 MongoDB connection completely failed after all retries:', error);
       this.client = null;
+      this.db = null;
+      this.tasksCollection = null;
       return false;
     }
   }
