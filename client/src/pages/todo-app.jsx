@@ -6,11 +6,13 @@ import TaskEditModal from "@/components/task-edit-modal";
 import LaterSection from "@/components/later-section";
 import TimerModal from "@/components/timer-modal";
 import NotificationToast from "@/components/notification-toast";
+import { CalendarView } from "@/components/calendar-view";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
 import { Moon, Sun, CheckSquare, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function TodoApp() {
   const [currentTask, setCurrentTask] = useState(null);
@@ -18,6 +20,7 @@ export default function TodoApp() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [activeTab, setActiveTab] = useState("tasks");
 
   const { tasks, isLoading, createTask, updateTask, deleteTask } = useTasks();
   const { theme, setTheme } = useTheme();
@@ -159,82 +162,96 @@ export default function TodoApp() {
     <div className="min-h-screen bg-white dark:bg-black">
       {/* Header */}
       <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <CheckSquare className="h-8 w-8 text-black dark:text-white" />
-            <h1 className="text-xl font-semibold text-black dark:text-white">
-              Task Master Pro
-            </h1>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <CheckSquare className="h-8 w-8 text-black dark:text-white" />
+              <h1 className="text-xl font-semibold text-black dark:text-white">
+                Task Master Pro
+              </h1>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                {theme === "light" ? (
+                  <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                ) : (
+                  <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                )}
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              {theme === "light" ? (
-                <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              ) : (
-                <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              )}
-            </Button>
-
-          </div>
+          
+          {/* Navigation Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="tasks">Task Management</TabsTrigger>
+              <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="h-[calc(100vh-73px)] overflow-y-auto">
+      <div className="h-[calc(100vh-125px)] overflow-y-auto">
         <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
-          {/* Main Layout: Left sidebar with scoring/form, Right main area with tasks */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-            {/* Left Sidebar */}
-            <div className="lg:col-span-1 space-y-4 lg:space-y-6">
-              <ScoreDisplay
-                totalScore={totalScore}
-                completedTasks={completedTasks}
-                totalTasks={mainTasks.length}
-                pendingTasks={pendingTasks}
-                totalEstimatedTime={totalEstimatedTime}
-              />
-              <TaskForm
-                onSubmit={(taskData) => {
-                  createTask.mutate(taskData);
-                  showNotification(
-                    `Task "${taskData.title}" added successfully!`,
-                    "success",
-                  );
-                }}
-                isLoading={createTask.isPending}
-              />
-            </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsContent value="tasks" className="mt-0">
+              {/* Main Layout: Left sidebar with scoring/form, Right main area with tasks */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+                {/* Left Sidebar */}
+                <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+                  <ScoreDisplay
+                    totalScore={totalScore}
+                    completedTasks={completedTasks}
+                    totalTasks={mainTasks.length}
+                    pendingTasks={pendingTasks}
+                    totalEstimatedTime={totalEstimatedTime}
+                  />
+                  <TaskForm
+                    onSubmit={(taskData) => {
+                      createTask.mutate(taskData);
+                      showNotification(
+                        `Task "${taskData.title}" added successfully!`,
+                        "success",
+                      );
+                    }}
+                    isLoading={createTask.isPending}
+                  />
+                </div>
 
-            {/* Right Main Area */}
-            <div className="lg:col-span-2">
-              <TaskTable
-                tasks={mainTasks}
-                isLoading={isLoading}
-                onCompleteTask={handleCompleteTask}
-                onDeleteTask={handleDeleteTask}
-                onEditTask={handleEditTask}
-                onUndoCompletion={handleUndoCompletion}
-                onMoveToLater={handleMoveToLater}
-              />
-              <LaterSection
-                tasks={laterTasks}
-                onMoveToMain={handleMoveToMain}
-                onDeleteTask={handleDeleteTask}
-                onEditTask={handleEditTask}
-                onCompleteTask={handleCompleteTask}
-                onUndoCompletion={handleUndoCompletion}
-                onMoveToLater={handleMoveToLater}
-              />
-            </div>
-          </div>
-
-          {/* Timeline Bottom Section */}
-
+                {/* Right Main Area */}
+                <div className="lg:col-span-2">
+                  <TaskTable
+                    tasks={mainTasks}
+                    isLoading={isLoading}
+                    onCompleteTask={handleCompleteTask}
+                    onDeleteTask={handleDeleteTask}
+                    onEditTask={handleEditTask}
+                    onUndoCompletion={handleUndoCompletion}
+                    onMoveToLater={handleMoveToLater}
+                  />
+                  <LaterSection
+                    tasks={laterTasks}
+                    onMoveToMain={handleMoveToMain}
+                    onDeleteTask={handleDeleteTask}
+                    onEditTask={handleEditTask}
+                    onCompleteTask={handleCompleteTask}
+                    onUndoCompletion={handleUndoCompletion}
+                    onMoveToLater={handleMoveToLater}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="calendar" className="mt-0">
+              <CalendarView tasks={tasks || []} />
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
 
