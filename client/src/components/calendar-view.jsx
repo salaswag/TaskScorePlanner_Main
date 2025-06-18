@@ -66,29 +66,31 @@ export function CalendarView() {
     if (hours >= 8) {
       // Green for 8+ hours
       return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200';
+    } else if (hours >= 7) {
+      // Light green for 7+ hours
+      return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300';
     } else if (hours <= 1) {
       // Red for 1 hour or less
       return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
     } else {
-      // Scale from red to green (2-7 hours)
-      const ratio = (hours - 1) / 7; // 0 to 1 scale
-      if (ratio < 0.16) {
+      // Scale from red to green (2-6 hours)
+      const ratio = (hours - 1) / 6; // 0 to 1 scale for 2-6 hours
+      if (ratio < 0.2) {
         // Red-ish
         return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
       }
-      else if (ratio < 0.33) {
+      else if (ratio < 0.4) {
         // Orange-ish
         return 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 text-orange-800 dark:text-orange-200';
-      } else if (ratio < 0.5) {
+      } else if (ratio < 0.6) {
         // Yellow-ish
         return 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200';
-      } else if (ratio < 0.66) {
+      } else if (ratio < 0.8) {
         // Lime-ish
         return 'bg-lime-100 dark:bg-lime-900/30 border-lime-300 dark:border-lime-700 text-lime-800 dark:text-lime-200';
-      }
-       else {
-        // Light green
-        return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200';
+      } else {
+        // Light lime approaching green
+        return 'bg-lime-50 dark:bg-lime-900/20 border-lime-200 dark:border-lime-800 text-lime-700 dark:text-lime-300';
       }
     }
   };
@@ -105,21 +107,60 @@ export function CalendarView() {
     setShowTimeModal(true);
   };
 
-  const handleTimeSave = () => {
+  const handleTimeSave = async () => {
     setIsLoading(true);
     if (selectedDate) {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
-      setTimeData(prev => ({
-        ...prev,
-        [dateKey]: sliderTime
-      }));
+      
+      try {
+        // Save to MongoDB via API
+        const response = await apiRequest('/api/time-entries', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            date: dateKey,
+            timeInMinutes: sliderTime
+          })
+        });
+
+        if (response.ok) {
+          // Update local state
+          setTimeData(prev => ({
+            ...prev,
+            [dateKey]: sliderTime
+          }));
+          
+          // Also update localStorage as backup
+          const newTimeData = { ...timeData, [dateKey]: sliderTime };
+          localStorage.setItem('timeData', JSON.stringify(newTimeData));
+          
+          console.log('Time entry saved successfully to MongoDB');
+        } else {
+          console.error('Failed to save time entry to MongoDB');
+          // Fallback to localStorage only
+          setTimeData(prev => ({
+            ...prev,
+            [dateKey]: sliderTime
+          }));
+          localStorage.setItem('timeData', JSON.stringify({ ...timeData, [dateKey]: sliderTime }));
+        }
+      } catch (error) {
+        console.error('Error saving time entry:', error);
+        // Fallback to localStorage
+        setTimeData(prev => ({
+          ...prev,
+          [dateKey]: sliderTime
+        }));
+        localStorage.setItem('timeData', JSON.stringify({ ...timeData, [dateKey]: sliderTime }));
+      }
     }
-    setTimeout(() => { // Simulate saving delay
-      setShowTimeModal(false);
-      setSelectedDate(null);
-      setSliderTime(0);
-      setIsLoading(false);
-    }, 500);
+    
+    setShowTimeModal(false);
+    setSelectedDate(null);
+    setSliderTime(0);
+    setIsLoading(false);
   };
 
   const handleTimeCancel = () => {
@@ -241,13 +282,13 @@ export function CalendarView() {
                     {isCurrentMonth && !isFuture && timeSpent === 0 && (
                       <div className="flex-1 flex flex-col items-center justify-center">
                         <div
-                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-3 transition-colors border-2 border-dashed border-gray-300 dark:border-gray-600 w-full text-center"
+                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors w-full text-center"
                           onClick={() => handleTimeEdit(day)}
                           title="Click to add time"
                         >
-                          <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
-                            <Clock className="w-4 h-4" />
-                            <span className="text-sm">Add time</span>
+                          <div className="flex items-center justify-center gap-1 text-gray-400 dark:text-gray-500">
+                            <Clock className="w-3 h-3" />
+                            <span className="text-xs">Add</span>
                           </div>
                         </div>
                       </div>
