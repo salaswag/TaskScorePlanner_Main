@@ -6,11 +6,15 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from 'luci
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export function CalendarView({ tasks, onUpdateTask }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [editingTime, setEditingTime] = useState(null);
   const [tempTimeValue, setTempTimeValue] = useState('');
+  const [showTimeModal, setShowTimeModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [sliderTime, setSliderTime] = useState(0);
 
   // Get data for a specific date
   const getDayData = (date) => {
@@ -35,8 +39,22 @@ export function CalendarView({ tasks, onUpdateTask }) {
   };
 
   const formatTime = (timeInMinutes) => {
+    if (!timeInMinutes || timeInMinutes === 0) return '0m';
     if (timeInMinutes >= 60) {
-      return `${Math.floor(timeInMinutes / 60)}h ${timeInMinutes % 60}m`;
+      const hours = Math.floor(timeInMinutes / 60);
+      const minutes = timeInMinutes % 60;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    } else {
+      return `${timeInMinutes}m`;
+    }
+  };
+
+  const formatSliderTime = (timeInMinutes) => {
+    if (timeInMinutes === 0) return '0m';
+    if (timeInMinutes >= 60) {
+      const hours = Math.floor(timeInMinutes / 60);
+      const minutes = timeInMinutes % 60;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
     } else {
       return `${timeInMinutes}m`;
     }
@@ -57,24 +75,23 @@ export function CalendarView({ tasks, onUpdateTask }) {
     return 'bg-green-200 text-green-800 dark:bg-green-900/50 dark:text-green-300';
   };
 
-  const handleTimeEdit = (dateKey, currentTime) => {
-    setEditingTime(dateKey);
-    setTempTimeValue(currentTime.toString());
+  const handleTimeEdit = (date, currentTime) => {
+    setSelectedDate(date);
+    setSliderTime(currentTime);
+    setShowTimeModal(true);
   };
 
-  const handleTimeSave = async (dateKey) => {
-    const newTime = parseInt(tempTimeValue);
-    if (!isNaN(newTime) && newTime >= 0) {
-      const date = new Date(dateKey);
-      const dayTasks = getDayData(date).tasks;
+  const handleTimeSave = async () => {
+    if (selectedDate && sliderTime >= 0) {
+      const dayTasks = getDayData(selectedDate).tasks;
       
-      // Update all tasks for this day with proportional time distribution
+      // Override the time for all tasks on this day with proportional distribution
       if (dayTasks.length > 0) {
         const totalCurrentTime = dayTasks.reduce((sum, task) => sum + (task.actualTime || 0), 0);
         
         for (const task of dayTasks) {
           const proportion = totalCurrentTime > 0 ? (task.actualTime || 0) / totalCurrentTime : 1 / dayTasks.length;
-          const newTaskTime = Math.round(newTime * proportion);
+          const newTaskTime = Math.round(sliderTime * proportion);
           
           if (onUpdateTask) {
             await onUpdateTask(task.id, { ...task, actualTime: newTaskTime });
@@ -82,13 +99,15 @@ export function CalendarView({ tasks, onUpdateTask }) {
         }
       }
     }
-    setEditingTime(null);
-    setTempTimeValue('');
+    setShowTimeModal(false);
+    setSelectedDate(null);
+    setSliderTime(0);
   };
 
   const handleTimeCancel = () => {
-    setEditingTime(null);
-    setTempTimeValue('');
+    setShowTimeModal(false);
+    setSelectedDate(null);
+    setSliderTime(0);
   };
 
   // Generate calendar days
@@ -195,39 +214,19 @@ export function CalendarView({ tasks, onUpdateTask }) {
                       </div>
 
                       {/* Time Spent - Larger and Editable */}
-                      {dayData.timeSpent > 0 && (
-                        <div className="text-center">
-                          {editingTime === dateKey ? (
-                            <div className="flex items-center gap-1 justify-center">
-                              <Input
-                                type="number"
-                                value={tempTimeValue}
-                                onChange={(e) => setTempTimeValue(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') handleTimeSave(dateKey);
-                                  if (e.key === 'Escape') handleTimeCancel();
-                                }}
-                                onBlur={() => handleTimeSave(dateKey)}
-                                className="w-16 h-8 text-sm p-1 text-center font-medium"
-                                autoFocus
-                              />
-                              <span className="text-sm font-medium">m</span>
-                            </div>
-                          ) : (
-                            <div 
-                              className="cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 rounded p-1 transition-colors"
-                              onClick={() => handleTimeEdit(dateKey, dayData.timeSpent)}
-                            >
-                              <div className="flex items-center justify-center gap-1">
-                                <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                  {formatTime(dayData.timeSpent)}
-                                </span>
-                              </div>
-                            </div>
-                          )}
+                      <div className="text-center">
+                        <div 
+                          className="cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 rounded p-1 transition-colors"
+                          onClick={() => handleTimeEdit(day, dayData.timeSpent)}
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            <Clock className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                            <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                              {formatTime(dayData.timeSpent)}
+                            </span>
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -258,6 +257,64 @@ export function CalendarView({ tasks, onUpdateTask }) {
           <span>Click time to edit</span>
         </div>
       </div>
+
+      {/* Time Edit Modal */}
+      <Dialog open={showTimeModal} onOpenChange={setShowTimeModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-blue-600" />
+              <span>Edit Time Spent</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 p-4">
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Adjust the total time spent on this day
+              </p>
+            </div>
+
+            {/* Time Slider */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Time spent: {formatSliderTime(sliderTime)}
+              </label>
+              <div className="relative">
+                <input
+                  type="range"
+                  min="0"
+                  max="720"
+                  step="15"
+                  value={sliderTime}
+                  onChange={(e) => setSliderTime(parseInt(e.target.value))}
+                  className="slider w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <span>0m</span>
+                  <span>6h</span>
+                  <span>12h</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <Button onClick={handleTimeCancel} variant="outline" className="flex-1">
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleTimeSave} 
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Save Time
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
