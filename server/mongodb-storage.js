@@ -54,18 +54,44 @@ export class MongoStorage {
 
   async getTasks() {
     try {
-      const tasks = await this.tasksCollection.find({}).sort({ createdAt: -1 }).toArray();
-      console.log('Raw tasks from MongoDB:', JSON.stringify(tasks, null, 2));
-      console.log('Fetched tasks from MongoDB:', tasks.length);
-      return tasks.map(task => ({
-        ...task,
-        id: task.id || task._id.toString(),
-        createdAt: task.createdAt || new Date(),
-        completedAt: task.completedAt || null,
-        actualTime: task.actualTime,
-        distractionLevel: task.distractionLevel,
-        isLater: task.isLater || false
-      }));
+      // Fetch tasks from main Tasks collection
+      const mainTasks = await this.tasksCollection.find({}).sort({ createdAt: -1 }).toArray();
+      console.log('Raw main tasks from MongoDB:', JSON.stringify(mainTasks, null, 2));
+      console.log('Fetched main tasks from MongoDB:', mainTasks.length);
+
+      // Fetch tasks from Later Tasks collection
+      const laterTasks = await this.laterTasksCollection.find({}).sort({ createdAt: -1 }).toArray();
+      console.log('Raw later tasks from MongoDB:', JSON.stringify(laterTasks, null, 2));
+      console.log('Fetched later tasks from MongoDB:', laterTasks.length);
+
+      // Combine both collections
+      const allTasks = [
+        ...mainTasks.map(task => ({
+          ...task,
+          id: task.id || task._id.toString(),
+          createdAt: task.createdAt || new Date(),
+          completedAt: task.completedAt || null,
+          actualTime: task.actualTime,
+          distractionLevel: task.distractionLevel,
+          isLater: task.isLater || false,  // Main tasks are not later by default
+          isFocus: task.isFocus || false,
+          archived: task.archived || false
+        })),
+        ...laterTasks.map(task => ({
+          ...task,
+          id: task.id || task._id.toString(),
+          createdAt: task.createdAt || new Date(),
+          completedAt: task.completedAt || null,
+          actualTime: task.actualTime,
+          distractionLevel: task.distractionLevel,
+          isLater: true,  // Later tasks are always marked as later
+          isFocus: task.isFocus || false,
+          archived: task.archived || false
+        }))
+      ];
+
+      console.log('Total combined tasks:', allTasks.length);
+      return allTasks;
     } catch (error) {
       console.error('Error fetching tasks:', error);
       return [];
@@ -93,9 +119,13 @@ export class MongoStorage {
     try {
       console.log('Creating task with data:', taskData);
 
-      // Get the next numeric ID
-      const lastTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
-      const nextId = lastTask ? (lastTask.id || 0) + 1 : 1;
+      // Get the next numeric ID from both collections
+      const lastMainTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
+      const lastLaterTask = await this.laterTasksCollection.findOne({}, { sort: { id: -1 } });
+      
+      const lastMainId = lastMainTask ? (lastMainTask.id || 0) : 0;
+      const lastLaterId = lastLaterTask ? (lastLaterTask.id || 0) : 0;
+      const nextId = Math.max(lastMainId, lastLaterId) + 1;
 
       console.log('Next task ID:', nextId);
 
@@ -114,8 +144,13 @@ export class MongoStorage {
       };
 
       console.log('Task object to insert:', task);
-      const result = await this.tasksCollection.insertOne(task);
-      console.log('MongoDB insert result:', result);
+      
+      // Choose collection based on isLater flag
+      const targetCollection = task.isLater ? this.laterTasksCollection : this.tasksCollection;
+      const collectionName = task.isLater ? 'Later Tasks' : 'Main Tasks';
+      
+      const result = await targetCollection.insertOne(task);
+      console.log(`MongoDB insert result in ${collectionName}:`, result);
       console.log('Task created successfully with ID:', task.id);
 
       return {
@@ -171,62 +206,114 @@ export class MongoStorage {
 
       console.log('Updating task:', id, updateFields);
 
-      let result = null;
+      // First, find the current task from both collections
+      let currentTask = null;
+      let currentCollection = null;
 
-      // Try to find by numeric id first
+      // Try to find in main tasks collection
       if (!isNaN(Number(id))) {
-        result = await this.tasksCollection.findOneAndUpdate(
-          { id: Number(id) },
-          { $set: updateFields },
-          { returnDocument: 'after' }
-        );
-        console.log('Update result by numeric id:', result.value ? 'Found' : 'Not found');
+        currentTask = await this.tasksCollection.findOne({ id: Number(id) });
+        if (currentTask) {
+          currentCollection = this.tasksCollection;
+          console.log('Found task in main collection');
+        }
       }
 
-      // If not found by numeric id, try by _id (ObjectId)
-      if (!result || !result.value) {
+      // If not found, try later tasks collection
+      if (!currentTask) {
+        if (!isNaN(Number(id))) {
+          currentTask = await this.laterTasksCollection.findOne({ id: Number(id) });
+          if (currentTask) {
+            currentCollection = this.laterTasksCollection;
+            console.log('Found task in later collection');
+          }
+        }
+      }
+
+      // If still not found, try by ObjectId
+      if (!currentTask) {
         try {
           const { ObjectId } = await import('mongodb');
           let objectId;
 
-          // If id looks like ObjectId string, convert it
           if (typeof id === 'string' && id.length === 24) {
             objectId = new ObjectId(id);
-          } else {
-            // Search for any task with this numeric id and get its _id
-            const task = await this.tasksCollection.findOne({ id: Number(id) });
-            if (task) {
-              objectId = task._id;
-            }
           }
 
           if (objectId) {
-            result = await this.tasksCollection.findOneAndUpdate(
-              { _id: objectId },
-              { $set: updateFields },
-              { returnDocument: 'after' }
-            );
-            console.log('Update result by ObjectId:', result.value ? 'Found' : 'Not found');
+            // Try main collection first
+            currentTask = await this.tasksCollection.findOne({ _id: objectId });
+            if (currentTask) {
+              currentCollection = this.tasksCollection;
+              console.log('Found task in main collection by ObjectId');
+            } else {
+              // Try later collection
+              currentTask = await this.laterTasksCollection.findOne({ _id: objectId });
+              if (currentTask) {
+                currentCollection = this.laterTasksCollection;
+                console.log('Found task in later collection by ObjectId');
+              }
+            }
           }
         } catch (objectIdError) {
           console.error('Error with ObjectId conversion:', objectIdError);
         }
       }
 
-      if (!result || !result.value) {
+      if (!currentTask || !currentCollection) {
         console.error('Task not found for update:', id);
         return undefined;
       }
 
-      console.log('Task updated successfully:', result.value);
-      return {
-        ...result.value,
-        id: result.value.id || result.value._id.toString(),
-        actualTime: result.value.actualTime,
-        distractionLevel: result.value.distractionLevel,
-        isLater: Boolean(result.value.isLater),
-        isFocus: Boolean(result.value.isFocus)
-      };
+      // Check if we need to move the task between collections
+      const currentIsLater = Boolean(currentTask.isLater);
+      const newIsLater = updateFields.isLater !== undefined ? Boolean(updateFields.isLater) : currentIsLater;
+
+      if (currentIsLater !== newIsLater) {
+        console.log(`Moving task from ${currentIsLater ? 'later' : 'main'} to ${newIsLater ? 'later' : 'main'} collection`);
+        
+        // Create updated task
+        const updatedTask = { ...currentTask, ...updateFields };
+        
+        // Insert into target collection
+        const targetCollection = newIsLater ? this.laterTasksCollection : this.tasksCollection;
+        await targetCollection.insertOne(updatedTask);
+        
+        // Remove from current collection
+        await currentCollection.deleteOne({ _id: currentTask._id });
+        
+        console.log('Task moved successfully between collections');
+        return {
+          ...updatedTask,
+          id: updatedTask.id || updatedTask._id.toString(),
+          actualTime: updatedTask.actualTime,
+          distractionLevel: updatedTask.distractionLevel,
+          isLater: Boolean(updatedTask.isLater),
+          isFocus: Boolean(updatedTask.isFocus)
+        };
+      } else {
+        // Update in current collection
+        const result = await currentCollection.findOneAndUpdate(
+          { _id: currentTask._id },
+          { $set: updateFields },
+          { returnDocument: 'after' }
+        );
+
+        if (!result || !result.value) {
+          console.error('Task update failed:', id);
+          return undefined;
+        }
+
+        console.log('Task updated successfully:', result.value);
+        return {
+          ...result.value,
+          id: result.value.id || result.value._id.toString(),
+          actualTime: result.value.actualTime,
+          distractionLevel: result.value.distractionLevel,
+          isLater: Boolean(result.value.isLater),
+          isFocus: Boolean(result.value.isFocus)
+        };
+      }
     } catch (error) {
       console.error('Error updating task:', error);
       return undefined;
@@ -239,13 +326,21 @@ export class MongoStorage {
       
       let result = null;
 
-      // Try to find by numeric id first
+      // Try to find by numeric id in main collection first
       if (!isNaN(Number(id))) {
         result = await this.tasksCollection.deleteOne({ id: Number(id) });
-        console.log('Delete result by numeric id:', result.deletedCount);
+        console.log('Delete result in main collection by numeric id:', result.deletedCount);
       }
 
-      // If not found by numeric id, try by _id (ObjectId)
+      // If not found in main collection, try later collection
+      if (!result || result.deletedCount === 0) {
+        if (!isNaN(Number(id))) {
+          result = await this.laterTasksCollection.deleteOne({ id: Number(id) });
+          console.log('Delete result in later collection by numeric id:', result.deletedCount);
+        }
+      }
+
+      // If still not found by numeric id, try by _id (ObjectId) in both collections
       if (!result || result.deletedCount === 0) {
         try {
           const { ObjectId } = await import('mongodb');
@@ -254,16 +349,26 @@ export class MongoStorage {
           if (typeof id === 'string' && id.length === 24) {
             objectId = new ObjectId(id);
           } else {
-            // Search for any task with this numeric id and get its _id
-            const task = await this.tasksCollection.findOne({ id: Number(id) });
+            // Search for any task with this numeric id and get its _id from both collections
+            let task = await this.tasksCollection.findOne({ id: Number(id) });
+            if (!task) {
+              task = await this.laterTasksCollection.findOne({ id: Number(id) });
+            }
             if (task) {
               objectId = task._id;
             }
           }
 
           if (objectId) {
+            // Try main collection first
             result = await this.tasksCollection.deleteOne({ _id: objectId });
-            console.log('Delete result by ObjectId:', result.deletedCount);
+            console.log('Delete result in main collection by ObjectId:', result.deletedCount);
+            
+            // If not found in main, try later collection
+            if (result.deletedCount === 0) {
+              result = await this.laterTasksCollection.deleteOne({ _id: objectId });
+              console.log('Delete result in later collection by ObjectId:', result.deletedCount);
+            }
           }
         } catch (objectIdError) {
           console.error('Error with ObjectId conversion:', objectIdError);
@@ -287,16 +392,29 @@ export class MongoStorage {
     try {
       console.log('Archive task with ID:', id);
       
-      // First, find the task to archive
+      // First, find the task to archive from both collections
       let task = null;
+      let sourceCollection = null;
 
-      // Try to find by numeric id first
+      // Try to find by numeric id in main collection first
       if (!isNaN(Number(id))) {
         task = await this.tasksCollection.findOne({ id: Number(id) });
-        console.log('Found task by numeric id:', task ? 'Yes' : 'No');
+        if (task) {
+          sourceCollection = this.tasksCollection;
+          console.log('Found task in main collection by numeric id');
+        }
       }
 
-      // If not found by numeric id, try by _id (ObjectId)
+      // If not found in main, try later collection
+      if (!task && !isNaN(Number(id))) {
+        task = await this.laterTasksCollection.findOne({ id: Number(id) });
+        if (task) {
+          sourceCollection = this.laterTasksCollection;
+          console.log('Found task in later collection by numeric id');
+        }
+      }
+
+      // If not found by numeric id, try by _id (ObjectId) in both collections
       if (!task) {
         try {
           const { ObjectId } = await import('mongodb');
@@ -305,23 +423,30 @@ export class MongoStorage {
           if (typeof id === 'string' && id.length === 24) {
             objectId = new ObjectId(id);
           } else {
-            // Search for any task with this numeric id and get its _id
-            const foundTask = await this.tasksCollection.findOne({ id: Number(id) });
+            // Search for any task with this numeric id and get its _id from both collections
+            let foundTask = await this.tasksCollection.findOne({ id: Number(id) });
             if (foundTask) {
               objectId = foundTask._id;
+              sourceCollection = this.tasksCollection;
+            } else {
+              foundTask = await this.laterTasksCollection.findOne({ id: Number(id) });
+              if (foundTask) {
+                objectId = foundTask._id;
+                sourceCollection = this.laterTasksCollection;
+              }
             }
           }
 
-          if (objectId) {
-            task = await this.tasksCollection.findOne({ _id: objectId });
-            console.log('Found task by ObjectId:', task ? 'Yes' : 'No');
+          if (objectId && sourceCollection) {
+            task = await sourceCollection.findOne({ _id: objectId });
+            console.log('Found task by ObjectId in', sourceCollection === this.tasksCollection ? 'main' : 'later', 'collection');
           }
         } catch (objectIdError) {
           console.error('Error with ObjectId conversion:', objectIdError);
         }
       }
 
-      if (!task) {
+      if (!task || !sourceCollection) {
         console.error('Task not found for archiving:', id);
         return false;
       }
@@ -340,31 +465,16 @@ export class MongoStorage {
       console.log('Archive insert result:', insertResult);
 
       if (insertResult.acknowledged) {
-        // Remove from main tasks collection
-        let deleteResult = null;
-
-        if (!isNaN(Number(id))) {
-          deleteResult = await this.tasksCollection.deleteOne({ id: Number(id) });
-        }
-
-        if (!deleteResult || deleteResult.deletedCount === 0) {
-          try {
-            const { ObjectId } = await import('mongodb');
-            const objectId = task._id;
-            deleteResult = await this.tasksCollection.deleteOne({ _id: objectId });
-          } catch (error) {
-            console.error('Error deleting from main collection:', error);
-          }
-        }
-
-        console.log('Delete from main collection result:', deleteResult);
+        // Remove from source collection
+        const deleteResult = await sourceCollection.deleteOne({ _id: task._id });
+        console.log('Delete from source collection result:', deleteResult);
         
         if (deleteResult && deleteResult.deletedCount > 0) {
           console.log('✅ Task successfully archived');
           return true;
         } else {
-          console.error('❌ Failed to remove task from main collection after archiving');
-          // Remove from archive since main deletion failed
+          console.error('❌ Failed to remove task from source collection after archiving');
+          // Remove from archive since source deletion failed
           await this.archiveCollection.deleteOne({ _id: insertResult.insertedId });
           return false;
         }
