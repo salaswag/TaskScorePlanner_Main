@@ -8,6 +8,7 @@ export default function TaskForm({ onSubmit, isLoading }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
+  const [isLater, setIsLater] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,9 +17,11 @@ export default function TaskForm({ onSubmit, isLoading }) {
         title: title.trim(),
         priority: Number(priority),
         estimatedTime: Number(estimatedTime),
-        isLater: false,
+        isLater: Boolean(isLater),
         isFocus: false,
       };
+      console.log('Submitting task with data:', taskData);
+      console.log('isLater flag being sent:', Boolean(isLater));
       onSubmit(taskData);
       setTitle("");
       setPriority(5);
@@ -36,11 +39,42 @@ export default function TaskForm({ onSubmit, isLoading }) {
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Task Destination Toggle */}
+          <div>
+            <label className="block text-sm font-medium text-black dark:text-white mb-3">
+              Add to:
+            </label>
+            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setIsLater(false)}
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                  !isLater
+                    ? 'bg-white dark:bg-gray-700 text-black dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                Main Tasks
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsLater(true)}
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                  isLater
+                    ? 'bg-white dark:bg-gray-700 text-black dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                Later Tasks
+              </button>
+            </div>
+          </div>
+
           {/* Task Input */}
           <div>
             <Input
               type="text"
-              placeholder="Add a new task..."
+              placeholder={`Add a new ${isLater ? 'later' : 'main'} task...`}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-3 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
@@ -100,7 +134,7 @@ export default function TaskForm({ onSubmit, isLoading }) {
             className="w-full bg-black dark:bg-white text-white dark:text-black py-3 px-6 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center space-x-2"
           >
             <Plus className="h-4 w-4" />
-            <span>{isLoading ? 'Adding...' : 'Add Task'}</span>
+            <span>{isLoading ? 'Adding...' : `Add to ${isLater ? 'Later' : 'Main'} Tasks`}</span>
           </Button>
         </form>
       </CardContent>
