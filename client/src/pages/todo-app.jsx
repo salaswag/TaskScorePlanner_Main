@@ -303,11 +303,10 @@ export default function TodoApp() {
                 <div className="lg:col-span-2">
                   <TaskTable
                     tasks={mainTasks}
-                    isLoading={isLoading}
                     onCompleteTask={handleCompleteTask}
+                    onUndoCompletion={handleUndoCompletion}
                     onDeleteTask={handleDeleteTask}
                     onEditTask={handleEditTask}
-                    onUndoCompletion={handleUndoCompletion}
                     onMoveToLater={handleMoveToLater}
                     onMoveToMain={handleMoveToMain}
                     onArchive={handleArchive}
