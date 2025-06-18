@@ -275,12 +275,11 @@ export default function TodoApp() {
                   />
                   <LaterSection
                     tasks={laterTasks}
-                    onMoveToMain={handleMoveToMain}
+                    onCompleteTask={handleCompleteTask}
                     onDeleteTask={handleDeleteTask}
                     onEditTask={handleEditTask}
-                    onCompleteTask={handleCompleteTask}
-                    onUndoCompletion={handleUndoCompletion}
-                    onMoveToLater={handleMoveToLater}
+                    onMoveToMain={handleMoveToMain}
+                    onArchive={handleArchive}
                   />
                 </div>
               </div>

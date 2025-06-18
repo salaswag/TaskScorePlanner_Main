@@ -130,7 +130,7 @@ export class MongoStorage {
 
   async updateTask(updateData) {
     try {
-      const { id, ...updateFields } = updateData;
+      const { id, _id, ...updateFields } = updateData;
 
       if (updateFields.completedAt && typeof updateFields.completedAt === 'string') {
         updateFields.completedAt = new Date(updateFields.completedAt);
@@ -235,12 +235,48 @@ export class MongoStorage {
 
   async deleteTask(id) {
     try {
-      // Convert string ID to ObjectId if needed
-      const { ObjectId } = await import('mongodb');
-      const objectId = typeof id === 'string' && id.length === 24 ? new ObjectId(id) : id;
+      console.log('Delete task with ID:', id);
+      
+      let result = null;
 
-      const result = await this.tasksCollection.deleteOne({ _id: objectId });
-      return result.deletedCount > 0;
+      // Try to find by numeric id first
+      if (!isNaN(Number(id))) {
+        result = await this.tasksCollection.deleteOne({ id: Number(id) });
+        console.log('Delete result by numeric id:', result.deletedCount);
+      }
+
+      // If not found by numeric id, try by _id (ObjectId)
+      if (!result || result.deletedCount === 0) {
+        try {
+          const { ObjectId } = await import('mongodb');
+          let objectId;
+
+          if (typeof id === 'string' && id.length === 24) {
+            objectId = new ObjectId(id);
+          } else {
+            // Search for any task with this numeric id and get its _id
+            const task = await this.tasksCollection.findOne({ id: Number(id) });
+            if (task) {
+              objectId = task._id;
+            }
+          }
+
+          if (objectId) {
+            result = await this.tasksCollection.deleteOne({ _id: objectId });
+            console.log('Delete result by ObjectId:', result.deletedCount);
+          }
+        } catch (objectIdError) {
+          console.error('Error with ObjectId conversion:', objectIdError);
+        }
+      }
+
+      if (result && result.deletedCount > 0) {
+        console.log('✅ Task successfully deleted');
+        return true;
+      } else {
+        console.error('❌ Task not found for deletion:', id);
+        return false;
+      }
     } catch (error) {
       console.error('Error deleting task:', error);
       return false;
