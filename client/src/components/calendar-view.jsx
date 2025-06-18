@@ -171,12 +171,15 @@ export function CalendarView() {
               <div
                 key={index}
                 className={`
-                  min-h-[120px] p-2 border-b border-r border-gray-200 dark:border-gray-600 relative
+                  min-h-[120px] p-2 border-b border-r border-gray-200 dark:border-gray-600 relative cursor-pointer
                   ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30 text-gray-400' : ''}
                   ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
                   ${isFuture ? 'opacity-50' : ''}
-                  ${isCurrentMonth && !isFuture ? 'bg-white dark:bg-gray-900' : ''}
+                  ${isCurrentMonth && !isFuture && timeSpent > 0 ? getTimeColorClasses(timeSpent) : ''}
+                  ${isCurrentMonth && !isFuture && timeSpent === 0 ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800' : ''}
                 `}
+                onClick={() => !isFuture && isCurrentMonth && handleTimeEdit(day)}
+                title={!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked - Click to edit` : "Click to add time") : ""}
               >
                 <div className="flex flex-col h-full relative z-10">
                   {/* Date Number */}
@@ -189,33 +192,30 @@ export function CalendarView() {
                   </div>
 
                   {/* Time Display and Edit */}
-                  {isCurrentMonth && !isFuture && (
+                  {isCurrentMonth && !isFuture && timeSpent === 0 && (
                     <div className="flex-1 flex flex-col items-center justify-center">
-                      {timeSpent > 0 ? (
-                        <div 
-                          className={`cursor-pointer rounded-lg p-3 transition-all duration-200 w-full text-center border-2 hover:scale-105 ${getTimeColorClasses(timeSpent)}`}
-                          onClick={() => handleTimeEdit(day)}
-                          title="Click to edit time"
-                        >
-                          <div className="flex items-center justify-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            <span className="text-lg font-semibold">
-                              {formatTime(timeSpent)}
-                            </span>
-                          </div>
+                      <div 
+                        className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-3 transition-colors border-2 border-dashed border-gray-300 dark:border-gray-600 w-full text-center"
+                        onClick={() => handleTimeEdit(day)}
+                        title="Click to add time"
+                      >
+                        <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-sm">Add time</span>
                         </div>
-                      ) : (
-                        <div 
-                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-3 transition-colors border-2 border-dashed border-gray-300 dark:border-gray-600 w-full text-center"
-                          onClick={() => handleTimeEdit(day)}
-                          title="Click to add time"
-                        >
-                          <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
-                            <Clock className="w-4 h-4" />
-                            <span className="text-sm">Add time</span>
-                          </div>
-                        </div>
-                      )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Time display for cells with time */}
+                  {isCurrentMonth && !isFuture && timeSpent > 0 && (
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span className="text-lg font-semibold">
+                          {formatTime(timeSpent)}
+                        </span>
+                      </div>
                     </div>
                   )}
 

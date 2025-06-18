@@ -17,28 +17,15 @@ export function DashboardView({ tasks, onUpdateTask }) {
     <div className="space-y-6">
       {/* Info Card */}
       <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
-            <Info className="h-5 w-5" />
-            Manual Time Tracking Dashboard
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200 text-sm">
+            <Info className="h-3 w-3" />
+            Manual Time Tracking
           </CardTitle>
-          <CardDescription className="text-blue-700 dark:text-blue-300">
-            This dashboard provides a manual time tracking calendar. The time entries here are independent 
-            of your task management system and are meant for personal time tracking only.
+          <CardDescription className="text-blue-700 dark:text-blue-300 text-xs">
+            Independent time tracking - not connected to tasks
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 text-sm text-blue-700 dark:text-blue-300">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              <span>Track work hours manually</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>View daily and monthly summaries</span>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
       {/* Manual Time Tracking Calendar */}

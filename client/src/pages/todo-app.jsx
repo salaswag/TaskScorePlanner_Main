@@ -270,7 +270,7 @@ export default function TodoApp() {
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid grid-cols-2">
                   <TabsTrigger value="tasks">Task Management</TabsTrigger>
-                  <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                  <TabsTrigger value="dashboard">Time Tracking</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
