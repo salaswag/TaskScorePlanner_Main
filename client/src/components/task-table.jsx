@@ -179,7 +179,7 @@ export default function TaskTable({
                         variant="ghost"
                         size="sm"
                         onClick={() => onMoveToLater && onMoveToLater(task)}
-                        className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-2 py-1 h-6 font-medium"
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs px-2 py-1 h-6 font-medium"
                         title="Move to Later"
                       >
                         Later
