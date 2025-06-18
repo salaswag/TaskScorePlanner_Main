@@ -29,15 +29,17 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
     onTimeChange(totalMinutes);
   }, [startTime, endTime, onTimeChange]);
 
+  // Convert time in minutes to angle (12 o'clock = 0 degrees, clockwise)
   const getAngleFromTime = (timeInMinutes) => {
-    const hours = timeInMinutes / 60;
-    return (hours - 6) * 30; // 6 AM is at top (0 degrees), each hour is 30 degrees
+    const hours = (timeInMinutes / 60) % 12; // Convert to 12-hour format
+    return hours * 30; // Each hour is 30 degrees
   };
 
+  // Convert angle to time in minutes (12 o'clock = 0 degrees)
   const getTimeFromAngle = (angle) => {
-    const hours = (angle / 30) + 6;
-    const normalizedHours = ((hours % 24) + 24) % 24;
-    return Math.round(normalizedHours * 60 / 15) * 15; // Round to nearest 15 minutes
+    const hours = (angle / 30) % 12; // Convert to hours (0-11)
+    const timeInMinutes = Math.round(hours * 60 / 15) * 15; // Round to nearest 15 minutes
+    return timeInMinutes;
   };
 
   const getMouseAngle = (e) => {
@@ -50,13 +52,16 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
     const x = e.clientX - centerX;
     const y = e.clientY - centerY;
     
+    // Calculate angle from 12 o'clock position (top), clockwise
     let angle = Math.atan2(x, -y) * (180 / Math.PI);
-    return (angle + 360) % 360;
+    if (angle < 0) angle += 360;
+    return angle;
   };
 
   const handleMouseDown = (e, type) => {
     e.preventDefault();
     setIsDragging(type);
+    document.body.style.userSelect = 'none'; // Prevent text selection
   };
 
   const handleMouseMove = (e) => {
@@ -66,14 +71,17 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
     const newTime = getTimeFromAngle(angle);
     
     if (isDragging === 'start') {
-      setStartTime(Math.min(newTime, endTime - 15)); // Minimum 15 minutes
+      const maxStart = endTime - 15; // Minimum 15 minutes duration
+      setStartTime(Math.min(newTime, maxStart >= 0 ? maxStart : 0));
     } else if (isDragging === 'end') {
-      setEndTime(Math.max(newTime, startTime + 15)); // Minimum 15 minutes
+      const minEnd = startTime + 15; // Minimum 15 minutes duration
+      setEndTime(Math.max(newTime, minEnd <= 720 ? minEnd : 720)); // Max 12 hours
     }
   };
 
   const handleMouseUp = () => {
     setIsDragging(null);
+    document.body.style.userSelect = ''; // Restore text selection
   };
 
   useEffect(() => {
@@ -88,16 +96,36 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
   }, [isDragging, startTime, endTime]);
 
   const formatTimeDisplay = (timeInMinutes) => {
-    const hours = Math.floor(timeInMinutes / 60) % 24;
+    const hours = Math.floor(timeInMinutes / 60);
     const minutes = timeInMinutes % 60;
+    const displayHours = hours === 0 ? 12 : hours;
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
-    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    const displayHour12 = displayHours > 12 ? displayHours - 12 : displayHours;
+    return `${displayHour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
 
   const startAngle = getAngleFromTime(startTime);
   const endAngle = getAngleFromTime(endTime);
   const workDuration = endTime - startTime;
+
+  // Calculate arc path for work duration
+  const createArcPath = () => {
+    if (workDuration <= 0) return '';
+    
+    const centerX = 96;
+    const centerY = 96;
+    const radius = 60;
+    
+    const startX = centerX + radius * Math.sin(startAngle * Math.PI / 180);
+    const startY = centerY - radius * Math.cos(startAngle * Math.PI / 180);
+    
+    const endX = centerX + radius * Math.sin(endAngle * Math.PI / 180);
+    const endY = centerY - radius * Math.cos(endAngle * Math.PI / 180);
+    
+    const largeArcFlag = Math.abs(endAngle - startAngle) > 180 ? 1 : 0;
+    
+    return `M ${centerX} ${centerY} L ${startX} ${startY} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
+  };
 
   return (
     <div className="flex flex-col items-center space-y-4">
@@ -107,37 +135,44 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
         style={{ userSelect: 'none' }}
       >
         {/* Clock face with hour markers */}
-        {Array.from({ length: 24 }, (_, i) => {
-          const angle = i * 15 - 90; // 15 degrees per hour, start from top
-          const isMainHour = i % 2 === 0;
+        {Array.from({ length: 12 }, (_, i) => {
+          const angle = i * 30; // 30 degrees per hour
+          const isMainHour = i % 3 === 0; // Every 3 hours (12, 3, 6, 9)
           const radius = isMainHour ? 85 : 90;
-          const x = 96 + radius * Math.cos(angle * Math.PI / 180);
-          const y = 96 + radius * Math.sin(angle * Math.PI / 180);
+          const x = 96 + radius * Math.sin(angle * Math.PI / 180);
+          const y = 96 - radius * Math.cos(angle * Math.PI / 180);
           
           return (
             <div
               key={i}
-              className={`absolute w-1 ${isMainHour ? 'h-4 bg-gray-400' : 'h-2 bg-gray-300'} transform -translate-x-1/2 -translate-y-1/2`}
-              style={{ left: x, top: y, transform: `translate(-50%, -50%) rotate(${angle + 90}deg)` }}
+              className={`absolute ${isMainHour ? 'w-1 h-4 bg-gray-600 dark:bg-gray-400' : 'w-0.5 h-2 bg-gray-400 dark:bg-gray-500'} transform -translate-x-1/2 -translate-y-1/2`}
+              style={{ 
+                left: x, 
+                top: y, 
+                transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+                transformOrigin: 'center'
+              }}
             />
           );
         })}
 
-        {/* Hour labels */}
-        {[6, 9, 12, 15, 18, 21].map(hour => {
-          const angle = (hour - 6) * 30 - 90;
-          const x = 96 + 70 * Math.cos(angle * Math.PI / 180);
-          const y = 96 + 70 * Math.sin(angle * Math.PI / 180);
-          const displayHour = hour % 12 || 12;
-          const ampm = hour >= 12 ? 'p' : 'a';
+        {/* Hour labels - normal clock positions */}
+        {[
+          { hour: 12, angle: 0 },
+          { hour: 3, angle: 90 },
+          { hour: 6, angle: 180 },
+          { hour: 9, angle: 270 }
+        ].map(({ hour, angle }) => {
+          const x = 96 + 70 * Math.sin(angle * Math.PI / 180);
+          const y = 96 - 70 * Math.cos(angle * Math.PI / 180);
           
           return (
             <div
               key={hour}
-              className="absolute text-xs font-medium text-gray-600 dark:text-gray-300 transform -translate-x-1/2 -translate-y-1/2"
+              className="absolute text-sm font-bold text-gray-700 dark:text-gray-300 transform -translate-x-1/2 -translate-y-1/2"
               style={{ left: x, top: y }}
             >
-              {displayHour}{ampm}
+              {hour}
             </div>
           );
         })}
@@ -146,7 +181,7 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
         {workDuration > 0 && (
           <svg className="absolute inset-0 w-full h-full pointer-events-none">
             <path
-              d={`M 96 96 L ${96 + 60 * Math.cos((startAngle - 90) * Math.PI / 180)} ${96 + 60 * Math.sin((startAngle - 90) * Math.PI / 180)} A 60 60 0 ${endAngle - startAngle > 180 ? 1 : 0} 1 ${96 + 60 * Math.cos((endAngle - 90) * Math.PI / 180)} ${96 + 60 * Math.sin((endAngle - 90) * Math.PI / 180)} Z`}
+              d={createArcPath()}
               fill="rgba(59, 130, 246, 0.2)"
               stroke="rgb(59, 130, 246)"
               strokeWidth="2"
@@ -156,26 +191,30 @@ function ClockTimePicker({ onTimeChange, initialMinutes = 0 }) {
 
         {/* Start time handle */}
         <div
-          className="absolute w-4 h-4 bg-green-500 border-2 border-white rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:bg-green-600 transition-colors shadow-lg"
+          className="absolute w-5 h-5 bg-green-500 border-3 border-white rounded-full cursor-grab active:cursor-grabbing transform -translate-x-1/2 -translate-y-1/2 hover:bg-green-600 transition-colors shadow-lg z-10"
           style={{
-            left: 96 + 75 * Math.cos((startAngle - 90) * Math.PI / 180),
-            top: 96 + 75 * Math.sin((startAngle - 90) * Math.PI / 180),
+            left: 96 + 75 * Math.sin(startAngle * Math.PI / 180),
+            top: 96 - 75 * Math.cos(startAngle * Math.PI / 180),
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
           }}
           onMouseDown={(e) => handleMouseDown(e, 'start')}
+          title="Drag to set start time"
         />
 
         {/* End time handle */}
         <div
-          className="absolute w-4 h-4 bg-red-500 border-2 border-white rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:bg-red-600 transition-colors shadow-lg"
+          className="absolute w-5 h-5 bg-red-500 border-3 border-white rounded-full cursor-grab active:cursor-grabbing transform -translate-x-1/2 -translate-y-1/2 hover:bg-red-600 transition-colors shadow-lg z-10"
           style={{
-            left: 96 + 75 * Math.cos((endAngle - 90) * Math.PI / 180),
-            top: 96 + 75 * Math.sin((endAngle - 90) * Math.PI / 180),
+            left: 96 + 75 * Math.sin(endAngle * Math.PI / 180),
+            top: 96 - 75 * Math.cos(endAngle * Math.PI / 180),
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
           }}
           onMouseDown={(e) => handleMouseDown(e, 'end')}
+          title="Drag to set end time"
         />
 
         {/* Center dot */}
-        <div className="absolute w-2 h-2 bg-gray-400 rounded-full transform -translate-x-1/2 -translate-y-1/2" style={{ left: 96, top: 96 }} />
+        <div className="absolute w-3 h-3 bg-gray-600 dark:bg-gray-400 rounded-full transform -translate-x-1/2 -translate-y-1/2" style={{ left: 96, top: 96 }} />
       </div>
 
       {/* Time display */}
