@@ -114,21 +114,19 @@ export default function TaskTable({
           const taskData = JSON.parse(e.dataTransfer.getData('text/plain'));
           console.log('Dropped task data to main:', taskData);
           if (taskData && taskData.id && taskData.isLater && !taskData.completed) {
-            // This would need to be passed as a prop from the parent
-            // For now, we'll just log it
-            console.log('Task should be moved to main section');
+            onMoveToMain && onMoveToMain(taskData);
           }
         } catch (error) {
           console.error('Error parsing dropped task data:', error);
         }
       }}
     >
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-black z-10">
         <h3 className="text-lg font-semibold text-black dark:text-white">Main Tasks</h3>
       </div>
 
       {/* Table Header */}
-      <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-[73px] z-10">
         <div className="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>

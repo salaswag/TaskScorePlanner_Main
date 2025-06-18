@@ -131,6 +131,9 @@ export class MongoStorage {
       console.log('Next task ID:', nextId);
       console.log('isLater from taskData:', taskData.isLater, 'Type:', typeof taskData.isLater);
 
+      // Ensure isLater is properly preserved
+      const isLaterFlag = Boolean(taskData.isLater);
+
       const task = {
         ...taskData,
         id: nextId,
@@ -138,7 +141,7 @@ export class MongoStorage {
         completed: false,
         actualTime: null,
         distractionLevel: null,
-        isLater: Boolean(taskData.isLater),
+        isLater: isLaterFlag,
         isFocus: Boolean(taskData.isFocus),
         archived: Boolean(taskData.archived),
         createdAt: new Date(),

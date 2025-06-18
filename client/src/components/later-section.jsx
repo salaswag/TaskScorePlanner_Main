@@ -128,25 +128,25 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                 task.completed 
                   ? `${getDistractionBackgroundColor(task.distractionLevel) || ''}` 
                   : ''
-              } opacity-60`}
+              }`}
             >
               <div className="grid grid-cols-12 gap-2 items-center">
                 <div className="col-span-1 flex justify-center">
-                  <div
-                    draggable={!task.completed}
-                    onDragStart={(e) => {
-                      if (!task.completed) {
-                        e.dataTransfer.setData('text/plain', JSON.stringify({...task, isLater: true}));
-                        e.dataTransfer.effectAllowed = 'move';
-                      } else {
-                        e.preventDefault();
-                      }
-                    }}
-                    className={`${!task.completed ? 'cursor-grab active:cursor-grabbing opacity-50 group-hover:opacity-100' : 'opacity-30 cursor-not-allowed'} transition-opacity`}
-                    title={task.completed ? "Completed tasks cannot be dragged" : "Drag to move"}
-                  >
-                    <GripVertical className="h-4 w-4 text-gray-400" />
-                  </div>
+                  {!task.completed ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onMoveToMain(task)}
+                      className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-3 py-2 h-8 font-medium"
+                      title="Move to Main"
+                    >
+                      ↑ Main
+                    </Button>
+                  ) : (
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <span className="text-gray-400 text-xs">✓</span>
+                    </div>
+                  )}
                 </div>
                 <div className="col-span-1 flex justify-center">
                   <Checkbox 
@@ -166,14 +166,14 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   <span className={`font-medium truncate block ${
                     task.completed 
                       ? 'text-gray-400 dark:text-gray-500 line-through' 
-                      : 'text-gray-500 dark:text-gray-400'
+                      : 'text-gray-900 dark:text-gray-100'
                   }`} title={task.title}>
                     {task.title}
                   </span>
                 </div>
                 <div className="col-span-2 flex justify-center">
                   <div className={`flex items-center text-sm ${
-                    task.completed ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400'
+                    task.completed ? 'text-gray-400' : 'text-gray-600 dark:text-gray-400'
                   }`}>
                     <Clock className="h-4 w-4 mr-1" />
                     <span>{formatTime(task.estimatedTime)}</span>
@@ -199,15 +199,6 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   )}
                 </div>
                 <div className="col-span-2 flex justify-center space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onMoveToMain(task)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs px-2 py-1 h-6"
-                    title="Move to Main"
-                  >
-                    <ArrowUp className="h-3 w-3" />
-                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
