@@ -1,3 +1,4 @@
+
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
@@ -6,8 +7,8 @@ const firebaseConfig = {
   authDomain: "taskscoreplanner.firebaseapp.com",
   projectId: "taskscoreplanner",
   storageBucket: "taskscoreplanner.firebasestorage.app",
-  messagingSenderId: "462209045062",
-  appId: "1:462209045062:web:bd2c5bb7f48fc31daf4c74",
+  messagingSenderId: "10710154133",
+  appId: "1:10710154133:web:9d2327a6b9e90b5cf6a3f5",
   measurementId: "G-EEL36PB3VC"
 };
 
