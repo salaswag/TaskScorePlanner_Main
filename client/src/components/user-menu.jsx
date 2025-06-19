@@ -216,103 +216,101 @@ function UserMenu() {
                 <span className="sm:hidden">Sign In</span>
               </Button>
             </DialogTrigger>
-              <DialogContent className="sm:max-w-sm">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-4">
-                    <TabsTrigger value="login" className="text-sm">Sign In</TabsTrigger>
-                    <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
+              <DialogContent className="w-[95vw] max-w-md mx-auto">
+                <DialogHeader className="text-center space-y-2">
+                  <DialogTitle className="text-lg sm:text-xl">Welcome to TaskMaster Pro</DialogTitle>
+                  <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    Sign in to sync your tasks across devices or create a new account
+                  </DialogDescription>
+                </DialogHeader>
+
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
+                  <TabsList className="grid w-full grid-cols-2 mb-6 h-9">
+                    <TabsTrigger value="login" className="text-xs sm:text-sm px-2">Sign In</TabsTrigger>
+                    <TabsTrigger value="signup" className="text-xs sm:text-sm px-2">Sign Up</TabsTrigger>
                   </TabsList>
 
-          <DialogHeader>
-            <DialogTitle>Welcome to TaskMaster Pro</DialogTitle>
-            <DialogDescription>
-              Sign in to sync your tasks across devices or create a new account
-            </DialogDescription>
-          </DialogHeader>
-
-
-                    <TabsContent value="login" className="space-y-3">
-                      <form onSubmit={handleLogin} className="space-y-3">
+                    <TabsContent value="login" className="space-y-4 mt-0">
+                      <form onSubmit={handleLogin} className="space-y-4">
                         {(loginError || localErrors.login) && (
-                          <div className="p-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded">
+                          <div className="p-3 text-xs sm:text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
                             {localErrors.login || loginError}
                           </div>
                         )}
-                        <div className="space-y-1">
-                          <Label htmlFor="login-email" className="text-sm">Email</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="login-email" className="text-xs sm:text-sm font-medium">Email</Label>
                           <Input
                             id="login-email"
                             type="email"
-                            placeholder="Email"
-                            className="h-8 text-sm"
+                            placeholder="Enter your email"
+                            className="h-10 text-sm"
                             value={loginData.email}
                             onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
                             disabled={isLoginLoading}
                           />
                         </div>
-                        <div className="space-y-1">
-                          <Label htmlFor="login-password" className="text-sm">Password</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="login-password" className="text-xs sm:text-sm font-medium">Password</Label>
                           <Input
                             id="login-password"
                             type="password"
-                            placeholder="Password"
-                            className="h-8 text-sm"
+                            placeholder="Enter your password"
+                            className="h-10 text-sm"
                             value={loginData.password}
                             onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                             disabled={isLoginLoading}
                           />
                         </div>
-                        <Button type="submit" className="w-full h-8 text-sm" disabled={isLoginLoading}>
+                        <Button type="submit" className="w-full h-10 text-sm font-medium" disabled={isLoginLoading}>
                           {isLoginLoading ? "Signing in..." : "Sign In"}
                         </Button>
                       </form>
                     </TabsContent>
 
-
-                    <TabsContent value="signup" className="space-y-3">
-                      <form onSubmit={handleSignup} className="space-y-3">
+                    <TabsContent value="signup" className="space-y-4 mt-0">
+                      <form onSubmit={handleSignup} className="space-y-4">
                         {(signupError || localErrors.signup) && (
-                          <div className="p-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded">
+                          <div className="p-3 text-xs sm:text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
                             {localErrors.signup || signupError}
                           </div>
                         )}
-                        <div className="space-y-1">
-                          <Label htmlFor="signup-email" className="text-sm">Email</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email" className="text-xs sm:text-sm font-medium">Email</Label>
                           <Input
                             id="signup-email"
                             type="email"
-                            placeholder="Email"
-                            className="h-8 text-sm"
+                            placeholder="Enter your email"
+                            className="h-10 text-sm"
                             value={signupData.email}
                             onChange={(e) => setSignupData(prev => ({ ...prev, email: e.target.value }))}
                             disabled={isSignupLoading}
                           />
                         </div>
-                        <div className="space-y-1">
-                          <Label htmlFor="signup-password" className="text-sm">Password</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-password" className="text-xs sm:text-sm font-medium">Password</Label>
                           <Input
                             id="signup-password"
                             type="password"
-                            placeholder="Password (min 6 chars)"
-                            className="h-8 text-sm"
+                            placeholder="Minimum 6 characters"
+                            className="h-10 text-sm"
                             value={signupData.password}
                             onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
                             disabled={isSignupLoading}
                           />
                         </div>
-                        <div className="space-y-1">
-                          <Label htmlFor="signup-confirm-password" className="text-sm">Confirm Password</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-confirm-password" className="text-xs sm:text-sm font-medium">Confirm Password</Label>
                           <Input
                             id="signup-confirm-password"
                             type="password"
-                            placeholder="Confirm password"
-                            className="h-8 text-sm"
+                            placeholder="Confirm your password"
+                            className="h-10 text-sm"
                             value={signupData.confirmPassword}
                             onChange={(e) => setSignupData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                             disabled={isSignupLoading}
                           />
                         </div>
-                        <Button type="submit" className="w-full h-8 text-sm" disabled={isSignupLoading}>
+                        <Button type="submit" className="w-full h-10 text-sm font-medium" disabled={isSignupLoading}>
                           {isSignupLoading ? "Creating account..." : "Sign Up"}
                         </Button>
                       </form>

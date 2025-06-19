@@ -1,9 +1,9 @@
 import { useState } from "react";
-import TaskForm from "@/components/task-form";
 import TaskTable from "@/components/task-table";
 import TaskEditModal from "@/components/task-edit-modal";
 import TimerModal from "@/components/timer-modal";
 import LaterSection from "@/components/later-section";
+import FloatingAddButton from "@/components/floating-add-button";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
@@ -308,25 +308,16 @@ export default function TodoApp() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
-                {/* Top Section: Score Display and Task Form */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                  {/* Score Display - Compact */}
+                {/* Top Section: Score Display */}
+                <div className="grid grid-cols-1">
                   <ScoreDisplay
                     totalScore={totalScore}
                     totalPossibleScore={totalPossibleScore}
                     totalEstimatedTime={totalEstimatedTime}
                   />
-
-                  {/* Task Form - Takes remaining space */}
-                  <div className="lg:col-span-3">
-                    <TaskForm
-                      onSubmit={handleCreateTask}
-                      isLoading={createTask.isPending}
-                    />
-                  </div>
                 </div>
 
-                {/* Bottom Section: Tasks */}
+                {/* Tasks Section */}
                 <div className="space-y-4">
                   {/* Main Tasks */}
                   <TaskTable
@@ -354,6 +345,12 @@ export default function TodoApp() {
                   />
                 </div>
               </div>
+
+              {/* Floating Add Button */}
+              <FloatingAddButton
+                onSubmit={handleCreateTask}
+                isLoading={createTask.isPending}
+              />
             </TabsContent>
 
             <TabsContent value="dashboard" className="mt-0">
