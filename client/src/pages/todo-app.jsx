@@ -40,7 +40,6 @@ export default function TodoApp() {
 
   const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } = useTasks();
   const { theme, setTheme } = useTheme();
-  const { user } = useAuth();
 
   const handleCompleteTask = (task) => {
     setCurrentTask(task);
