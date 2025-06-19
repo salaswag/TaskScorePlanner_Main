@@ -8,8 +8,12 @@ export async function verifyFirebaseToken(req, res, next) {
                   (authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null);
 
     if (!token) {
-      // No token provided - allow anonymous access
-      req.user = null;
+      // No token provided - create anonymous user session
+      req.user = {
+        uid: 'anonymous',
+        email: null,
+        isAnonymous: true
+      };
       return next();
     }
 
@@ -23,13 +27,21 @@ export async function verifyFirebaseToken(req, res, next) {
     } catch (error) {
       console.error('Firebase token verification failed:', error);
       // If token verification fails, treat as anonymous
-      req.user = null;
+      req.user = {
+        uid: 'anonymous',
+        email: null,
+        isAnonymous: true
+      };
     }
 
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    req.user = null;
+    req.user = {
+      uid: 'anonymous',
+      email: null,
+      isAnonymous: true
+    };
     next();
   }
 }

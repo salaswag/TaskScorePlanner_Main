@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
@@ -24,66 +23,48 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [previousAnonymousUid, setPreviousAnonymousUid] = useState<string | null>(null);
 
   // Listen to Firebase auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setFirebaseUser(firebaseUser);
-      if (firebaseUser) {
-        const token = await firebaseUser.getIdToken();
-        localStorage.setItem('firebase-token', token);
-        
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Check if this is a newly authenticated user who was previously anonymous
+        if (previousAnonymousUid && !user.isAnonymous && user.uid !== previousAnonymousUid) {
+          console.log('User authenticated, transferring data from anonymous session');
+          await transferAnonymousData(previousAnonymousUid, user.uid);
+          setPreviousAnonymousUid(null);
+        }
+
+        setFirebaseUser(user);
         setUser({
-          id: firebaseUser.uid,
-          email: firebaseUser.email || undefined,
-          isAnonymous: firebaseUser.isAnonymous
+          id: user.uid,
+          email: user.email || undefined,
+          isAnonymous: user.isAnonymous
         });
       } else {
-        localStorage.removeItem('firebase-token');
+        // Don't try anonymous sign-in if it's not configured
+        // Just set user to null and continue
+        console.log('No user authenticated, continuing as anonymous');
+        setFirebaseUser(null);
         setUser(null);
       }
       setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
-
-  // Sign in anonymously if no user exists
-  useEffect(() => {
-    const signInAnonymouslyIfNeeded = async () => {
-      if (!isLoading && !user) {
-        try {
-          await signInAnonymously(auth);
-        } catch (error) {
-          console.error('Anonymous sign in failed:', error);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    signInAnonymouslyIfNeeded();
-  }, [isLoading, user]);
+  }, [previousAnonymousUid]);
 
   const loginMutation = useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
-      if (firebaseUser?.isAnonymous) {
-        // Link anonymous account with email/password
-        const credential = EmailAuthProvider.credential(data.email, data.password);
-        try {
-          await linkWithCredential(firebaseUser, credential);
-        } catch (error: any) {
-          if (error.code === 'auth/email-already-in-use') {
-            // Sign in to existing account and transfer data
-            const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-            // Transfer anonymous user data
-            await transferAnonymousData(firebaseUser.uid, userCredential.user.uid);
-          } else {
-            throw error;
-          }
-        }
-      } else {
-        await signInWithEmailAndPassword(auth, data.email, data.password);
+      // Store current user state for potential data transfer
+      const currentUser = firebaseUser;
+      if (currentUser && !currentUser.email) {
+        // This could be an anonymous user or unauthenticated state
+        setPreviousAnonymousUid(currentUser.uid || 'anonymous');
       }
+
+      await signInWithEmailAndPassword(auth, data.email, data.password);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
@@ -130,7 +111,7 @@ export function useAuth() {
         },
         body: JSON.stringify({ anonymousUid, permanentUid })
       });
-      
+
       if (!response.ok) {
         console.error('Failed to transfer anonymous data');
       }
