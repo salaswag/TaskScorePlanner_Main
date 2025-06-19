@@ -4,52 +4,49 @@ import { admin } from '../firebase-admin.js';
 const loggedAnonymousUsers = new Set();
 const lastLogTime = new Map();
 
-export async function verifyFirebaseToken(req, res, next) {
-  const authHeader = req.headers.authorization;
+export const authenticateUser = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    const anonymousId = `anonymous-${req.ip}`;
-    const now = Date.now();
-    const lastLog = lastLogTime.get(req.ip) || 0;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // Only log once per IP to reduce spam
+      if (!loggedAnonymousUsers.has(clientIP)) {
+        console.log(`👤 No token provided, using anonymous user for IP: ${clientIP}`);
+        loggedAnonymousUsers.add(clientIP);
+      }
 
-    // Only log once per IP per 30 seconds to reduce spam significantly
-    if (now - lastLog > 30000) {
-      console.log(`No token provided, using anonymous user for IP: ${req.ip}`);
-      lastLogTime.set(req.ip, now);
-
-      // Clean up old entries every hour
-      setTimeout(() => {
-        lastLogTime.delete(req.ip);
-      }, 60 * 60 * 1000);
+      req.user = { 
+        uid: `anonymous-${clientIP}`, 
+        email: null, 
+        isAnonymous: true 
+      };
+      return next();
     }
 
-    req.user = {
-      uid: anonymousId,
-      email: null,
-      isAnonymous: true
-    };
-    next();
-    return;
-  }
-
-  const token = authHeader.split(' ')[1];
-
-  try {
+    const token = authHeader.split(' ')[1];
+    console.log('🔐 Verifying Firebase token...');
     const decodedToken = await admin.auth().verifyIdToken(token);
+
+    console.log(`✅ Token verified for user: ${decodedToken.email}`);
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
       isAnonymous: false
     };
-    console.log(`Authenticated user: ${decodedToken.email}`);
+
     next();
   } catch (error) {
-    console.error('Firebase token verification failed:', error.message);
-    req.user = {
-      uid: `anonymous-${req.ip}`,
-      email: null,
-      isAnonymous: true
+    console.error('❌ Token verification failed:', error.code || 'unknown', '-', error.message);
+
+    // Fall back to anonymous user on error
+    const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+    console.log(`🔄 Falling back to anonymous user for IP: ${clientIP}`);
+    req.user = { 
+      uid: `anonymous-${clientIP}`, 
+      email: null, 
+      isAnonymous: true 
     };
     next();
   }
-}
+};

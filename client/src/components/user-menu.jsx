@@ -146,14 +146,13 @@ function UserMenu() {
 
   // Show sign in/up buttons for anonymous users
   return (
-    <div className="flex items-center gap-2">
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-1 text-sm">
-                  <User className="h-3 w-3" />
-                  Sign In / Up
-                </Button>
-              </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="flex items-center gap-1 text-sm">
+                <User className="h-3 w-3" />
+                Sign In / Up
+              </Button>
+            </DialogTrigger>
               <DialogContent className="sm:max-w-sm">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -258,17 +257,6 @@ function UserMenu() {
                 </Tabs>
               </DialogContent>
             </Dialog>
-
-      <Button 
-        variant="default" 
-        size="sm"
-        onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2"
-      >
-        <UserPlus className="w-4 h-4" />
-        <span className="hidden sm:inline">Sign Up</span>
-      </Button>
-    </div>
   );
 }
 

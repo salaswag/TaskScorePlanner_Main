@@ -30,7 +30,7 @@ const getErrorMessage = (errorCode: string): string => {
     case 'auth/network-request-failed':
       return 'Network error. Please check your connection and try again.';
     case 'auth/api-key-not-valid':
-      return 'Authentication service is temporarily unavailable. Please try again later.';
+      return 'Firebase authentication is not properly configured. Please contact support.';
     default:
       return 'An unexpected error occurred. Please try again.';
   }
@@ -44,15 +44,20 @@ export function useAuth() {
   const [signupError, setSignupError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('🔧 Setting up Firebase auth listener...');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('Auth state changed:', user);
-      setUser(user);
-      if (!user) {
-        console.log('No user authenticated, continuing as anonymous');
+      if (user && !user.isAnonymous) {
+        console.log('✅ User authenticated:', user.email);
+      } else {
+        console.log('👤 No user authenticated, continuing as anonymous');
       }
+      setUser(user);
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log('🔧 Cleaning up Firebase auth listener');
+      unsubscribe();
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -60,13 +65,15 @@ export function useAuth() {
     setLoginError(null);
 
     try {
+      console.log('🔐 Attempting login for:', email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('Login successful:', userCredential.user);
+      console.log('✅ Login successful:', userCredential.user.email);
       return userCredential.user;
     } catch (error: any) {
-      console.error('Login failed:', error.message);
+      console.error('❌ Login failed:', error.code, '-', error.message);
       const errorCode = error.code || 'unknown';
       const friendlyMessage = getErrorMessage(errorCode);
+      console.log('🔄 Displaying error to user:', friendlyMessage);
       setLoginError(friendlyMessage);
       throw error;
     } finally {
@@ -79,13 +86,15 @@ export function useAuth() {
     setSignupError(null);
 
     try {
+      console.log('📝 Attempting signup for:', email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('Signup successful:', userCredential.user);
+      console.log('✅ Signup successful:', userCredential.user.email);
       return userCredential.user;
     } catch (error: any) {
-      console.error('Signup failed:', error.message);
+      console.error('❌ Signup failed:', error.code, '-', error.message);
       const errorCode = error.code || 'unknown';
       const friendlyMessage = getErrorMessage(errorCode);
+      console.log('🔄 Displaying error to user:', friendlyMessage);
       setSignupError(friendlyMessage);
       throw error;
     } finally {
