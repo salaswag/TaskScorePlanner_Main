@@ -22,6 +22,9 @@ export default function TaskTable({
   onArchive,
   onMoveToMain,
   onMoveToLater,
+  totalScore,
+  totalPossibleScore,
+  totalEstimatedTime,
 }) {
   const [expandedTasks, setExpandedTasks] = useState(new Set());
 
@@ -75,6 +78,13 @@ export default function TaskTable({
       'bg-red-50 dark:bg-red-900/20'    // 5
     ];
     return colors[level - 1];
+  };
+
+  const getScoreColor = (percent) => {
+    if (percent >= 80) return "text-green-600 dark:text-green-400";
+    if (percent >= 60) return "text-yellow-600 dark:text-yellow-400";
+    if (percent >= 40) return "text-orange-600 dark:text-orange-400";
+    return "text-red-600 dark:text-red-400";
   };
 
   // Sort tasks: incomplete first (by priority desc), then completed at the bottom (by completion time desc)
@@ -140,7 +150,36 @@ export default function TaskTable({
       }}
     >
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-black z-10">
-        <h3 className="text-base sm:text-lg font-semibold text-black dark:text-white">Main Tasks</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base sm:text-lg font-semibold text-black dark:text-white">Main Tasks</h3>
+          
+          {/* Score Display - moved from separate component */}
+          <div className="flex items-center justify-end divide-x divide-gray-300 dark:divide-gray-600">
+            {/* Score Fraction */}
+            <div className="text-center px-3">
+              <div className={`text-sm sm:text-base font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
+                {totalScore} / {totalPossibleScore}
+              </div>
+            </div>
+
+            {/* Percentage */}
+            <div className="text-center px-3">
+              <div className={`text-sm sm:text-base font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
+                {totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0}%
+              </div>
+            </div>
+
+            {/* Time Left */}
+            <div className="text-center px-3">
+              <div className="text-xs sm:text-sm font-medium text-black dark:text-white">
+                {formatTime(totalEstimatedTime)}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                Time Left
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Table Header - Only visible on larger screens */}

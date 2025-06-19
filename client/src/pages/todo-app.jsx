@@ -8,7 +8,6 @@ import TaskFormModal from "@/components/task-form-modal";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
-import ScoreDisplay from "@/components/score-display";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
@@ -257,19 +256,52 @@ export default function TodoApp() {
     showNotification(`Task "${task.title}" moved back to main tasks`, "success");
   };
 
+  // Add touch handling for swipe gestures
+  const handleTouchStart = (e) => {
+    if (window.innerWidth >= 1024) return; // Only on mobile/tablet
+    setTouchStart(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e) => {
+    if (window.innerWidth >= 1024) return; // Only on mobile/tablet
+    if (!touchStart) return;
+    
+    const currentTouch = e.touches[0].clientY;
+    const diff = touchStart - currentTouch;
+    
+    // Swipe up to hide header (when header is visible)
+    if (diff > 50 && isHeaderVisible && user && !user.isAnonymous) {
+      setIsHeaderVisible(false);
+    }
+    // Swipe down to show header (when header is hidden)
+    else if (diff < -50 && !isHeaderVisible && user && !user.isAnonymous) {
+      setIsHeaderVisible(true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStart(null);
+  };
+
+  const [touchStart, setTouchStart] = useState(null);
+
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div 
+      className="min-h-screen bg-white dark:bg-black"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Collapsible Header for Authenticated Users */}
       {user && !user.isAnonymous && !isHeaderVisible && (
-        <div className="fixed top-2 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="fixed top-2 left-1/2 transform -translate-x-1/2 z-50 lg:hidden">
           <Button
             onClick={() => setIsHeaderVisible(true)}
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all"
+            className="bg-white/70 dark:bg-black/70 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-md hover:shadow-lg transition-all opacity-60 hover:opacity-90 rounded-full p-2"
           >
-            <ChevronDown className="h-4 w-4 mr-2" />
-            Show Menu
+            <ChevronDown className="h-4 w-4" />
           </Button>
         </div>
       )}
@@ -309,7 +341,7 @@ export default function TodoApp() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsHeaderVisible(false)}
-                  className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors lg:hidden"
                   title="Hide menu"
                 >
                   <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
@@ -340,14 +372,6 @@ export default function TodoApp() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
-                {/* Top Section: Score Display */}
-                <div className="grid grid-cols-1">
-                  <ScoreDisplay
-                    totalScore={totalScore}
-                    totalPossibleScore={totalPossibleScore}
-                    totalEstimatedTime={totalEstimatedTime}
-                  />
-                </div>
 
                 {/* Desktop Task Form - Hidden on mobile */}
                 <div className="hidden lg:block">
@@ -371,6 +395,9 @@ export default function TodoApp() {
                     onUpdateTask={handleUpdateTask}
                     onMoveToMain={handleMoveToMain}
                     onMoveToLater={handleMoveToLater}
+                    totalScore={totalScore}
+                    totalPossibleScore={totalPossibleScore}
+                    totalEstimatedTime={totalEstimatedTime}
                   />
 
                   {/* Later Section */}
