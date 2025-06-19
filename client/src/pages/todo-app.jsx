@@ -300,22 +300,22 @@ export default function TodoApp() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
-                {/* Top Section: Score Display and Task Form Side by Side */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {/* Score Display */}
+                {/* Top Section: Score Display and Task Form */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                  {/* Score Display - Compact */}
                   <ScoreDisplay
                     totalScore={totalScore}
                     totalPossibleScore={totalPossibleScore}
-                    completedTasks={completedTasks}
-                    pendingTasks={pendingTasks}
                     totalEstimatedTime={totalEstimatedTime}
                   />
                   
-                  {/* Task Form */}
-                  <TaskForm
-                    onSubmit={handleCreateTask}
-                    isLoading={createTask.isPending}
-                  />
+                  {/* Task Form - Takes remaining space */}
+                  <div className="lg:col-span-3">
+                    <TaskForm
+                      onSubmit={handleCreateTask}
+                      isLoading={createTask.isPending}
+                    />
+                  </div>
                 </div>
 
                 {/* Bottom Section: Tasks */}

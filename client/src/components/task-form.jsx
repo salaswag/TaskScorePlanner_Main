@@ -34,10 +34,11 @@ export default function TaskForm({ onSubmit, isLoading }) {
 
   return (
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
-      <CardContent className="p-4">
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Task Input and Button Row */}
-          <div className="flex gap-3">
+      <CardContent className="p-3">
+        <form onSubmit={handleSubmit}>
+          {/* All Elements in One Line */}
+          <div className="flex items-center gap-3">
+            {/* Task Input */}
             <Input
               type="text"
               placeholder="Add a new main task..."
@@ -45,60 +46,47 @@ export default function TaskForm({ onSubmit, isLoading }) {
               onChange={(e) => setTitle(e.target.value)}
               className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
             />
+
+            {/* Priority Slider */}
+            <div className="flex items-center gap-2 min-w-[120px]">
+              <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
+                P: {priority}
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={priority}
+                onChange={(e) => setPriority(parseInt(e.target.value))}
+                className="slider w-20"
+              />
+            </div>
+
+            {/* Time Slider */}
+            <div className="flex items-center gap-2 min-w-[140px]">
+              <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
+                T: {formatTime(estimatedTime)}
+              </label>
+              <input
+                type="range"
+                min="5"
+                max="120"
+                step="5"
+                value={estimatedTime}
+                onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
+                className="slider w-20"
+              />
+            </div>
+
+            {/* Add Button */}
             <Button
               type="submit"
               disabled={!title.trim() || isLoading}
               className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap"
             >
               <Plus className="h-4 w-4" />
-              <span>{isLoading ? 'Adding...' : 'Add Task'}</span>
+              <span>{isLoading ? 'Adding...' : 'Add'}</span>
             </Button>
-          </div>
-
-          {/* Priority and Time Controls - Side by Side */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Priority Slider */}
-            <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-1">
-                Priority: {priority}
-              </label>
-              <div className="relative">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={priority}
-                  onChange={(e) => setPriority(parseInt(e.target.value))}
-                  className="slider w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <span>Low</span>
-                  <span>High</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Estimated Time Slider */}
-            <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-1">
-                Time: {formatTime(estimatedTime)}
-              </label>
-              <div className="relative">
-                <input
-                  type="range"
-                  min="5"
-                  max="120"
-                  step="5"
-                  value={estimatedTime}
-                  onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
-                  className="slider w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <span>5m</span>
-                  <span>2h</span>
-                </div>
-              </div>
-            </div>
           </div>
         </form>
       </CardContent>
