@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TaskTable from "@/components/task-table";
 import TaskEditModal from "@/components/task-edit-modal";
 import TimerModal from "@/components/timer-modal";
@@ -286,7 +286,7 @@ export default function TodoApp() {
   const [touchStart, setTouchStart] = useState(null);
 
   // Auto-show header when switching to desktop view
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024 && !isHeaderVisible) {
         setIsHeaderVisible(true);
