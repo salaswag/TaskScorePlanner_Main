@@ -32,7 +32,7 @@ import {
   Settings
 } from "lucide-react";
 
-export function UserMenu() {
+function UserMenu() {
   const { user, login, signup, logout, isLoginLoading, isSignupLoading, loginError, signupError } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -285,3 +285,6 @@ export function UserMenu() {
     </div>
   );
 }
+
+export { UserMenu };
+export default UserMenu;
