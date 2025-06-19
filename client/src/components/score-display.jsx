@@ -1,10 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3, Clock } from "lucide-react";
 
-export default function ScoreDisplay({ totalScore, totalPossibleScore, completedTasks, pendingTasks, totalEstimatedTime }) {
-  const completedCount = completedTasks?.length || 0;
-  const pendingCount = (pendingTasks || []).length;
-  const scorePercentage = totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0;
+export default function ScoreDisplay({
+  totalScore,
+  totalPossibleScore,
+  completedTasks,
+  pendingTasks,
+  totalEstimatedTime,
+}) {
+  const completionPercentage = totalPossibleScore > 0 
+    ? Math.round((totalScore / totalPossibleScore) * 100) 
+    : 0;
 
   const formatTime = (minutes) => {
     const hours = Math.floor(minutes / 60);
@@ -14,26 +20,53 @@ export default function ScoreDisplay({ totalScore, totalPossibleScore, completed
 
   return (
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
-      <CardContent className="p-6">
-        <div className="text-center space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold text-black dark:text-white mb-2">Priority Points</h3>
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="text-2xl font-bold text-black dark:text-white">
-                {totalScore}/{totalPossibleScore}
-              </div>
-              <div className="text-4xl font-bold text-black dark:text-white">
-                {scorePercentage}%
-              </div>
+      <CardContent className="p-4">
+        <div className="space-y-3">
+          {/* Main Score */}
+          <div className="text-center">
+            <h3 className="text-base font-semibold text-black dark:text-white mb-1">
+              Current Score
+            </h3>
+            <div className="text-2xl font-bold text-black dark:text-white">
+              {totalScore} / {totalPossibleScore}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              {completionPercentage}% Complete
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-              <span>Est. Time Left</span>
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-1" />
-                <span>{formatTime(totalEstimatedTime)}</span>
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-black dark:bg-white h-2 rounded-full transition-all duration-300"
+              style={{ width: `${completionPercentage}%` }}
+            ></div>
+          </div>
+
+          {/* Statistics Grid */}
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <div className="text-base font-semibold text-green-600 dark:text-green-400">
+                {completedTasks.length}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                Completed
+              </div>
+            </div>
+            <div>
+              <div className="text-base font-semibold text-orange-600 dark:text-orange-400">
+                {pendingTasks.length}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                Pending
+              </div>
+            </div>
+            <div>
+              <div className="text-base font-semibold text-blue-600 dark:text-blue-400">
+                {formatTime(totalEstimatedTime)}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                Time Left
               </div>
             </div>
           </div>

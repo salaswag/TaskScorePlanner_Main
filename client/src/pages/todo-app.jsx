@@ -299,10 +299,9 @@ export default function TodoApp() {
         <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
-              {/* Main Layout: Left sidebar with score and form, Right main area with tasks */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-                {/* Left Sidebar */}
-                <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+              <div className="space-y-4">
+                {/* Top Section: Score Display and Task Form Side by Side */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {/* Score Display */}
                   <ScoreDisplay
                     totalScore={totalScore}
@@ -319,8 +318,8 @@ export default function TodoApp() {
                   />
                 </div>
 
-                {/* Right Main Area */}
-                <div className="lg:col-span-2 space-y-4">
+                {/* Bottom Section: Tasks */}
+                <div className="space-y-4">
                   {/* Main Tasks */}
                   <TaskTable
                     tasks={mainTasks}

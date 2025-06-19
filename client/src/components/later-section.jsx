@@ -156,9 +156,12 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   />
                 </div>
                 <div className="col-span-1 flex justify-center">
-                  <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                    task.completed ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' : getPriorityColor(task.priority, false)
-                  }`}>
+                  <span
+                    className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      task.priority,
+                      task.completed,
+                    )}`}
+                  >
                     {task.priority}
                   </span>
                 </div>
@@ -172,11 +175,9 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   </span>
                 </div>
                 <div className="col-span-2 flex justify-center">
-                  <div className={`flex items-center text-sm ${
-                    task.completed ? 'text-gray-400' : 'text-gray-600 dark:text-gray-400'
-                  }`}>
+                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                     <Clock className="h-4 w-4 mr-1" />
-                    <span>{formatTime(task.estimatedTime)}</span>
+                    <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                   </div>
                 </div>
                 <div className="col-span-2 flex justify-center">

@@ -34,24 +34,32 @@ export default function TaskForm({ onSubmit, isLoading }) {
 
   return (
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
-      <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Task Input */}
-          <div>
+      <CardContent className="p-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Task Input and Button Row */}
+          <div className="flex gap-3">
             <Input
               type="text"
               placeholder="Add a new main task..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
+              className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
             />
+            <Button
+              type="submit"
+              disabled={!title.trim() || isLoading}
+              className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap"
+            >
+              <Plus className="h-4 w-4" />
+              <span>{isLoading ? 'Adding...' : 'Add Task'}</span>
+            </Button>
           </div>
 
-          {/* Priority and Time Controls */}
-          <div className="space-y-4">
+          {/* Priority and Time Controls - Side by Side */}
+          <div className="grid grid-cols-2 gap-4">
             {/* Priority Slider */}
             <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-2">
+              <label className="block text-sm font-medium text-black dark:text-white mb-1">
                 Priority: {priority}
               </label>
               <div className="relative">
@@ -64,16 +72,16 @@ export default function TaskForm({ onSubmit, isLoading }) {
                   className="slider w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <span>Low (1)</span>
-                  <span>High (10)</span>
+                  <span>Low</span>
+                  <span>High</span>
                 </div>
               </div>
             </div>
 
             {/* Estimated Time Slider */}
             <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-2">
-                Estimated Time: {formatTime(estimatedTime)}
+              <label className="block text-sm font-medium text-black dark:text-white mb-1">
+                Time: {formatTime(estimatedTime)}
               </label>
               <div className="relative">
                 <input
@@ -92,16 +100,6 @@ export default function TaskForm({ onSubmit, isLoading }) {
               </div>
             </div>
           </div>
-
-          {/* Add Task Button */}
-          <Button
-            type="submit"
-            disabled={!title.trim() || isLoading}
-            className="w-full bg-black dark:bg-white text-white dark:text-black py-3 px-6 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center space-x-2"
-          >
-            <Plus className="h-4 w-4" />
-            <span>{isLoading ? 'Adding...' : 'Add to Main Tasks'}</span>
-          </Button>
         </form>
       </CardContent>
     </Card>
