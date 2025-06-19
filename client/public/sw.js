@@ -1,10 +1,9 @@
 
-const CACHE_NAME = 'taskmaster-v1';
+const CACHE_NAME = 'taskmaster-v2';
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon.svg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -21,7 +20,13 @@ self.addEventListener('fetch', (event) => {
         if (response) {
           return response;
         }
-        return fetch(event.request);
+        return fetch(event.request).catch((error) => {
+          console.log('Fetch failed; returning offline page instead.', error);
+          // For navigation requests, return the cached index page
+          if (event.request.destination === 'document') {
+            return caches.match('/');
+          }
+        });
       })
   );
 });
