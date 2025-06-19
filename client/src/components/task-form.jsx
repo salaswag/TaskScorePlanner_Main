@@ -34,21 +34,21 @@ function TaskForm({ onSubmit, isLoading }) {
 
   return (
     <Card className="bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/95 dark:bg-black/95">
-      <CardContent className="p-2 h-full flex items-center justify-center">
+      <CardContent className="p-4 h-full flex items-center justify-center">
         <form onSubmit={handleSubmit} className="w-full">
           {/* All Elements in One Line */}
           <div className="flex items-center gap-4 w-full">
-            {/* Task Input - Flexible width */}
+            {/* Task Input - Flexible width with increased height */}
             <Input
               type="text"
               placeholder="Add new task..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
+              className="flex-1 px-4 py-4 h-12 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md"
             />
 
             {/* Priority Slider - Bigger with descriptive label */}
-            <div className="flex items-center gap-2 min-w-[180px]">
+            <div className="flex items-center gap-2 min-w-[180px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
               <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
                 Priority: {priority}
               </label>
@@ -63,7 +63,7 @@ function TaskForm({ onSubmit, isLoading }) {
             </div>
 
             {/* Time Slider - Bigger with descriptive label */}
-            <div className="flex items-center gap-2 min-w-[200px]">
+            <div className="flex items-center gap-2 min-w-[200px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
               <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
                 Time: {formatTime(estimatedTime)}
               </label>
@@ -82,7 +82,7 @@ function TaskForm({ onSubmit, isLoading }) {
             <Button
               type="submit"
               disabled={!title.trim() || isLoading}
-              className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap"
+              className="bg-black dark:bg-white text-white dark:text-black px-4 py-3 h-12 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg transition-all duration-200 flex items-center space-x-2 whitespace-nowrap transform hover:scale-105"
             >
               <Plus className="h-4 w-4" />
               <span>{isLoading ? 'Adding...' : 'Add'}</span>
