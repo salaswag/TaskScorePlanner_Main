@@ -1,4 +1,4 @@
-import admin from '../firebase-admin.js';
+import { admin } from '../firebase-admin.js';
 
 // Cache for anonymous users to avoid repeated logs
 const loggedAnonymousUsers = new Set();
