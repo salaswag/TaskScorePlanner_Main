@@ -184,15 +184,14 @@ export default function TaskTable({
 
       {/* Table Header - Only visible on larger screens */}
       <div className="hidden lg:block px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-[65px] z-10">
-        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-          <div className="col-span-1 text-center"></div>
-          <div className="col-span-1 text-center">Done</div>
-          <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-5 text-left">Task</div>
-          <div className="col-span-1 text-right">Est Time</div>
-          <div className="col-span-1 text-right">Actual Time</div>
-          <div className="col-span-1 text-right">Distracted</div>
-          <div className="col-span-1 text-right">Actions</div>
+        <div className="grid grid-cols-12 gap-0 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="col-span-1 text-left pl-2"></div>
+          <div className="col-span-1 text-left pl-2">Done</div>
+          <div className="col-span-1 text-left pl-2">Priority</div>
+          <div className="col-span-6 text-left pl-2">Task</div>
+          <div className="col-span-1 text-right pr-2">Est Time</div>
+          <div className="col-span-1 text-right pr-2">Actual Time</div>
+          <div className="col-span-1 text-right pr-2">Actions</div>
         </div>
       </div>
 
@@ -218,8 +217,8 @@ export default function TaskTable({
                 }`}
               >
                 {/* Desktop Layout - Hidden on mobile/tablet */}
-                <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
-                  <div className="col-span-1 flex justify-center">
+                <div className="hidden lg:grid grid-cols-12 gap-0 items-center">
+                  <div className="col-span-1 flex justify-start pl-2">
                     {!task.completed ? (
                       <Button
                         variant="ghost"
@@ -236,7 +235,7 @@ export default function TaskTable({
                       </div>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-start pl-2">
                     <Checkbox 
                       checked={task.completed} 
                       onCheckedChange={(checked) => {
@@ -249,9 +248,9 @@ export default function TaskTable({
                       className="cursor-pointer w-6 h-6"
                     />
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-start pl-2">
                     <span
-                      className={`inline-flex items-center justify-center w-12 h-10 rounded-md text-xl font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-lg font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -259,7 +258,7 @@ export default function TaskTable({
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-5">
+                  <div className="col-span-6 pl-2">
                     <span className={`font-medium text-lg leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
@@ -268,13 +267,13 @@ export default function TaskTable({
                       {task.title}
                     </span>
                   </div>
-                  <div className="col-span-1 flex justify-end">
+                  <div className="col-span-1 flex justify-end pr-2">
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                       <Clock className="h-4 w-4 mr-1" />
                       <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                     </div>
                   </div>
-                  <div className="col-span-1 flex justify-end">
+                  <div className="col-span-1 flex justify-end pr-2">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
                       <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                         <CheckCircle className="h-4 w-4 mr-1" />
@@ -284,16 +283,7 @@ export default function TaskTable({
                       <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-end">
-                    {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
-                      <span className={`text-sm font-bold ${getDistractionColor(task.distractionLevel)}`}>
-                        {task.distractionLevel}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
-                    )}
-                  </div>
-                  <div className="col-span-1 flex justify-end gap-1">
+                  <div className="col-span-1 flex justify-end pr-2 gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
