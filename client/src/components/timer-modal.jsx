@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -56,43 +57,70 @@ export default function TimerModal({ isOpen, task, onClose, onConfirm }) {
       <DialogContent className="w-[95vw] max-w-md mx-auto max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl font-semibold text-center text-gray-900 dark:text-gray-100">
-            Task Timer
+            Complete Task
           </DialogTitle>
         </DialogHeader>
 
-        <div className="text-center space-y-4 sm:space-y-6">
-          <h3 className="text-base sm:text-lg font-medium text-gray-800 dark:text-gray-200 px-2 break-words">
+        <div className="space-y-4 sm:space-y-6">
+          <h3 className="text-base sm:text-lg font-medium text-center text-gray-800 dark:text-gray-200 px-2 break-words">
             {task?.title}
           </h3>
 
-          <div className="text-2xl sm:text-3xl font-mono font-bold text-gray-900 dark:text-gray-100 py-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            {formatTimeMinutes(actualTime)}
+          {/* Actual Time Slider */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+              Actual Time: {formatTimeMinutes(actualTime)}
+            </label>
+            <div className="relative">
+              <input
+                type="range"
+                min="5"
+                max="240"
+                step="5"
+                value={actualTime}
+                onChange={(e) => setActualTime(parseInt(e.target.value))}
+                className="slider w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <span>5m</span>
+                <span>4h</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-2">
-            <Button
-              onClick={() => {}}
-              className="w-full sm:w-auto px-6 py-3 h-12 text-base font-medium bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 rounded-lg transition-all duration-200"
-            >
-              Pause
-            </Button>
-
-            <Button
-              onClick={() => {}}
-              variant="outline"
-              className="w-full sm:w-auto px-6 py-3 h-12 text-base font-medium border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"
-            >
-              Reset
-            </Button>
-          </div>
-
-          <div className="pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 px-2">
-              Mark this task as completed?
+          {/* Distraction Level */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+              How distracted were you?
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              {[1, 2, 3, 4, 5].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setDistractionLevel(level)}
+                  className={`px-3 py-2 text-xs rounded-lg border transition-all ${
+                    distractionLevel === level
+                      ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+            <p className={`text-xs font-medium ${getDistractionColor(distractionLevel)}`}>
+              {getDistractionLabel(distractionLevel)}
             </p>
+          </div>
+
+          <div className="flex space-x-3 pt-4">
+            <Button onClick={handleClose} variant="outline" className="flex-1">
+              Cancel
+            </Button>
             <Button
-              onClick={() => {}}
-              className="w-full py-3 h-12 text-base font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 transform hover:scale-105"
+              onClick={handleConfirm}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white transition-colors duration-200"
             >
               Complete Task
             </Button>
