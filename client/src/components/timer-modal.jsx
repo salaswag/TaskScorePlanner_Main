@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -53,76 +52,47 @@ export default function TimerModal({ isOpen, task, onClose, onConfirm }) {
   if (!isOpen || !task) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="w-[95vw] max-w-md mx-auto max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span>Complete Task</span>
+          <DialogTitle className="text-lg sm:text-xl font-semibold text-center text-gray-900 dark:text-gray-100">
+            Task Timer
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 p-4">
-          <div className="text-center">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              {task.title}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Estimated: {formatTimeMinutes(task.estimatedTime)}
-            </p>
+        <div className="text-center space-y-4 sm:space-y-6">
+          <h3 className="text-base sm:text-lg font-medium text-gray-800 dark:text-gray-200 px-2 break-words">
+            {task?.title}
+          </h3>
+
+          <div className="text-2xl sm:text-3xl font-mono font-bold text-gray-900 dark:text-gray-100 py-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            {formatTimeMinutes(actualTime)}
           </div>
 
-          {/* Actual Time Slider */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Actual time spent: {formatTimeMinutes(actualTime)}
-            </label>
-            <div className="relative">
-              <input
-                type="range"
-                min="5"
-                max="240"
-                step="5"
-                value={actualTime}
-                onChange={(e) => setActualTime(parseInt(e.target.value))}
-                className="slider w-full"
-              />
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span>5m</span>
-                <span>4h</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Distraction Level Slider */}
-          <div>
-            <label className={`block text-sm font-medium mb-3 ${getDistractionColor(distractionLevel)}`}>
-              Distraction level: {distractionLevel} - {getDistractionLabel(distractionLevel)}
-            </label>
-            <div className="relative">
-              <input
-                type="range"
-                min="1"
-                max="5"
-                step="1"
-                value={distractionLevel}
-                onChange={(e) => setDistractionLevel(parseInt(e.target.value))}
-                className="slider w-full"
-              />
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span className="text-green-600">Focused</span>
-                <span className="text-red-500">Distracted</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex space-x-3">
-            <Button onClick={handleClose} variant="outline" className="flex-1">
-              Cancel
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-2">
+            <Button
+              onClick={() => {}}
+              className="w-full sm:w-auto px-6 py-3 h-12 text-base font-medium bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 rounded-lg transition-all duration-200"
+            >
+              Pause
             </Button>
-            <Button 
-              onClick={handleConfirm} 
-              className="flex-1"
+
+            <Button
+              onClick={() => {}}
+              variant="outline"
+              className="w-full sm:w-auto px-6 py-3 h-12 text-base font-medium border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"
+            >
+              Reset
+            </Button>
+          </div>
+
+          <div className="pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 px-2">
+              Mark this task as completed?
+            </p>
+            <Button
+              onClick={() => {}}
+              className="w-full py-3 h-12 text-base font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 transform hover:scale-105"
             >
               Complete Task
             </Button>
