@@ -557,10 +557,15 @@ export class MongoStorage {
     }
   }
 
-  async getTimeEntries() {
+  async getTimeEntries(userId = null) {
     try {
-      const timeEntries = await this.timeEntriesCollection.find({}).toArray();
-      console.log('Fetched time entries from MongoDB:', timeEntries.length);
+      // Always filter by userId - never return all time entries
+      const userFilter = userId ? { userId } : { userId: 'no-user-specified' };
+      
+      console.log('Getting time entries for userId:', userId, 'Filter:', userFilter);
+      
+      const timeEntries = await this.timeEntriesCollection.find(userFilter).toArray();
+      console.log('Fetched time entries from MongoDB for user', userId, ':', timeEntries.length);
       return timeEntries.map(entry => ({
         ...entry,
         id: entry.id || entry._id.toString()

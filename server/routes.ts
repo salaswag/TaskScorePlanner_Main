@@ -329,6 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({});
       }
       
+      console.log("✅ Getting time entries for user:", userId);
       const timeEntries = await mongoStorage.getTimeEntries(userId);
       
       // Convert to date-indexed object for easier frontend usage
@@ -337,6 +338,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timeData[entry.date] = entry.timeInMinutes;
       });
       
+      console.log("📅 Time entries for user", userId, ":", Object.keys(timeData).length, "entries");
       res.json(timeData);
     } catch (error) {
       console.error("Error fetching time entries:", error);

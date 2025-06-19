@@ -5,33 +5,44 @@ import { ChevronLeft, ChevronRight, Clock, Check, X, Lock } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useAuth } from '@/hooks/use-auth';
 
 export function CalendarView() {
+  const { user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [sliderTime, setSliderTime] = useState(0);
   const [timeData, setTimeData] = useState({}); // Store manual time entries
   const [isLoading, setIsLoading] = useState(false);
-  const [isAnonymous, setIsAnonymous] = useState(false); // Mock anonymous state
+  
+  const isAnonymous = !user || user.isAnonymous;
 
   useEffect(() => {
     fetchTimeEntries();
-  }, []);
+  }, [user, isAnonymous]);
 
   const fetchTimeEntries = async () => {
+    // Don't fetch time entries for anonymous users
+    if (isAnonymous) {
+      console.log('👤 Anonymous user - time entries not available');
+      setTimeData({});
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await apiRequest('/api/time-entries');
-      const data = await response.json();
-      setTimeData(data);
+      if (response.ok) {
+        const data = await response.json();
+        setTimeData(data);
+      } else {
+        console.error('Failed to fetch time entries:', response.status);
+        setTimeData({});
+      }
     } catch (error) {
       console.error('Error fetching time entries:', error);
-      // Fallback to localStorage for offline functionality
-      const saved = localStorage.getItem('timeData');
-      if (saved) {
-        setTimeData(JSON.parse(saved));
-      }
+      setTimeData({});
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +108,11 @@ export function CalendarView() {
   };
 
   const handleTimeEdit = (date) => {
+    // Don't allow editing for anonymous users
+    if (isAnonymous) {
+      return;
+    }
+
     // Don't allow editing future dates
     if (isAfter(date, new Date())) {
       return;
@@ -109,6 +125,11 @@ export function CalendarView() {
   };
 
   const handleTimeSave = async () => {
+    // Don't allow saving for anonymous users
+    if (isAnonymous) {
+      return;
+    }
+
     setIsLoading(true);
     if (selectedDate) {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -133,28 +154,12 @@ export function CalendarView() {
             [dateKey]: sliderTime
           }));
 
-          // Also update localStorage as backup
-          const newTimeData = { ...timeData, [dateKey]: sliderTime };
-          localStorage.setItem('timeData', JSON.stringify(newTimeData));
-
           console.log('Time entry saved successfully to MongoDB');
         } else {
           console.error('Failed to save time entry to MongoDB');
-          // Fallback to localStorage only
-          setTimeData(prev => ({
-            ...prev,
-            [dateKey]: sliderTime
-          }));
-          localStorage.setItem('timeData', JSON.stringify({ ...timeData, [dateKey]: sliderTime }));
         }
       } catch (error) {
         console.error('Error saving time entry:', error);
-        // Fallback to localStorage
-        setTimeData(prev => ({
-          ...prev,
-          [dateKey]: sliderTime
-        }));
-        localStorage.setItem('timeData', JSON.stringify({ ...timeData, [dateKey]: sliderTime }));
       }
     }
 
@@ -191,6 +196,24 @@ export function CalendarView() {
 
   return (
     <div className="w-full space-y-4">
+      {/* Authentication Required Message */}
+      {isAnonymous && (
+        <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Lock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              <div>
+                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                  Authentication Required
+                </p>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                  You must be logged in to use the time tracking calendar. Please log in to track your work hours.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Calendar Header */}
       <div className="flex items-center justify-between">
@@ -203,6 +226,7 @@ export function CalendarView() {
             size="sm" 
             onClick={goToToday}
             className="text-xs"
+            disabled={isAnonymous}
           >
             Today
           </Button>
@@ -212,6 +236,7 @@ export function CalendarView() {
             variant="outline"
             size="sm"
             onClick={() => navigateMonth('prev')}
+            disabled={isAnonymous}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -219,6 +244,7 @@ export function CalendarView() {
             variant="outline"
             size="sm"
             onClick={() => navigateMonth('next')}
+            disabled={isAnonymous}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -236,7 +262,7 @@ export function CalendarView() {
           </CardContent>
         </Card>
       ) : (
-        <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <div className={`bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden ${isAnonymous ? 'opacity-50 pointer-events-none' : ''}`}>
           {/* Days of Week Header */}
           <div className="grid grid-cols-7 bg-gray-50 dark:bg-gray-800">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -266,8 +292,8 @@ export function CalendarView() {
                   ${isCurrentMonth && !isFuture && timeSpent > 0 ? getTimeColorClasses(timeSpent) : ''}
                   ${isCurrentMonth && !isFuture && timeSpent === 0 ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800' : ''}
                 `}
-                  onClick={() => !isFuture && isCurrentMonth && handleTimeEdit(day)}
-                  title={!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked - Click to edit` : "Click to add time") : ""}
+                  onClick={() => !isFuture && isCurrentMonth && !isAnonymous && handleTimeEdit(day)}
+                  title={isAnonymous ? "Login required to track time" : (!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked - Click to edit` : "Click to add time") : "")}
                 >
                   <div className="flex flex-col h-full relative z-10">
                     {/* Date Number */}
@@ -283,13 +309,13 @@ export function CalendarView() {
                     {isCurrentMonth && !isFuture && timeSpent === 0 && (
                       <div className="flex-1 flex flex-col items-center justify-center">
                         <div
-                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors w-full text-center"
-                          onClick={() => handleTimeEdit(day)}
-                          title="Click to add time"
+                          className={`rounded-lg p-2 transition-colors w-full text-center ${isAnonymous ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                          onClick={() => !isAnonymous && handleTimeEdit(day)}
+                          title={isAnonymous ? "Login required to track time" : "Click to add time"}
                         >
                           <div className="flex items-center justify-center gap-1 text-gray-400 dark:text-gray-500">
-                            <Clock className="w-3 h-3" />
-                            <span className="text-xs">Add</span>
+                            {isAnonymous ? <Lock className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                            <span className="text-xs">{isAnonymous ? "Login" : "Add"}</span>
                           </div>
                         </div>
                       </div>
@@ -323,8 +349,13 @@ export function CalendarView() {
       {/* Instructions and Small Disclaimer */}
       <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          <span>Click any day to manually enter time worked</span>
+          {isAnonymous ? <Lock className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+          <span>
+            {isAnonymous 
+              ? "Login required to track time on calendar" 
+              : "Click any day to manually enter time worked"
+            }
+          </span>
         </div>
         <div className="text-xs text-gray-400 dark:text-gray-500">
           Manual time tracking - not connected to tasks
