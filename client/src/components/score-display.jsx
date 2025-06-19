@@ -11,18 +11,30 @@ export default function ScoreDisplay({
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
+  const percentage = totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0;
+
   return (
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
-      <CardContent className="p-3">
-        <div className="text-center space-y-2">
-          {/* Main Score */}
-          <div className="text-xl font-bold text-black dark:text-white">
-            {totalScore} / {totalPossibleScore}
+      <CardContent className="p-3 h-full flex items-center justify-center">
+        <div className="flex items-center gap-4 w-full">
+          {/* Score and Percentage */}
+          <div className="text-center">
+            <div className="text-lg font-bold text-black dark:text-white">
+              {totalScore} / {totalPossibleScore}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              {percentage}%
+            </div>
           </div>
           
           {/* Time Left */}
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Time Left: {formatTime(totalEstimatedTime)}
+          <div className="text-center">
+            <div className="text-sm font-medium text-black dark:text-white">
+              {formatTime(totalEstimatedTime)}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Time Left
+            </div>
           </div>
         </div>
       </CardContent>
