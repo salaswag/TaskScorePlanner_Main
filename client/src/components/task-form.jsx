@@ -10,7 +10,7 @@ import { Plus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export function TaskForm({ onTaskSubmit, isLater = false }) {
+export default function TaskForm({ onTaskSubmit, isLater = false }) {
   const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');

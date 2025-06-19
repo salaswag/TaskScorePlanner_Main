@@ -57,20 +57,20 @@ export function useTasks() {
     if (previousUserId !== null && currentUserId) {
       const userChanged = previousUserId !== currentUserId;
       const authStatusChanged = previousIsAnonymous !== currentIsAnonymous;
-      
+
       if (userChanged || authStatusChanged) {
         console.log('🔄 User/auth status changed, clearing cache and forcing refresh...');
         console.log(`Previous: ${previousUserId} (anonymous: ${previousIsAnonymous})`);
         console.log(`Current: ${currentUserId} (anonymous: ${currentIsAnonymous})`);
-        
+
         // Immediately clear all cached queries and data
         queryClient.clear();
         queryClient.removeQueries();
-        
+
         // Clear session storage
         sessionStorage.removeItem('currentUser');
         sessionStorage.removeItem('authToken');
-        
+
         // Force immediate refetch of tasks for the new user
         setTimeout(() => {
           queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
@@ -115,7 +115,7 @@ export function useTasks() {
 
     window.addEventListener('force-task-refresh', handleForceRefresh);
     window.addEventListener('auth-state-changed', handleForceRefresh);
-    
+
     return () => {
       window.removeEventListener('force-task-refresh', handleForceRefresh);
       window.removeEventListener('auth-state-changed', handleForceRefresh);
