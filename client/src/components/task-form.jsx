@@ -1,93 +1,106 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Plus, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-export default function TaskForm({ onSubmit, isLoading }) {
-  const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState(5);
-  const [estimatedTime, setEstimatedTime] = useState(30);
+export function TaskForm({ onTaskSubmit, isLater = false }) {
+  const { user } = useAuth();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState([5]);
+  const [estimatedTime, setEstimatedTime] = useState([30]);
+  const [isFocus, setIsFocus] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (title.trim() && priority >= 1 && priority <= 10 && estimatedTime > 0) {
-      const taskData = {
-        title: title.trim(),
-        priority: Number(priority),
-        estimatedTime: Number(estimatedTime),
-        isFocus: false,
-      };
-      console.log('Submitting task with data:', taskData);
-      onSubmit(taskData);
-      setTitle("");
-      setPriority(5);
-      setEstimatedTime(30);
-    }
-  };
-
-  const formatTime = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
+  const isAnonymous = !user || user.isAnonymous;
 
   return (
-    <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
-      <CardContent className="p-2 h-full flex items-center justify-center">
-        <form onSubmit={handleSubmit} className="w-full">
-          {/* All Elements in One Line */}
-          <div className="flex items-center gap-4 w-full">
-            {/* Task Input - Flexible width */}
+    <Card>
+      <CardHeader>
+        <CardTitle>Add New Task</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onTaskSubmit({
+              title,
+              description,
+              priority: priority[0],
+              estimatedTime: estimatedTime[0],
+              isFocus,
+              isLater,
+            });
+            setTitle('');
+            setDescription('');
+            setPriority([5]);
+            setEstimatedTime([30]);
+            setIsFocus(false);
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <Label htmlFor="title">Title</Label>
             <Input
               type="text"
-              placeholder="Add new task..."
+              id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
+              placeholder="Task title"
             />
-
-            {/* Priority Slider - Bigger with descriptive label */}
-            <div className="flex items-center gap-2 min-w-[180px]">
-              <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
-                Priority: {priority}
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={priority}
-                onChange={(e) => setPriority(parseInt(e.target.value))}
-                className="slider w-20 flex-1"
-              />
-            </div>
-
-            {/* Time Slider - Bigger with descriptive label */}
-            <div className="flex items-center gap-2 min-w-[200px]">
-              <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
-                Time: {formatTime(estimatedTime)}
-              </label>
-              <input
-                type="range"
-                min="5"
-                max="120"
-                step="5"
-                value={estimatedTime}
-                onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
-                className="slider w-20 flex-1"
-              />
-            </div>
-
-            {/* Add Button */}
-            <Button
-              type="submit"
-              disabled={!title.trim() || isLoading}
-              className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap"
-            >
-              <Plus className="h-4 w-4" />
-              <span>{isLoading ? 'Adding...' : 'Add'}</span>
-            </Button>
           </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Task description"
+            />
+          </div>
+          <div>
+            <Label>Priority: {priority[0]}</Label>
+            <Slider
+              value={priority}
+              onValueChange={setPriority}
+              defaultValue={[5]}
+              max={10}
+              step={1}
+            />
+          </div>
+          <div>
+            <Label>Estimated Time: {estimatedTime[0]} minutes</Label>
+            <Slider
+              value={estimatedTime}
+              onValueChange={setEstimatedTime}
+              defaultValue={[30]}
+              max={120}
+              step={5}
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch id="isFocus" checked={isFocus} onCheckedChange={setIsFocus} />
+            <Label htmlFor="isFocus">Focus Task</Label>
+          </div>
+          <Button type="submit" className="w-full">
+            <Plus className="h-4 w-4 mr-2" />
+            Add {isLater ? 'Later' : ''} Task
+          </Button>
+
+          {isAnonymous && (
+            <Alert className="mt-4 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <AlertDescription className="text-amber-800 dark:text-amber-200">
+                <strong>Note:</strong> Your tasks are stored temporarily and will be lost when you close the browser. Sign in to save your tasks permanently.
+              </AlertDescription>
+            </Alert>
+          )}
         </form>
       </CardContent>
     </Card>
