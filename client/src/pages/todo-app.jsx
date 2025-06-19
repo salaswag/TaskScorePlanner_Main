@@ -4,6 +4,7 @@ import TaskEditModal from "@/components/task-edit-modal";
 import TimerModal from "@/components/timer-modal";
 import LaterSection from "@/components/later-section";
 import FloatingAddButton from "@/components/floating-add-button";
+import TaskFormModal from "@/components/task-form-modal";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
@@ -11,7 +12,8 @@ import ScoreDisplay from "@/components/score-display";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
-import { Moon, Sun, CheckSquare, GripVertical } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Moon, Sun, CheckSquare, GripVertical, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import UserMenu from '../components/user-menu';
@@ -23,9 +25,11 @@ export default function TodoApp() {
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [activeTab, setActiveTab] = useState("tasks");
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
   const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } = useTasks();
   const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
 
   const handleCompleteTask = (task) => {
     setCurrentTask(task);
@@ -255,8 +259,25 @@ export default function TodoApp() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
+      {/* Collapsible Header for Authenticated Users */}
+      {user && !user.isAnonymous && !isHeaderVisible && (
+        <div className="fixed top-2 left-1/2 transform -translate-x-1/2 z-50">
+          <Button
+            onClick={() => setIsHeaderVisible(true)}
+            variant="outline"
+            size="sm"
+            className="bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all"
+          >
+            <ChevronDown className="h-4 w-4 mr-2" />
+            Show Menu
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-4">
+      <header className={`bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-4 transition-all duration-300 ${
+        user && !user.isAnonymous && !isHeaderVisible ? 'hidden' : ''
+      }`}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -283,6 +304,17 @@ export default function TodoApp() {
             </div>
 
             <div className="flex items-center space-x-1 sm:space-x-2">
+              {user && !user.isAnonymous && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsHeaderVisible(false)}
+                  className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  title="Hide menu"
+                >
+                  <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -303,7 +335,7 @@ export default function TodoApp() {
       </header>
 
       {/* Main Content */}
-      <div className="h-[calc(100vh-125px)] overflow-y-auto">
+      <div className={`${user && !user.isAnonymous && !isHeaderVisible ? 'h-screen' : 'h-[calc(100vh-125px)]'} overflow-y-auto transition-all duration-300`}>
         <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
@@ -314,6 +346,15 @@ export default function TodoApp() {
                     totalScore={totalScore}
                     totalPossibleScore={totalPossibleScore}
                     totalEstimatedTime={totalEstimatedTime}
+                  />
+                </div>
+
+                {/* Desktop Task Form - Hidden on mobile */}
+                <div className="hidden lg:block">
+                  <TaskFormModal
+                    isInline={true}
+                    onSubmit={handleCreateTask}
+                    isLoading={createTask.isPending}
                   />
                 </div>
 
@@ -346,11 +387,13 @@ export default function TodoApp() {
                 </div>
               </div>
 
-              {/* Floating Add Button */}
-              <FloatingAddButton
-                onSubmit={handleCreateTask}
-                isLoading={createTask.isPending}
-              />
+              {/* Floating Add Button - Only on mobile/tablet */}
+              <div className="lg:hidden">
+                <FloatingAddButton
+                  onSubmit={handleCreateTask}
+                  isLoading={createTask.isPending}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="dashboard" className="mt-0">
