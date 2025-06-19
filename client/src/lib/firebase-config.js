@@ -3,13 +3,13 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDSvbg8ko_7lx8_bUBOmXaE6hZ8u9Wrzgk",
-  authDomain: "taskscoreplanner.firebaseapp.com",
-  projectId: "taskscoreplanner",
-  storageBucket: "taskscoreplanner.firebasestorage.app",
-  messagingSenderId: "10710154133",
-  appId: "1:10710154133:web:9d2327a6b9e90b5cf6a3f5",
-  measurementId: "G-EEL36PB3VC"
+  apiKey: "AIzaSyBCgjsKVuqS99hx_29uX5e2nJeyyWoJhrE",
+  authDomain: "task-master-pro-auth.firebaseapp.com",
+  projectId: "task-master-pro-auth",
+  storageBucket: "task-master-pro-auth.firebasestorage.app",
+  messagingSenderId: "1098500419305",
+  appId: "1:1098500419305:web:4af12d37896359511c4a78",
+  measurementId: "G-27LVP6GDRB"
 };
 
 // Prevent duplicate app initialization
