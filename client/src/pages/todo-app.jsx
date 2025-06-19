@@ -402,15 +402,6 @@ export default function TodoApp() {
                     totalEstimatedTime={totalEstimatedTime}
                   />
 
-                  {/* Task Form - Inline between main tasks and later section */}
-                  <div className="w-full px-2 md:px-0">
-                    <TaskFormModal
-                      isInline={true}
-                      onSubmit={handleCreateTask}
-                      isLoading={createTask.isPending}
-                    />
-                  </div>
-
                   {/* Later Section */}
                   <LaterSection
                     tasks={laterTasks}
@@ -425,7 +416,22 @@ export default function TodoApp() {
                 </div>
               </div>
 
-              
+              {/* Floating Add Button - Only on mobile/tablet */}
+              <div className="lg:hidden">
+                <FloatingAddButton
+                  onSubmit={handleCreateTask}
+                  isLoading={createTask.isPending}
+                />
+              </div>
+
+              {/* Floating Task Form - Desktop only */}
+              <div className="hidden lg:block fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-4xl px-6">
+                <TaskFormModal
+                  isInline={true}
+                  onSubmit={handleCreateTask}
+                  isLoading={createTask.isPending}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="dashboard" className="mt-0">
