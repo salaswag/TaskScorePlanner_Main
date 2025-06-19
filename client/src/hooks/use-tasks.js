@@ -40,17 +40,39 @@ export function useTasks() {
   const { user } = useAuth();
   const previousUserRef = useRef(null);
 
-  // Detect user changes and invalidate cache
+  // Detect user changes and clear cache immediately
   useEffect(() => {
     const currentUserId = user?.uid;
     const previousUserId = previousUserRef.current;
+    const currentIsAnonymous = user?.isAnonymous || false;
+    const previousIsAnonymous = previousUserRef.current ? 
+      JSON.parse(sessionStorage.getItem('currentUser') || '{}').isAnonymous || false : 
+      false;
 
-    if (previousUserId && currentUserId && previousUserId !== currentUserId) {
-      console.log('🔄 User changed, invalidating task cache...');
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.clear(); // Clear all cached data
+    // Clear cache when:
+    // 1. Switching between different authenticated users
+    // 2. Switching from authenticated to anonymous
+    // 3. Switching from anonymous to authenticated
+    if (previousUserId && currentUserId) {
+      const userChanged = previousUserId !== currentUserId;
+      const authStatusChanged = previousIsAnonymous !== currentIsAnonymous;
+      
+      if (userChanged || authStatusChanged) {
+        console.log('🔄 User/auth status changed, clearing all cached data...');
+        console.log(`Previous: ${previousUserId} (anonymous: ${previousIsAnonymous})`);
+        console.log(`Current: ${currentUserId} (anonymous: ${currentIsAnonymous})`);
+        
+        // Immediately clear all cached queries and data
+        queryClient.clear();
+        queryClient.removeQueries();
+        
+        // Clear session storage
+        sessionStorage.removeItem('currentUser');
+        sessionStorage.removeItem('authToken');
+      }
     }
 
+    // Update ref before storing new user data
     previousUserRef.current = currentUserId;
 
     // Store user info for API requests
@@ -69,17 +91,25 @@ export function useTasks() {
           console.error('Failed to get auth token:', error);
         });
       }
+    } else {
+      // Clear session data if no user
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('authToken');
     }
   }, [user, queryClient]);
 
   const { data: tasks, isLoading, error } = useQuery({
-    queryKey: ["/api/tasks", user?.uid], // Include user ID in query key
+    queryKey: ["/api/tasks", user?.uid, user?.isAnonymous], // Include user ID and auth status in query key
     queryFn: async () => {
+      console.log('🔍 Fetching tasks for user:', user?.uid, 'anonymous:', user?.isAnonymous);
       const response = await apiRequest("/api/tasks");
-      return response.json();
+      const data = await response.json();
+      console.log('📋 Fetched tasks:', data.length, 'tasks');
+      return data;
     },
-    staleTime: 30000, // 30 seconds
+    staleTime: 10000, // Reduced to 10 seconds for better responsiveness
     refetchOnWindowFocus: false,
+    enabled: !!user, // Only fetch when user is available
   });
 
   const createTask = useMutation({

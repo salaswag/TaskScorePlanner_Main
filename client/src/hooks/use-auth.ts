@@ -55,19 +55,29 @@ export function useAuth() {
     let previousUser: User | null = null;
     
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Detect user switching
-      if (previousUser && user && 
-          previousUser.uid !== user.uid && 
-          !previousUser.isAnonymous && 
-          !user.isAnonymous) {
-        console.log('🔄 User switch detected, clearing data...');
-        // Clear cached data when switching between authenticated users
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('user-tasks');
-          localStorage.removeItem('user-preferences');
-          // Reload to start fresh with new user
-          window.location.reload();
-          return;
+      // Detect any user change that requires data clearing
+      if (previousUser && user) {
+        const userIdChanged = previousUser.uid !== user.uid;
+        const authStatusChanged = previousUser.isAnonymous !== user.isAnonymous;
+        
+        if (userIdChanged || authStatusChanged) {
+          console.log('🔄 User/auth change detected, clearing data...');
+          console.log(`Previous: ${previousUser.uid} (anonymous: ${previousUser.isAnonymous})`);
+          console.log(`Current: ${user.uid} (anonymous: ${user.isAnonymous})`);
+          
+          // Clear all cached data immediately
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('user-tasks');
+            localStorage.removeItem('user-preferences');
+            
+            // Only reload for significant changes (different authenticated users)
+            if (!previousUser.isAnonymous && !user.isAnonymous && userIdChanged) {
+              window.location.reload();
+              return;
+            }
+          }
         }
       }
 
@@ -132,19 +142,23 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       console.log('🔓 Starting logout process...');
+      
+      // Clear session data immediately before signing out
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('currentUser');
+        sessionStorage.removeItem('authToken');
+        localStorage.removeItem('user-tasks');
+        localStorage.removeItem('user-preferences');
+      }
+      
       await signOut(auth);
       console.log('✅ Logout successful');
       
-      // Clear any cached data and reload to start fresh as anonymous
+      // Force page reload to ensure clean state
       if (typeof window !== 'undefined') {
-        // Clear any local storage related to user data
-        localStorage.removeItem('user-tasks');
-        localStorage.removeItem('user-preferences');
-        
-        // Force page reload to clear all state and start fresh as anonymous
         setTimeout(() => {
           window.location.reload();
-        }, 100);
+        }, 50); // Reduced delay for faster response
       }
     } catch (error: any) {
       console.error('❌ Logout failed:', error.message);
