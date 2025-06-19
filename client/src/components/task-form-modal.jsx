@@ -32,18 +32,16 @@ export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, is
 
   if (isInline) {
     return (
-      <div className="flex justify-center w-full">
-        <Card className="bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 max-w-md w-full">
-          <CardContent>
-            <TaskForm 
-              onSubmit={handleSubmit} 
-              isLoading={isLoading}
-              formData={formData}
-              setFormData={setFormData}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
+        <CardContent>
+          <TaskForm 
+            onSubmit={handleSubmit} 
+            isLoading={isLoading}
+            formData={formData}
+            setFormData={setFormData}
+          />
+        </CardContent>
+      </Card>
     );
   }
 
