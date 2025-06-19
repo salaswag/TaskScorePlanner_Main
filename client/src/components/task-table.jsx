@@ -152,24 +152,10 @@ export default function TaskTable({
             return (
               <div 
                 key={task.id}
-                draggable={!task.completed}
-                onDragStart={(e) => {
-                  if (!task.completed) {
-                    const taskData = { ...task, id: task.id };
-                    e.dataTransfer.setData('text/plain', JSON.stringify(taskData));
-                    e.dataTransfer.effectAllowed = 'move';
-                    e.currentTarget.classList.add('opacity-50');
-                  } else {
-                    e.preventDefault();
-                  }
-                }}
-                onDragEnd={(e) => {
-                  e.currentTarget.classList.remove('opacity-50');
-                }}
                 className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group ${
                   task.completed 
                     ? `${getDistractionBackgroundColor(task.distractionLevel) || 'bg-gray-50 dark:bg-gray-800'}` 
-                    : 'cursor-grab active:cursor-grabbing'
+                    : ''
                 }`}
               >
                 <div className="grid grid-cols-12 gap-0.5 items-center">

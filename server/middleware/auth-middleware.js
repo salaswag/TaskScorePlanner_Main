@@ -7,17 +7,21 @@ const lastLogTime = new Map();
 export const authenticateUser = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown';
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    
+    // Create a more unique anonymous identifier
+    const anonymousId = `anonymous-${clientIP}-${Buffer.from(userAgent).toString('base64').substring(0, 8)}`;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // Only log once per IP to reduce spam
-      if (!loggedAnonymousUsers.has(clientIP)) {
-        console.log(`👤 No token provided, using anonymous user for IP: ${clientIP}`);
-        loggedAnonymousUsers.add(clientIP);
+      // Only log once per unique anonymous ID to reduce spam
+      if (!loggedAnonymousUsers.has(anonymousId)) {
+        console.log(`👤 No token provided, using anonymous user: ${anonymousId}`);
+        loggedAnonymousUsers.add(anonymousId);
       }
 
       req.user = { 
-        uid: `anonymous-${clientIP}`, 
+        uid: anonymousId, 
         email: null, 
         isAnonymous: true 
       };
@@ -40,10 +44,13 @@ export const authenticateUser = async (req, res, next) => {
     console.error('❌ Token verification failed:', error.code || 'unknown', '-', error.message);
 
     // Fall back to anonymous user on error
-    const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
-    console.log(`🔄 Falling back to anonymous user for IP: ${clientIP}`);
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown';
+    const userAgent = req.headers['user-agent'] || 'unknown';
+    const anonymousId = `anonymous-${clientIP}-${Buffer.from(userAgent).toString('base64').substring(0, 8)}`;
+    
+    console.log(`🔄 Falling back to anonymous user: ${anonymousId}`);
     req.user = { 
-      uid: `anonymous-${clientIP}`, 
+      uid: anonymousId, 
       email: null, 
       isAnonymous: true 
     };

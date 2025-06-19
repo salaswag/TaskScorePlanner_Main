@@ -57,17 +57,18 @@ export class MongoStorage {
 
   async getTasks(userId = null) {
     try {
-      const userFilter = userId ? { userId } : {};
+      // Always filter by userId - never return all tasks
+      const userFilter = userId ? { userId } : { userId: 'no-user-specified' };
+      
+      console.log('Getting tasks for userId:', userId, 'Filter:', userFilter);
       
       // Fetch tasks from main Tasks collection
       const mainTasks = await this.tasksCollection.find(userFilter).sort({ createdAt: -1 }).toArray();
-      console.log('Raw main tasks from MongoDB:', JSON.stringify(mainTasks, null, 2));
-      console.log('Fetched main tasks from MongoDB:', mainTasks.length);
+      console.log('Fetched main tasks from MongoDB for user', userId, ':', mainTasks.length);
 
       // Fetch tasks from Later Tasks collection
       const laterTasks = await this.laterTasksCollection.find(userFilter).sort({ createdAt: -1 }).toArray();
-      console.log('Raw later tasks from MongoDB:', JSON.stringify(laterTasks, null, 2));
-      console.log('Fetched later tasks from MongoDB:', laterTasks.length);
+      console.log('Fetched later tasks from MongoDB for user', userId, ':', laterTasks.length);
 
       // Combine both collections
       const allTasks = [

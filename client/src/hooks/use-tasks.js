@@ -101,10 +101,11 @@ export function useTasks() {
   const { data: tasks, isLoading, error } = useQuery({
     queryKey: ["/api/tasks", user?.uid, user?.isAnonymous], // Include user ID and auth status in query key
     queryFn: async () => {
-      console.log('🔍 Fetching tasks for user:', user?.uid, 'anonymous:', user?.isAnonymous);
+      const currentUserId = user?.uid;
+      console.log('🔍 Fetching tasks for user:', currentUserId, 'anonymous:', user?.isAnonymous);
       const response = await apiRequest("/api/tasks");
       const data = await response.json();
-      console.log('📋 Fetched tasks:', data.length, 'tasks');
+      console.log('📋 Fetched tasks for user', currentUserId, ':', data.length, 'tasks');
       return data;
     },
     staleTime: 10000, // Reduced to 10 seconds for better responsiveness
