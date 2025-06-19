@@ -270,23 +270,30 @@ export default function TodoApp() {
             <div className="flex-1 flex justify-center">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid grid-cols-2">
-                  <TabsTrigger value="tasks">Task Management</TabsTrigger>
-                  <TabsTrigger value="dashboard">Time Tracking</TabsTrigger>
+                  <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 sm:px-3">
+                    <span className="hidden sm:inline">Task Management</span>
+                    <span className="sm:hidden">Tasks</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="dashboard" className="text-xs sm:text-sm px-2 sm:px-3">
+                    <span className="hidden sm:inline">Time Tracking</span>
+                    <span className="sm:hidden">Time</span>
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleTheme}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
               >
                 {theme === "light" ? (
-                  <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <Moon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
                 ) : (
-                  <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
                 )}
               </Button>
               <UserMenu />

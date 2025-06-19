@@ -1,9 +1,29 @@
+
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle, Archive } from "lucide-react";
+import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle, Archive, MoreHorizontal, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchiveTask }) {
+  const [expandedTasks, setExpandedTasks] = useState(new Set());
+
+  const toggleExpanded = (taskId) => {
+    const newExpanded = new Set(expandedTasks);
+    if (newExpanded.has(taskId)) {
+      newExpanded.delete(taskId);
+    } else {
+      newExpanded.add(taskId);
+    }
+    setExpandedTasks(newExpanded);
+  };
+
   const formatTime = (minutes) => {
     if (!minutes) return "-";
     const hours = Math.floor(minutes / 60);
@@ -95,12 +115,12 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
         }
       }}
     >
-      <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700 border-dashed">
+      <div className="px-4 sm:px-6 py-3 border-b border-gray-200 dark:border-gray-700 border-dashed">
         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Later (Not counted in score)</h3>
       </div>
 
-      {/* Table Header */}
-      <div className="px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
+      {/* Table Header - Only visible on larger screens */}
+      <div className="hidden lg:block px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
         <div className="grid grid-cols-12 gap-0.5 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
@@ -116,126 +136,260 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
       {/* Task Rows */}
       <div className="divide-y divide-gray-200 dark:divide-gray-700 divide-dashed">
         {sortedTasks.length === 0 ? (
-          <div className="px-6 py-8 text-center text-gray-400 dark:text-gray-500">
+          <div className="px-4 sm:px-6 py-8 text-center text-gray-400 dark:text-gray-500">
             <p className="text-sm">Drag incomplete tasks here for later</p>
             <p className="text-xs mt-1 opacity-75">Completed tasks cannot be moved</p>
           </div>
         ) : (
-          sortedTasks.map((task) => (
-            <div 
-              key={task.id} 
-              className={`px-6 py-4 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors group ${
-                task.completed 
-                  ? `${getDistractionBackgroundColor(task.distractionLevel) || ''}` 
-                  : ''
-              }`}
-            >
-              <div className="grid grid-cols-12 gap-0.5 items-center">
-                <div className="col-span-1 flex justify-center">
-                  {!task.completed ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onMoveToMain(task)}
-                      className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-1.5 py-1 h-6 font-medium"
-                      title="Move to Main"
+          sortedTasks.map((task) => {
+            const isExpanded = expandedTasks.has(task.id);
+
+            return (
+              <div 
+                key={task.id} 
+                className={`px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors group ${
+                  task.completed 
+                    ? `${getDistractionBackgroundColor(task.distractionLevel) || ''}` 
+                    : ''
+                }`}
+              >
+                {/* Desktop Layout - Hidden on mobile/tablet */}
+                <div className="hidden lg:grid grid-cols-12 gap-0.5 items-center">
+                  <div className="col-span-1 flex justify-center">
+                    {!task.completed ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onMoveToMain(task)}
+                        className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-1.5 py-1 h-6 font-medium"
+                        title="Move to Main"
+                      >
+                        ↑ Main
+                      </Button>
+                    ) : (
+                      <div className="w-6 h-6 flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">✓</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <Checkbox 
+                      checked={task.completed} 
+                      onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <span
+                      className={`inline-flex items-center justify-center w-8 h-7 rounded-md text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                        task.priority,
+                        task.completed,
+                      )}`}
                     >
-                      ↑ Main
-                    </Button>
-                  ) : (
-                    <div className="w-6 h-6 flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">✓</span>
+                      {task.priority}
+                    </span>
+                  </div>
+                  <div className="col-span-4">
+                    <span className={`font-medium block ${
+                      task.completed 
+                        ? 'text-gray-400 dark:text-gray-500 line-through' 
+                        : 'text-gray-900 dark:text-gray-100'
+                    }`} title={task.title}>
+                      {task.title}
+                    </span>
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                     </div>
-                  )}
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
+                      <div className="flex items-center text-xs text-green-600 dark:text-green-400">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        <span className="font-medium">{formatTime(task.actualTime)}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
+                    )}
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
+                      <span className={`text-xs font-bold ${getDistractionColor(task.distractionLevel)}`}>
+                        {task.distractionLevel}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
+                    )}
+                  </div>
+                  <div className="col-span-2 flex justify-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 h-7"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {!task.completed && (
+                          <DropdownMenuItem onClick={() => onMoveToMain(task)}>
+                            <ArrowUp className="h-4 w-4 mr-2" />
+                            Move to Main
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onClick={() => onEditTask && onEditTask(task)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        {task.completed ? (
+                          <DropdownMenuItem onClick={() => onArchiveTask && onArchiveTask(task)}>
+                            <Archive className="h-4 w-4 mr-2" />
+                            Archive
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem 
+                            onClick={() => onDeleteTask(task)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
-                <div className="col-span-1 flex justify-center">
-                  <Checkbox 
-                    checked={task.completed} 
-                    onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
-                    className="cursor-pointer"
-                  />
-                </div>
-                <div className="col-span-1 flex justify-center">
-                  <span
-                    className={`inline-flex items-center justify-center w-8 h-7 rounded-md text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+
+                {/* Mobile/Tablet Layout */}
+                <div className="lg:hidden">
+                  <div className="flex items-center gap-3">
+                    {/* Checkbox */}
+                    <Checkbox 
+                      checked={task.completed} 
+                      onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
+                      className="cursor-pointer flex-shrink-0"
+                    />
+                    
+                    {/* Priority */}
+                    <span
+                      className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md text-xs sm:text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
-                  >
-                    {task.priority}
-                  </span>
-                </div>
-                <div className="col-span-4">
-                  <span className={`font-medium block ${
-                    task.completed 
-                      ? 'text-gray-400 dark:text-gray-500 line-through' 
-                      : 'text-gray-900 dark:text-gray-100'
-                  }`} title={task.title}>
-                    {task.title}
-                  </span>
-                </div>
-                <div className="col-span-1 flex justify-center">
-                  <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                    <Clock className="h-3 w-3 mr-1" />
-                    <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
-                  </div>
-                </div>
-                <div className="col-span-1 flex justify-center">
-                  {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
-                    <div className="flex items-center text-xs text-green-600 dark:text-green-400">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      <span className="font-medium">{formatTime(task.actualTime)}</span>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
-                  )}
-                </div>
-                <div className="col-span-1 flex justify-center">
-                  {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
-                    <span className={`text-xs font-bold ${getDistractionColor(task.distractionLevel)}`}>
-                      {task.distractionLevel}
+                    >
+                      {task.priority}
                     </span>
-                  ) : (
-                    <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
-                  )}
-                </div>
-                <div className="col-span-2 flex justify-start space-x-0.5 ml-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEditTask && onEditTask(task)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs px-1.5 py-1 h-6"
-                    title="Edit Task"
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
 
-                  {/* Show Archive for completed tasks, Delete for incomplete tasks */}
-                  {task.completed ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onArchiveTask && onArchiveTask(task)}
-                      className="text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-xs px-1.5 py-1 h-6"
-                      title="Archive Task"
-                    >
-                      <Archive className="h-3 w-3" />
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDeleteTask(task)}
-                      className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-1.5 py-1 h-6"
-                      title="Delete Task"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    {/* Task Title and Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className={`font-medium text-sm sm:text-base truncate ${
+                          task.completed 
+                            ? 'text-gray-400 dark:text-gray-500 line-through' 
+                            : 'text-gray-900 dark:text-gray-100'
+                        }`} title={task.title}>
+                          {task.title}
+                        </span>
+                        
+                        {/* Time and Actions Row */}
+                        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                          {/* Estimated Time */}
+                          <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                            <Clock className="h-3 w-3 mr-1" />
+                            <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
+                          </div>
+
+                          {/* Expand Details Button (for completed tasks) */}
+                          {task.completed && (task.actualTime !== null || task.distractionLevel !== null) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleExpanded(task.id)}
+                              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1 h-6"
+                              title="Show Details"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-3 w-3" />
+                              ) : (
+                                <ChevronRight className="h-3 w-3" />
+                              )}
+                            </Button>
+                          )}
+                          
+                          {/* Actions Menu */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1 h-6"
+                              >
+                                <MoreHorizontal className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {!task.completed && (
+                                <DropdownMenuItem onClick={() => onMoveToMain(task)}>
+                                  <ArrowUp className="h-4 w-4 mr-2" />
+                                  Move to Main
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem onClick={() => onEditTask && onEditTask(task)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              {task.completed ? (
+                                <DropdownMenuItem onClick={() => onArchiveTask && onArchiveTask(task)}>
+                                  <Archive className="h-4 w-4 mr-2" />
+                                  Archive
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem 
+                                  onClick={() => onDeleteTask(task)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expandable Details for Mobile/Tablet */}
+                  {isExpanded && task.completed && (
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 rounded-md p-3">
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        {task.actualTime !== null && task.actualTime !== undefined && (
+                          <div className="flex items-center justify-center bg-green-50 dark:bg-green-900/20 rounded-md p-2">
+                            <CheckCircle className="h-3 w-3 mr-2 text-green-600 dark:text-green-400" />
+                            <span className="font-medium text-green-600 dark:text-green-400">
+                              Actual: {formatTime(task.actualTime)}
+                            </span>
+                          </div>
+                        )}
+                        {task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 && (
+                          <div className="flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-md p-2">
+                            <span className="text-gray-600 dark:text-gray-400 mr-2">Distraction:</span>
+                            <span className={`font-bold ${getDistractionColor(task.distractionLevel)}`}>
+                              {task.distractionLevel}/5
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </Card>

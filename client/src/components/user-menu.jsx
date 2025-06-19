@@ -176,12 +176,12 @@ function UserMenu() {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="flex items-center gap-1 sm:gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 p-1.5 sm:p-2"
           >
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
-            <span className="hidden sm:inline text-sm font-medium">
+            <span className="hidden md:inline text-sm font-medium max-w-[120px] truncate">
               {user.email}
             </span>
           </Button>
@@ -210,9 +210,10 @@ function UserMenu() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-1 text-sm">
+              <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
                 <User className="h-3 w-3" />
-                Sign In / Up
+                <span className="hidden sm:inline">Sign In / Up</span>
+                <span className="sm:hidden">Sign In</span>
               </Button>
             </DialogTrigger>
               <DialogContent className="sm:max-w-sm">
