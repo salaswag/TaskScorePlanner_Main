@@ -1,23 +1,13 @@
 import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { PlusCircle, AlertTriangle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuth } from "@/hooks/use-auth";
+import { Plus } from "lucide-react";
 
 export default function TaskForm({ onSubmit, isLoading }) {
   const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState("5");
-  const [estimatedTime, setEstimatedTime] = useState("");
-  const [isLater, setIsLater] = useState(false);
-  const [isFocus, setIsFocus] = useState(false);
-  const { user } = useAuth();
-
-  const isAnonymous = !user || user.isAnonymous;
+  const [priority, setPriority] = useState(5);
+  const [estimatedTime, setEstimatedTime] = useState(30);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -31,92 +21,73 @@ export default function TaskForm({ onSubmit, isLoading }) {
       console.log('Submitting task with data:', taskData);
       onSubmit(taskData);
       setTitle("");
-      setPriority("5");
-      setEstimatedTime("");
-      setIsLater(false);
-      setIsFocus(false);
+      setPriority(5);
+      setEstimatedTime(30);
     }
   };
 
+  const formatTime = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-medium">Add New Task</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isAnonymous && (
-          <Alert className="mb-4 border-amber-200 bg-amber-50 text-amber-800">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              Your tasks are not saved permanently. Sign in to save your tasks across sessions.
-            </AlertDescription>
-          </Alert>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="title">Task Title</Label>
+    <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
+      <CardContent className="p-2 h-full flex items-center justify-center">
+        <form onSubmit={handleSubmit} className="w-full">
+          {/* All Elements in One Line */}
+          <div className="flex items-center gap-4 w-full">
+            {/* Task Input - Flexible width */}
             <Input
-              id="title"
-              placeholder="Enter task title"
+              type="text"
+              placeholder="Add new task..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
             />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="priority">Priority</Label>
-            <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select priority" />
-              </SelectTrigger>
-              <SelectContent>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((p) => (
-                  <SelectItem key={p} value={String(p)}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="estimatedTime">Estimated Time (minutes)</Label>
-            <Input
-              type="number"
-              id="estimatedTime"
-              placeholder="Enter estimated time"
-              value={estimatedTime}
-              onChange={(e) => setEstimatedTime(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isLater"
-              checked={isLater}
-              onCheckedChange={setIsLater}
-            />
-            <label
-              htmlFor="isLater"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+
+            {/* Priority Slider - Bigger with descriptive label */}
+            <div className="flex items-center gap-2 min-w-[180px]">
+              <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
+                Priority: {priority}
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={priority}
+                onChange={(e) => setPriority(parseInt(e.target.value))}
+                className="slider w-20 flex-1"
+              />
+            </div>
+
+            {/* Time Slider - Bigger with descriptive label */}
+            <div className="flex items-center gap-2 min-w-[200px]">
+              <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
+                Time: {formatTime(estimatedTime)}
+              </label>
+              <input
+                type="range"
+                min="5"
+                max="120"
+                step="5"
+                value={estimatedTime}
+                onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
+                className="slider w-20 flex-1"
+              />
+            </div>
+
+            {/* Add Button */}
+            <Button
+              type="submit"
+              disabled={!title.trim() || isLoading}
+              className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap"
             >
-              Is Later
-            </label>
+              <Plus className="h-4 w-4" />
+              <span>{isLoading ? 'Adding...' : 'Add'}</span>
+            </Button>
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isFocus"
-              checked={isFocus}
-              onCheckedChange={setIsFocus}
-            />
-            <label
-              htmlFor="isFocus"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Is Focus
-            </label>
-          </div>
-          <Button disabled={!title.trim() || isLoading}>
-            {isLoading ? "Adding..." : "Add Task"}
-            <PlusCircle className="ml-2 h-4 w-4" />
-          </Button>
         </form>
       </CardContent>
     </Card>

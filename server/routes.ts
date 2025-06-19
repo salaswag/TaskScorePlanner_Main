@@ -38,18 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all tasks
   app.get("/api/tasks", async (req, res) => {
     try {
-      const userId = req.user?.uid || 'anonymous';
-      const isAnonymous = !req.user || req.user.isAnonymous;
-      
-      // Force anonymous users to use in-memory storage only
-      if (isAnonymous) {
-        console.log("👤 Anonymous user - using in-memory storage");
-        const tasks = await storage.getTasks(userId);
-        res.json(tasks);
-        return;
-      }
-      
-      // For authenticated users, try MongoDB first
+      // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
@@ -59,6 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("✅ Using MongoDB storage");
       }
       
+      const userId = req.user?.uid || 'anonymous';
       const tasks = await storageToUse.getTasks(userId);
       res.json(tasks);
     } catch (error) {
@@ -77,20 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertTaskSchema.parse(req.body);
       console.log('Validated data:', validatedData);
       
-      const userId = req.user?.uid || 'anonymous';
-      const isAnonymous = !req.user || req.user.isAnonymous;
-      
-      // Force anonymous users to use in-memory storage only
-      if (isAnonymous) {
-        console.log("👤 Anonymous user - creating task in in-memory storage");
-        const taskWithUser = { ...validatedData, userId };
-        const task = await storage.createTask(taskWithUser, userId);
-        console.log('Anonymous task created successfully:', task);
-        res.status(201).json(task);
-        return;
-      }
-      
-      // For authenticated users, try MongoDB first
+      // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
@@ -100,6 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("✅ Creating task in MongoDB storage");
       }
       
+      const userId = req.user?.uid || 'anonymous';
       const taskWithUser = { ...validatedData, userId };
       console.log('Task with user:', taskWithUser);
       
@@ -123,22 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = req.params.id;
       console.log('Updating task with ID:', id, 'Data:', req.body);
 
-      const isAnonymous = !req.user || req.user.isAnonymous;
-      
-      // Force anonymous users to use in-memory storage only
-      if (isAnonymous) {
-        console.log("👤 Anonymous user - updating task in in-memory storage");
-        const updateData = { id: Number(id), ...req.body };
-        const updatedTask = await storage.updateTask(updateData);
-        
-        if (!updatedTask) {
-          return res.status(404).json({ message: "Task not found" });
-        }
-        res.json(updatedTask);
-        return;
-      }
-
-      // For authenticated users, try MongoDB first
+      // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
@@ -175,25 +138,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/tasks/:id", async (req, res) => {
     try {
       const idParam = req.params.id;
-      const isAnonymous = !req.user || req.user.isAnonymous;
       
-      // Force anonymous users to use in-memory storage only
-      if (isAnonymous) {
-        console.log("👤 Anonymous user - deleting task from in-memory storage");
-        const idNum = Number(idParam);
-        if (isNaN(idNum)) {
-          return res.status(400).json({ message: "Invalid task id" });
-        }
-        const deleted = await storage.deleteTask(idNum);
-        
-        if (!deleted) {
-          return res.status(404).json({ message: "Task not found" });
-        }
-        res.status(204).send();
-        return;
-      }
-      
-      // For authenticated users, try MongoDB first
+      // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
