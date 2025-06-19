@@ -175,21 +175,21 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     <Checkbox 
                       checked={task.completed} 
                       onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
-                      className="cursor-pointer h-5 w-5"
+                      className="cursor-pointer w-6 h-6"
                     />
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
-                      className={`inline-flex items-center justify-center w-8 h-7 rounded-md text-lg font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
-                        task.priority,
-                        task.completed,
-                      )}`}
+                      className={`inline-flex items-center justify-center w-10 h-8 rounded-md text-lg font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      task.priority,
+                      task.completed,
+                    )}`}
                     >
                       {task.priority}
                     </span>
                   </div>
                   <div className="col-span-4">
-                    <span className={`font-medium text-lg leading-relaxed ${
+                    <span className={`font-medium text-xl leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
                         : 'text-gray-900 dark:text-gray-100'

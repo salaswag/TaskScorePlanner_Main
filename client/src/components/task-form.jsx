@@ -33,7 +33,7 @@ function TaskForm({ onSubmit, isLoading }) {
   };
 
   return (
-    <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
+    <Card className="bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/95 dark:bg-black/95">
       <CardContent className="p-2 h-full flex items-center justify-center">
         <form onSubmit={handleSubmit} className="w-full">
           {/* All Elements in One Line */}

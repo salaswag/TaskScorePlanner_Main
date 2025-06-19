@@ -285,6 +285,18 @@ export default function TodoApp() {
 
   const [touchStart, setTouchStart] = useState(null);
 
+  // Auto-show header when switching to desktop view
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && !isHeaderVisible) {
+        setIsHeaderVisible(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isHeaderVisible]);
+
   return (
     <div 
       className="min-h-screen bg-white dark:bg-black"
@@ -372,16 +384,6 @@ export default function TodoApp() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
-
-                {/* Desktop Task Form - Hidden on mobile */}
-                <div className="hidden lg:block">
-                  <TaskFormModal
-                    isInline={true}
-                    onSubmit={handleCreateTask}
-                    isLoading={createTask.isPending}
-                  />
-                </div>
-
                 {/* Tasks Section */}
                 <div className="space-y-4">
                   {/* Main Tasks */}
@@ -417,6 +419,15 @@ export default function TodoApp() {
               {/* Floating Add Button - Only on mobile/tablet */}
               <div className="lg:hidden">
                 <FloatingAddButton
+                  onSubmit={handleCreateTask}
+                  isLoading={createTask.isPending}
+                />
+              </div>
+
+              {/* Floating Task Form - Desktop only */}
+              <div className="hidden lg:block fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-4xl px-6">
+                <TaskFormModal
+                  isInline={true}
                   onSubmit={handleCreateTask}
                   isLoading={createTask.isPending}
                 />
