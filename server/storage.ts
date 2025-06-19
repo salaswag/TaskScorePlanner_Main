@@ -21,6 +21,7 @@ export class MemStorage implements IStorage {
   private currentTaskId: number;
   private currentUserId: number;
   private sessionStorage: Map<string, Task[]>; // Store tasks by session ID
+  private sessionTimestamps: Map<string, number>; // Track session last activity
 
   constructor() {
     this.tasks = new Map();
@@ -28,11 +29,14 @@ export class MemStorage implements IStorage {
     this.currentTaskId = 1;
     this.currentUserId = 1;
     this.sessionStorage = new Map();
+    this.sessionTimestamps = new Map();
   }
 
   // Task operations
   async getTasks(userId?: string): Promise<any[]> {
     if (userId && userId.startsWith('anonymous-')) {
+      // Update session activity
+      this.sessionTimestamps.set(userId, Date.now());
       // Return tasks for this specific anonymous session
       const sessionTasks = Array.from(this.tasks.values()).filter(task => task.userId === userId);
       console.log(`In-memory storage: Retrieved ${sessionTasks.length} tasks for anonymous session ${userId}`);
@@ -57,11 +61,18 @@ export class MemStorage implements IStorage {
   }
 
   async createTask(taskData: any, userId?: string): Promise<any> {
+    const finalUserId = userId || taskData.userId || 'anonymous';
+    
+    // Update session activity for anonymous users
+    if (finalUserId.startsWith('anonymous-')) {
+      this.sessionTimestamps.set(finalUserId, Date.now());
+    }
+    
     const id = this.currentTaskId++;
     const task = {
       id,
       ...taskData,
-      userId: userId || taskData.userId || 'anonymous',
+      userId: finalUserId,
       createdAt: new Date(),
       completedAt: null,
       completed: taskData.completed || false,
@@ -168,9 +179,36 @@ export class MemStorage implements IStorage {
 
   // Clean up old sessions (call periodically)
   cleanupSessions(): void {
-    // In a real implementation, you'd check timestamps and remove old sessions
-    // For now, we'll keep sessions until the server restarts
-    console.log(`🧹 Session cleanup: ${this.sessionStorage.size} active sessions`);
+    const now = Date.now();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    let cleanedSessions = 0;
+    let cleanedTasks = 0;
+
+    // Clean up session storage
+    for (const [sessionId, timestamp] of this.sessionTimestamps.entries()) {
+      if (now - timestamp > maxAge) {
+        this.sessionStorage.delete(sessionId);
+        this.sessionTimestamps.delete(sessionId);
+        cleanedSessions++;
+      }
+    }
+
+    // Clean up tasks for expired sessions
+    for (const [taskId, task] of this.tasks.entries()) {
+      if (task.userId.startsWith('anonymous-')) {
+        const lastActivity = this.sessionTimestamps.get(task.userId);
+        if (!lastActivity || now - lastActivity > maxAge) {
+          this.tasks.delete(taskId);
+          cleanedTasks++;
+        }
+      }
+    }
+
+    if (cleanedSessions > 0 || cleanedTasks > 0) {
+      console.log(`🧹 Session cleanup: Removed ${cleanedSessions} expired sessions and ${cleanedTasks} orphaned tasks`);
+    }
+    
+    console.log(`🧹 Session cleanup complete: ${this.sessionStorage.size} active sessions, ${this.sessionTimestamps.size} tracked sessions`);
   }
 }
 

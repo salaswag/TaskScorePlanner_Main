@@ -54,6 +54,14 @@ setInterval(() => {
   sessionStore.cleanup();
 }, 60 * 60 * 1000);
 
+// Import storage for session cleanup
+import { storage } from "./storage";
+
+// Clean up expired anonymous sessions every 6 hours
+setInterval(() => {
+  storage.cleanupSessions();
+}, 6 * 60 * 60 * 1000);
+
 export const mongoStorage = new MongoStorage();
 
 const app = express();

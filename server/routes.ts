@@ -55,9 +55,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Always try to use MongoDB storage, only fallback to in-memory if MongoDB is completely unavailable
   let activeStorage = mongoStorage;
+  let mongoConnectionStatus = { isAvailable: true, lastCheck: 0, checkInterval: 30000 }; // 30 seconds
   
-  // Test MongoDB connection with timeout
+  // Test MongoDB connection with timeout and caching
   const testMongoConnection = async () => {
+    const now = Date.now();
+    
+    // Use cached status if within check interval
+    if (now - mongoConnectionStatus.lastCheck < mongoConnectionStatus.checkInterval) {
+      return mongoConnectionStatus.isAvailable;
+    }
+    
     try {
       if (!mongoStorage.client || !mongoStorage.tasksCollection) {
         console.log("MongoDB client not available, attempting reconnection...");
@@ -77,9 +85,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timeoutPromise
       ]);
       
+      mongoConnectionStatus.isAvailable = true;
+      mongoConnectionStatus.lastCheck = now;
       return true;
     } catch (error) {
       console.error("MongoDB connection test failed:", error);
+      mongoConnectionStatus.isAvailable = false;
+      mongoConnectionStatus.lastCheck = now;
+      // Reduce check interval if MongoDB is down to avoid spam
+      mongoConnectionStatus.checkInterval = 60000; // 1 minute
       return false;
     }
   };
@@ -125,11 +139,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       Logger.debug('Request body:', req.body);
       Logger.debug('User:', req.user);
       
+      // Validate required fields
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ message: "Request body must be a valid JSON object" });
+      }
+
+      if (!req.body.title || typeof req.body.title !== 'string' || req.body.title.trim().length === 0) {
+        return res.status(400).json({ message: "Task title is required and must be a non-empty string" });
+      }
+
       const validatedData = insertTaskSchema.parse(req.body);
       
       // Ensure isLater and isFocus are mutually exclusive
       if (validatedData.isLater && validatedData.isFocus) {
         return res.status(400).json({ message: "Task cannot be both in 'Later' and 'Focus' state simultaneously" });
+      }
+      
+      // Validate priority range
+      if (validatedData.priority && (validatedData.priority < 1 || validatedData.priority > 10)) {
+        return res.status(400).json({ message: "Priority must be between 1 and 10" });
       }
       
       Logger.debug('Validated data:', validatedData);
@@ -140,14 +168,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Anonymous users ALWAYS use in-memory storage
       if (isAnonymous) {
         Logger.debug("👤 Anonymous user - creating task in in-memory storage for session:", userId);
-        const task = await storage.createTask(validatedData, userId);
-        console.log('Anonymous task created successfully:', task);
-        res.status(201).json(task);
-        return;
+        try {
+          const task = await storage.createTask(validatedData, userId);
+          console.log('Anonymous task created successfully:', task);
+          res.status(201).json(task);
+          return;
+        } catch (storageError) {
+          console.error("Error creating task in in-memory storage:", storageError);
+          return res.status(500).json({ message: "Failed to create task in session storage" });
+        }
       }
       
       // Authenticated users try MongoDB first
-      const mongoAvailable = await testMongoConnection();
+      let mongoAvailable = false;
+      try {
+        mongoAvailable = await testMongoConnection();
+      } catch (connectionError) {
+        console.error("Error testing MongoDB connection:", connectionError);
+        mongoAvailable = false;
+      }
+      
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
       if (!mongoAvailable) {
@@ -159,16 +199,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const taskWithUser = { ...validatedData, userId };
       console.log('Task with user:', taskWithUser);
       
-      const task = await storageToUse.createTask(taskWithUser);
-      console.log('Task created successfully:', task);
-      res.status(201).json(task);
+      try {
+        const task = await storageToUse.createTask(taskWithUser);
+        console.log('Task created successfully:', task);
+        res.status(201).json(task);
+      } catch (storageError) {
+        console.error("Error creating task in storage:", storageError);
+        
+        // Try fallback to in-memory storage if MongoDB fails
+        if (storageToUse === mongoStorage) {
+          console.log("Attempting fallback to in-memory storage...");
+          try {
+            const task = await storage.createTask(taskWithUser);
+            console.log('Task created successfully in fallback storage:', task);
+            res.status(201).json(task);
+          } catch (fallbackError) {
+            console.error("Fallback storage also failed:", fallbackError);
+            res.status(500).json({ message: "Failed to create task in both primary and fallback storage" });
+          }
+        } else {
+          res.status(500).json({ message: "Failed to create task" });
+        }
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         console.error('Validation error:', error.errors);
         res.status(400).json({ message: "Invalid task data", errors: error.errors });
       } else {
-        console.error("Error creating task:", error);
-        res.status(500).json({ message: "Failed to create task" });
+        console.error("Unexpected error creating task:", error);
+        res.status(500).json({ message: "An unexpected error occurred while creating the task" });
       }
     }
   });

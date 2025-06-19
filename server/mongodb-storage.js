@@ -12,6 +12,7 @@ export class MongoStorage {
 
   async connect(retries = 5) {
     try {
+      const uri = process.env.MONGODB_URI || "mongodb+srv://salaswag:Borderbiz8k@clusterfortask.riwouqe.mongodb.net/";
       this.client = new MongoClient(MONGODB_URI, {
         connectTimeoutMS: 10000,
         serverSelectionTimeoutMS: 10000,
@@ -131,7 +132,7 @@ export class MongoStorage {
       const lastLaterTask = await this.laterTasksCollection.findOne({}, { sort: { id: -1 } });
 
       const lastMainId = lastMainTask ? (lastMainTask.id || 0) : 0;
-      const lastLaterId = lastLaterTask ? (lastLaterTask.id || 0) : 0;
+      const lastLaterId = lastLaterTask ? (lastLaterId.id || 0) : 0;
       const nextId = Math.max(lastMainId, lastLaterId) + 1;
 
       console.log('Next task ID:', nextId);
@@ -561,9 +562,9 @@ export class MongoStorage {
     try {
       // Always filter by userId - never return all time entries
       const userFilter = userId ? { userId } : { userId: 'no-user-specified' };
-      
+
       console.log('Getting time entries for userId:', userId, 'Filter:', userFilter);
-      
+
       const timeEntries = await this.timeEntriesCollection.find(userFilter).toArray();
       console.log('Fetched time entries from MongoDB for user', userId, ':', timeEntries.length);
       return timeEntries.map(entry => ({
