@@ -51,9 +51,6 @@ export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, is
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[90vw] max-w-md mx-auto max-h-[85vh] overflow-y-auto rounded-xl shadow-2xl border-0 bg-white dark:bg-gray-900 p-6">
-        <DialogHeader className="pb-4">
-          <DialogTitle className="text-lg font-semibold text-center">Add New Task</DialogTitle>
-        </DialogHeader>
         <div className="px-2">
           <TaskForm 
             onSubmit={handleSubmit} 
