@@ -15,14 +15,18 @@ export default function ScoreDisplay({
 
   return (
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
-      <CardContent className="p-3 h-full flex items-center justify-center">
-        <div className="flex items-center gap-4 w-full">
-          {/* Score and Percentage */}
+      <CardContent className="p-2 h-full flex items-center justify-center">
+        <div className="flex items-center gap-3 justify-center">
+          {/* Score Fraction */}
           <div className="text-center">
             <div className="text-lg font-bold text-black dark:text-white">
               {totalScore} / {totalPossibleScore}
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">
+          </div>
+          
+          {/* Percentage */}
+          <div className="text-center">
+            <div className="text-lg font-bold text-black dark:text-white">
               {percentage}%
             </div>
           </div>
