@@ -3,7 +3,7 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "YOUR_CORRECT_API_KEY_FROM_FIREBASE_CONSOLE",
+  apiKey: "AIzaSyBCqjskVuqS99hx_29uX5e2nJeyyWoJhrE",
   authDomain: "task-master-pro-auth.firebaseapp.com",
   projectId: "task-master-pro-auth",
   storageBucket: "task-master-pro-auth.firebasestorage.app",
