@@ -380,7 +380,7 @@ export default function TodoApp() {
 
       {/* Main Content */}
       <div className={`${user && !user.isAnonymous && !isHeaderVisible ? 'h-screen' : 'h-[calc(100vh-125px)]'} overflow-y-auto transition-all duration-300`}>
-        <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        <main className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
