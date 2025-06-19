@@ -384,6 +384,15 @@ export default function TodoApp() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
+                {/* Task Form - Desktop only */}
+                <div className="hidden lg:block">
+                  <TaskFormModal
+                    isInline={true}
+                    onSubmit={handleCreateTask}
+                    isLoading={createTask.isPending}
+                  />
+                </div>
+
                 {/* Tasks Section */}
                 <div className="space-y-4">
                   {/* Main Tasks */}
