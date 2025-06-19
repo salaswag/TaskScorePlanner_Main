@@ -120,15 +120,15 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
 
       {/* Table Header - Only visible on larger screens */}
       <div className="hidden lg:block px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <div className="grid grid-cols-12 gap-0.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
           <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-4 text-left">Task</div>
-          <div className="col-span-1 text-center">Est Time</div>
-          <div className="col-span-1 text-center">Actual Time</div>
-          <div className="col-span-1 text-center">Distracted</div>
-          <div className="col-span-2 text-center">Actions</div>
+          <div className="col-span-5 text-left">Task</div>
+          <div className="col-span-1 text-right">Est Time</div>
+          <div className="col-span-1 text-right">Actual Time</div>
+          <div className="col-span-1 text-right">Distracted</div>
+          <div className="col-span-1 text-right">Actions</div>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                 }`}
               >
                 {/* Desktop Layout - Hidden on mobile/tablet */}
-                <div className="hidden lg:grid grid-cols-12 gap-0.5 items-center">
+                <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
                   <div className="col-span-1 flex justify-center">
                     {!task.completed ? (
                       <Button
@@ -188,7 +188,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-4">
+                  <div className="col-span-5">
                     <span className={`font-medium text-xl leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
@@ -197,13 +197,13 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       {task.title}
                     </span>
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-end">
                     <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
                       <Clock className="h-3 w-3 mr-1" />
                       <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                     </div>
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-end">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
                       <div className="flex items-center text-xs text-green-600 dark:text-green-400">
                         <CheckCircle className="h-3 w-3 mr-1" />
@@ -213,7 +213,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-end">
                     {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
                       <span className={`text-xs font-bold ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
@@ -222,44 +222,37 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
                     )}
                   </div>
-                  <div className="col-span-2 flex justify-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 h-7"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {!task.completed && (
-                          <DropdownMenuItem onClick={() => onMoveToMain(task)}>
-                            <ArrowUp className="h-4 w-4 mr-2" />
-                            Move to Main
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem onClick={() => onEditTask && onEditTask(task)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        {task.completed ? (
-                          <DropdownMenuItem onClick={() => onArchiveTask && onArchiveTask(task)}>
-                            <Archive className="h-4 w-4 mr-2" />
-                            Archive
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem 
-                            onClick={() => onDeleteTask(task)}
-                            className="text-red-600 focus:text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <div className="col-span-1 flex justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onEditTask && onEditTask(task)}
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                      title="Edit"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    {task.completed ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onArchiveTask && onArchiveTask(task)}
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                        title="Archive"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteTask(task)}
+                        className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 h-7"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
 

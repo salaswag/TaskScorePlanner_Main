@@ -184,15 +184,15 @@ export default function TaskTable({
 
       {/* Table Header - Only visible on larger screens */}
       <div className="hidden lg:block px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-[65px] z-10">
-        <div className="grid grid-cols-12 gap-0.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
           <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-4 text-left">Task</div>
-          <div className="col-span-1 text-center">Est Time</div>
-          <div className="col-span-1 text-center">Actual Time</div>
-          <div className="col-span-1 text-center">Distracted</div>
-          <div className="col-span-2 text-center">Actions</div>
+          <div className="col-span-5 text-left">Task</div>
+          <div className="col-span-1 text-right">Est Time</div>
+          <div className="col-span-1 text-right">Actual Time</div>
+          <div className="col-span-1 text-right">Distracted</div>
+          <div className="col-span-1 text-right">Actions</div>
         </div>
       </div>
 
@@ -218,7 +218,7 @@ export default function TaskTable({
                 }`}
               >
                 {/* Desktop Layout - Hidden on mobile/tablet */}
-                <div className="hidden lg:grid grid-cols-12 gap-0.5 items-center">
+                <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
                   <div className="col-span-1 flex justify-center">
                     {!task.completed ? (
                       <Button
@@ -259,7 +259,7 @@ export default function TaskTable({
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-4">
+                  <div className="col-span-5">
                     <span className={`font-medium text-lg leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
@@ -268,13 +268,13 @@ export default function TaskTable({
                       {task.title}
                     </span>
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-end">
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                       <Clock className="h-4 w-4 mr-1" />
                       <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                     </div>
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-end">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
                       <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                         <CheckCircle className="h-4 w-4 mr-1" />
@@ -284,7 +284,7 @@ export default function TaskTable({
                       <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-end">
                     {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
                       <span className={`text-sm font-bold ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
@@ -293,7 +293,7 @@ export default function TaskTable({
                       <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                     )}
                   </div>
-                  <div className="col-span-2 flex justify-center gap-1">
+                  <div className="col-span-1 flex justify-end gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
