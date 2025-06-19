@@ -33,9 +33,7 @@ function TaskForm({ onSubmit, isLoading }) {
   };
 
   return (
-    <Card className="bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/95 dark:bg-black/95">
-      <CardContent className="p-4 h-full flex items-center justify-center">
-        <form onSubmit={handleSubmit} className="w-full">
+    <form onSubmit={handleSubmit} className="w-full bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/95 dark:bg-black/95 rounded-lg p-3">
           {/* All Elements in One Line */}
           <div className="flex items-center gap-4 w-full">
             {/* Task Input - Flexible width with increased height */}
@@ -89,8 +87,6 @@ function TaskForm({ onSubmit, isLoading }) {
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
   );
 }
 

@@ -260,7 +260,7 @@ export default function TaskTable({
                     </span>
                   </div>
                   <div className="col-span-4">
-                    <span className={`font-medium text-xl leading-relaxed ${
+                    <span className={`font-medium text-lg leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
                         : 'text-gray-900 dark:text-gray-100'
@@ -293,38 +293,37 @@ export default function TaskTable({
                       <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                     )}
                   </div>
-                  <div className="col-span-2 flex justify-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEditTask && onEditTask(task)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        {task.completed ? (
-                          <DropdownMenuItem onClick={() => onArchive && onArchive(task)}>
-                            <Archive className="h-4 w-4 mr-2" />
-                            Archive
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem 
-                            onClick={() => onDeleteTask && onDeleteTask(task)}
-                            className="text-red-600 focus:text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <div className="col-span-2 flex justify-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onEditTask && onEditTask(task)}
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                      title="Edit"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    {task.completed ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onArchive && onArchive(task)}
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                        title="Archive"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteTask && onDeleteTask(task)}
+                        className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 h-7"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -357,7 +356,7 @@ export default function TaskTable({
                     {/* Task Title and Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <span className={`font-medium text-lg sm:text-xl leading-relaxed break-words ${
+                        <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
                           task.completed 
                             ? 'text-gray-400 dark:text-gray-500 line-through' 
                             : 'text-gray-900 dark:text-gray-100'
