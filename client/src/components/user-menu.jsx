@@ -59,7 +59,38 @@ function UserMenu() {
     }
 
     try {
-      await login(loginData.email, loginData.password);
+      const currentUser = user;
+      const loggedInUser = await login(loginData.email, loginData.password);
+      
+      // Transfer data if user was anonymous
+      if (currentUser && currentUser.isAnonymous && loggedInUser) {
+        try {
+          console.log('🔄 Transferring data from anonymous to authenticated user...');
+          const response = await fetch('/api/auth/transfer-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${await loggedInUser.getIdToken()}`
+            },
+            body: JSON.stringify({
+              anonymousUid: currentUser.uid,
+              permanentUid: loggedInUser.uid
+            })
+          });
+
+          if (response.ok) {
+            console.log('✅ Data transfer successful');
+            // Refresh tasks after data transfer
+            window.location.reload();
+          } else {
+            console.warn('⚠️ Data transfer failed, but login successful');
+          }
+        } catch (transferError) {
+          console.error('❌ Data transfer error:', transferError);
+          // Don't fail login due to transfer error
+        }
+      }
+
       setIsOpen(false);
       setLoginData({ email: "", password: "" });
       setLocalErrors({ login: "", signup: "" });
@@ -71,6 +102,67 @@ function UserMenu() {
   const handleSignup = async (e) => {
     e.preventDefault();
     setLocalErrors(prev => ({ ...prev, signup: "" }));
+
+    if (!signupData.email || !signupData.password || !signupData.confirmPassword) {
+      setLocalErrors(prev => ({ ...prev, signup: "Please fill in all fields" }));
+      return;
+    }
+
+    if (!validateEmail(signupData.email)) {
+      setLocalErrors(prev => ({ ...prev, signup: "Please enter a valid email address" }));
+      return;
+    }
+
+    if (signupData.password.length < 6) {
+      setLocalErrors(prev => ({ ...prev, signup: "Password must be at least 6 characters long" }));
+      return;
+    }
+
+    if (signupData.password !== signupData.confirmPassword) {
+      setLocalErrors(prev => ({ ...prev, signup: "Passwords do not match" }));
+      return;
+    }
+
+    try {
+      const currentUser = user;
+      const newUser = await signup(signupData.email, signupData.password);
+      
+      // Transfer data if user was anonymous
+      if (currentUser && currentUser.isAnonymous && newUser) {
+        try {
+          console.log('🔄 Transferring data from anonymous to new authenticated user...');
+          const response = await fetch('/api/auth/transfer-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${await newUser.getIdToken()}`
+            },
+            body: JSON.stringify({
+              anonymousUid: currentUser.uid,
+              permanentUid: newUser.uid
+            })
+          });
+
+          if (response.ok) {
+            console.log('✅ Data transfer successful');
+            // Refresh tasks after data transfer
+            window.location.reload();
+          } else {
+            console.warn('⚠️ Data transfer failed, but signup successful');
+          }
+        } catch (transferError) {
+          console.error('❌ Data transfer error:', transferError);
+          // Don't fail signup due to transfer error
+        }
+      }
+
+      setIsOpen(false);
+      setSignupData({ email: "", password: "", confirmPassword: "" });
+      setLocalErrors({ login: "", signup: "" });
+    } catch (error) {
+      // Error is handled in the hook
+    }
+  };
 
     if (!signupData.email || !signupData.password || !signupData.confirmPassword) {
       setLocalErrors(prev => ({ ...prev, signup: "Please fill in all fields" }));
