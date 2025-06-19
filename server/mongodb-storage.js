@@ -132,7 +132,7 @@ export class MongoStorage {
       const lastLaterTask = await this.laterTasksCollection.findOne({}, { sort: { id: -1 } });
 
       const lastMainId = lastMainTask ? (lastMainTask.id || 0) : 0;
-      const lastLaterId = lastLaterTask ? (lastLaterId.id || 0) : 0;
+      const lastLaterId = lastLaterTask ? (lastLaterTask.id || 0) : 0;
       const nextId = Math.max(lastMainId, lastLaterId) + 1;
 
       console.log('Next task ID:', nextId);
