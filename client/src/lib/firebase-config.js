@@ -1,5 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator, signInAnonymously } from 'firebase/auth';
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDSvbg8ko_7lx8_bUBOmXaE6hZ8u9Wrzgk",
@@ -11,13 +11,6 @@ const firebaseConfig = {
   measurementId: "G-EEL36PB3VC"
 };
 
-const app = initializeApp(firebaseConfig);
+// Prevent duplicate app initialization
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const auth = getAuth(app);
-
-// Initialize anonymous user if no user is present
-auth.onAuthStateChanged((user) => {
-  if (!user) {
-    // Don't try anonymous sign in, just let the user be anonymous
-    console.log('No user authenticated, continuing as anonymous');
-  }
-});
