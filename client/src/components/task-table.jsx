@@ -151,20 +151,20 @@ export default function TaskTable({
     >
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-black z-10">
         <div className="flex items-center justify-between">
-          <h3 className="text-base sm:text-lg font-semibold text-black dark:text-white">Main Tasks</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white">Main Tasks</h3>
           
           {/* Score Display - moved from separate component */}
           <div className="flex items-center justify-end divide-x divide-gray-300 dark:divide-gray-600">
             {/* Score Fraction */}
             <div className="text-center px-3">
-              <div className={`text-sm sm:text-base font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
+              <div className={`text-lg sm:text-xl font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
                 {totalScore} / {totalPossibleScore}
               </div>
             </div>
 
             {/* Percentage */}
             <div className="text-center px-3">
-              <div className={`text-sm sm:text-base font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
+              <div className={`text-lg sm:text-xl font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
                 {totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0}%
               </div>
             </div>
@@ -246,12 +246,12 @@ export default function TaskTable({
                           onUndoCompletion(task);
                         }
                       }}
-                      className="cursor-pointer"
+                      className="cursor-pointer w-5 h-5"
                     />
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
-                      className={`inline-flex items-center justify-center w-8 h-7 rounded-md text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center w-10 h-8 rounded-md text-lg font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -260,7 +260,7 @@ export default function TaskTable({
                     </span>
                   </div>
                   <div className="col-span-4">
-                    <span className={`font-medium text-base leading-relaxed ${
+                    <span className={`font-medium text-lg leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
                         : 'text-gray-900 dark:text-gray-100'
@@ -341,12 +341,12 @@ export default function TaskTable({
                           onUndoCompletion(task);
                         }
                       }}
-                      className="cursor-pointer flex-shrink-0"
+                      className="cursor-pointer flex-shrink-0 w-5 h-5"
                     />
                     
                     {/* Priority */}
                     <span
-                      className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md text-xs sm:text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md text-lg sm:text-xl font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -357,7 +357,7 @@ export default function TaskTable({
                     {/* Task Title and Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
+                        <span className={`font-medium text-lg sm:text-xl leading-relaxed break-words ${
                           task.completed 
                             ? 'text-gray-400 dark:text-gray-500 line-through' 
                             : 'text-gray-900 dark:text-gray-100'

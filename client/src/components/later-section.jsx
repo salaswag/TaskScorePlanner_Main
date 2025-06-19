@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -116,7 +115,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
       }}
     >
       <div className="px-4 sm:px-6 py-3 border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Later (Not counted in score)</h3>
+        <h3 className="text-lg font-medium text-gray-500 dark:text-gray-400">Later (Not counted in score)</h3>
       </div>
 
       {/* Table Header - Only visible on larger screens */}
@@ -176,12 +175,12 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     <Checkbox 
                       checked={task.completed} 
                       onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
-                      className="cursor-pointer"
+                      className="cursor-pointer h-5 w-5"
                     />
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
-                      className={`inline-flex items-center justify-center w-8 h-7 rounded-md text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center w-8 h-7 rounded-md text-lg font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                         task.priority,
                         task.completed,
                       )}`}
@@ -190,7 +189,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     </span>
                   </div>
                   <div className="col-span-4">
-                    <span className={`font-medium text-base leading-relaxed ${
+                    <span className={`font-medium text-lg leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
                         : 'text-gray-900 dark:text-gray-100'
@@ -271,12 +270,12 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     <Checkbox 
                       checked={task.completed} 
                       onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
-                      className="cursor-pointer flex-shrink-0"
+                      className="cursor-pointer flex-shrink-0 h-5 w-5"
                     />
-                    
+
                     {/* Priority */}
                     <span
-                      className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md text-xs sm:text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md text-lg sm:text-lg font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -287,14 +286,14 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     {/* Task Title and Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
+                        <span className={`font-medium text-lg sm:text-xl leading-relaxed break-words ${
                           task.completed 
                             ? 'text-gray-400 dark:text-gray-500 line-through' 
                             : 'text-gray-900 dark:text-gray-100'
                         }`}>
                           {task.title}
                         </span>
-                        
+
                         {/* Time and Actions Row */}
                         <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                           {/* Estimated Time */}
@@ -319,7 +318,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                               )}
                             </Button>
                           )}
-                          
+
                           {/* Actions Menu */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
