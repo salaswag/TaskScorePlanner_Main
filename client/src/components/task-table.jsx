@@ -1,3 +1,4 @@
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -127,7 +128,8 @@ export default function TaskTable({
 
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-[73px] z-10">
-        <div className="grid grid-cols-12 gap-0.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+        {/* Desktop Header */}
+        <div className="hidden md:grid grid-cols-12 gap-0.5 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
           <div className="col-span-1 text-center">Priority</div>
@@ -135,6 +137,15 @@ export default function TaskTable({
           <div className="col-span-1 text-center">Est Time</div>
           <div className="col-span-1 text-center">Actual Time</div>
           <div className="col-span-1 text-center">Distracted</div>
+          <div className="col-span-2 text-center">Actions</div>
+        </div>
+        
+        {/* Mobile Header */}
+        <div className="md:hidden grid grid-cols-8 gap-0.5 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="col-span-1 text-center">Done</div>
+          <div className="col-span-1 text-center">Priority</div>
+          <div className="col-span-3 text-left">Task</div>
+          <div className="col-span-1 text-center">Time</div>
           <div className="col-span-2 text-center">Actions</div>
         </div>
       </div>
@@ -149,6 +160,8 @@ export default function TaskTable({
           </div>
         ) : (
           sortedTasks.map((task) => {
+            const [expandedTaskId, setExpandedTaskId] = React.useState(null);
+            
             return (
               <div 
                 key={task.id}
@@ -158,7 +171,8 @@ export default function TaskTable({
                     : ''
                 }`}
               >
-                <div className="grid grid-cols-12 gap-0.5 items-center">
+                {/* Desktop Layout */}
+                <div className="hidden md:grid grid-cols-12 gap-0.5 items-center">
                   <div className="col-span-1 flex justify-center">
                     {!task.completed ? (
                       <Button
@@ -267,6 +281,133 @@ export default function TaskTable({
                       </Button>
                     )}
                   </div>
+                </div>
+
+                {/* Mobile Layout */}
+                <div className="md:hidden">
+                  <div className="grid grid-cols-8 gap-0.5 items-center">
+                    <div className="col-span-1 flex justify-center">
+                      <Checkbox 
+                        checked={task.completed} 
+                        onCheckedChange={(checked) => {
+                          if (checked && !task.completed) {
+                            onCompleteTask(task);
+                          } else if (!checked && task.completed) {
+                            onUndoCompletion(task);
+                          }
+                        }}
+                        className="cursor-pointer"
+                      />
+                    </div>
+                    <div className="col-span-1 flex justify-center">
+                      <span
+                        className={`inline-flex items-center justify-center w-7 h-6 rounded-md text-xs font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                        task.priority,
+                        task.completed,
+                      )}`}
+                      >
+                        {task.priority}
+                      </span>
+                    </div>
+                    <div className="col-span-3">
+                      <div className="flex flex-col">
+                        <span className={`font-medium text-sm ${
+                          task.completed 
+                            ? 'text-gray-400 dark:text-gray-500 line-through' 
+                            : 'text-gray-900 dark:text-gray-100'
+                        }`} title={task.title}>
+                          {task.title}
+                        </span>
+                        {!task.completed && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onMoveToLater && onMoveToLater(task)}
+                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-xs px-0 py-0 h-4 font-medium self-start mt-1"
+                            title="Move to Later"
+                          >
+                            → Later
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="col-span-1 flex justify-center">
+                      <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                        <Clock className="h-3 w-3 mr-1" />
+                        <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
+                      </div>
+                    </div>
+                    <div className="col-span-2 flex justify-end space-x-1">
+                      {/* Details toggle for mobile */}
+                      {task.completed && (task.actualTime !== null || task.distractionLevel !== null) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
+                          className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 text-xs px-1 py-1 h-6"
+                          title="Show Details"
+                        >
+                          {expandedTaskId === task.id ? '▼' : '▶'}
+                        </Button>
+                      )}
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEditTask && onEditTask(task)}
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1 h-6"
+                        title="Edit Task"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+
+                      {task.completed ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onArchive && onArchive(task)}
+                          className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-1 py-1 h-6"
+                          title="Archive Task"
+                        >
+                          <Archive className="h-3 w-3" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDeleteTask && onDeleteTask(task)}
+                          className="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-1 py-1 h-6"
+                          title="Delete Task"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Expandable Details for Mobile */}
+                  {expandedTaskId === task.id && task.completed && (
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 rounded-md p-3">
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        {task.actualTime !== null && task.actualTime !== undefined && (
+                          <div className="flex items-center justify-center bg-green-50 dark:bg-green-900/20 rounded-md p-2">
+                            <CheckCircle className="h-3 w-3 mr-2 text-green-600 dark:text-green-400" />
+                            <span className="font-medium text-green-600 dark:text-green-400">
+                              Actual: {formatTime(task.actualTime)}
+                            </span>
+                          </div>
+                        )}
+                        {task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 && (
+                          <div className="flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-md p-2">
+                            <span className="text-gray-600 dark:text-gray-400 mr-2">Distraction:</span>
+                            <span className={`font-bold ${getDistractionColor(task.distractionLevel)}`}>
+                              {task.distractionLevel}/5
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );
