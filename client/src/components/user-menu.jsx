@@ -164,36 +164,6 @@ function UserMenu() {
     }
   };
 
-    if (!signupData.email || !signupData.password || !signupData.confirmPassword) {
-      setLocalErrors(prev => ({ ...prev, signup: "Please fill in all fields" }));
-      return;
-    }
-
-    if (!validateEmail(signupData.email)) {
-      setLocalErrors(prev => ({ ...prev, signup: "Please enter a valid email address" }));
-      return;
-    }
-
-    if (signupData.password.length < 6) {
-      setLocalErrors(prev => ({ ...prev, signup: "Password must be at least 6 characters long" }));
-      return;
-    }
-
-    if (signupData.password !== signupData.confirmPassword) {
-      setLocalErrors(prev => ({ ...prev, signup: "Passwords don't match" }));
-      return;
-    }
-
-    try {
-      await signup(signupData.email, signupData.password);
-      setIsOpen(false);
-      setSignupData({ email: "", password: "", confirmPassword: "" });
-      setLocalErrors({ login: "", signup: "" });
-    } catch (error) {
-      // Error is handled in the hook
-    }
-  };
-
   const handleLogout = () => {
     logout();
   };

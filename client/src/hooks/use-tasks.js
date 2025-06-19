@@ -2,6 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./use-auth";
 import { useEffect, useRef } from "react";
 
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { useRef, useEffect } from "react";
+
 const apiRequest = async (url, options = {}) => {
   const headers = {
     "Content-Type": "application/json",
@@ -51,7 +55,7 @@ export function useTasks() {
       queryClient.clear(); // Clear all cached data
     }
 
-    previousUserRef.current = currentUserId;
+    previousUserRef.current = currentUserId;Id;
 
     // Store user info for API requests
     if (user) {
@@ -80,6 +84,54 @@ export function useTasks() {
     },
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: false,
+  });
+
+  const createTask = useMutation({
+    mutationFn: async (taskData) => {
+      const response = await apiRequest("/api/tasks", {
+        method: "POST",
+        body: JSON.stringify(taskData),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  const updateTask = useMutation({
+    mutationFn: async (taskData) => {
+      const response = await apiRequest(`/api/tasks/${taskData.id}`, {
+        method: "PUT",
+        body: JSON.stringify(taskData),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  const deleteTask = useMutation({
+    mutationFn: async (taskId) => {
+      const response = await apiRequest(`/api/tasks/${taskId}`, {
+        method: "DELETE",
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  return {
+    tasks: tasks || [],
+    isLoading,
+    error,
+    createTask,
+    updateTask,
+    deleteTask,
+  };
   });
 
   const createTask = useMutation({
