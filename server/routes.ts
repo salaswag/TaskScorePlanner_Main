@@ -267,35 +267,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { anonymousUid, permanentUid } = req.body;
       
+      // Validate input parameters
       if (!anonymousUid || !permanentUid) {
-        return res.status(400).json({ message: "Both anonymousUid and permanentUid are required" });
+        console.warn("❌ Missing required parameters for data transfer");
+        return res.status(400).json({ 
+          message: "Both anonymousUid and permanentUid are required",
+          code: "MISSING_PARAMETERS"
+        });
       }
 
-      // Try MongoDB first for authenticated users
-      const mongoAvailable = await testMongoConnection();
-      
-      if (mongoAvailable) {
-        console.log("📤 Transferring data via MongoDB...");
-        const success = await mongoStorage.transferUserData(anonymousUid, permanentUid);
+      // Validate UID formats
+      if (typeof anonymousUid !== 'string' || typeof permanentUid !== 'string') {
+        console.warn("❌ Invalid UID format for data transfer");
+        return res.status(400).json({ 
+          message: "Invalid UID format",
+          code: "INVALID_FORMAT"
+        });
+      }
+
+      // Prevent self-transfer
+      if (anonymousUid === permanentUid) {
+        console.warn("❌ Attempted self-transfer of data");
+        return res.status(400).json({ 
+          message: "Cannot transfer data to the same user",
+          code: "SELF_TRANSFER"
+        });
+      }
+
+      // Validate anonymous UID format
+      if (!anonymousUid.startsWith('anonymous-')) {
+        console.warn("❌ Invalid anonymous UID format");
+        return res.status(400).json({ 
+          message: "Invalid anonymous user ID format",
+          code: "INVALID_ANONYMOUS_UID"
+        });
+      }
+
+      console.log(`📤 Starting data transfer from ${anonymousUid} to ${permanentUid}`);
+
+      let transferResult = false;
+      let transferMethod = 'none';
+
+      // Try MongoDB first for authenticated users with timeout
+      try {
+        const mongoAvailable = await Promise.race([
+          testMongoConnection(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('MongoDB test timeout')), 5000))
+        ]);
         
-        if (success) {
-          res.json({ message: "Data transferred successfully" });
-          return;
+        if (mongoAvailable) {
+          console.log("📤 Attempting MongoDB data transfer...");
+          transferResult = await Promise.race([
+            mongoStorage.transferUserData(anonymousUid, permanentUid),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('MongoDB transfer timeout')), 15000))
+          ]);
+          transferMethod = 'mongodb';
+          
+          if (transferResult) {
+            console.log("✅ MongoDB data transfer successful");
+            return res.json({ 
+              message: "Data transferred successfully via MongoDB",
+              method: transferMethod,
+              transferredItems: 'tasks and time entries'
+            });
+          }
         }
+      } catch (mongoError) {
+        console.warn("⚠️ MongoDB transfer failed:", mongoError.message);
       }
       
       // Fall back to in-memory storage transfer
-      console.log("📤 Transferring session data from in-memory storage...");
-      const success = await storage.transferSessionData(anonymousUid, permanentUid);
-      
-      if (success) {
-        res.json({ message: "Session data transferred successfully" });
-      } else {
-        res.status(500).json({ message: "Failed to transfer session data" });
+      try {
+        console.log("📤 Attempting in-memory storage transfer...");
+        transferResult = await Promise.race([
+          storage.transferSessionData(anonymousUid, permanentUid),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Memory transfer timeout')), 10000))
+        ]);
+        transferMethod = 'memory';
+        
+        if (transferResult) {
+          console.log("✅ In-memory data transfer successful");
+          return res.json({ 
+            message: "Session data transferred successfully",
+            method: transferMethod,
+            transferredItems: 'tasks only'
+          });
+        }
+      } catch (memoryError) {
+        console.error("❌ In-memory transfer failed:", memoryError.message);
       }
+
+      // If both methods failed
+      console.error("❌ All data transfer methods failed");
+      res.status(500).json({ 
+        message: "Failed to transfer data using any available method",
+        code: "TRANSFER_FAILED",
+        attemptedMethods: ['mongodb', 'memory']
+      });
+
     } catch (error) {
-      console.error("Error transferring data:", error);
-      res.status(500).json({ message: "Failed to transfer data" });
+      console.error("❌ Unexpected error during data transfer:", error);
+      res.status(500).json({ 
+        message: "Internal server error during data transfer",
+        code: "INTERNAL_ERROR"
+      });
     }
   });
 
