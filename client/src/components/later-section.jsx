@@ -120,14 +120,15 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
 
       {/* Table Header - Only visible on larger screens */}
       <div className="hidden lg:block px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <div className="grid grid-cols-12 gap-0 text-sm font-medium text-gray-700 dark:text-gray-300">
-          <div className="col-span-1 text-left pl-2"></div>
-          <div className="col-span-1 text-left pl-2">Done</div>
-          <div className="col-span-1 text-left pl-2">Priority</div>
-          <div className="col-span-6 text-left pl-2">Task</div>
-          <div className="col-span-1 text-right pr-2">Est Time</div>
-          <div className="col-span-1 text-right pr-2">Actual Time</div>
-          <div className="col-span-1 text-right pr-2">Actions</div>
+        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="col-span-1 text-center"></div>
+          <div className="col-span-1 text-center">Done</div>
+          <div className="col-span-1 text-center">Priority</div>
+          <div className="col-span-5 text-left">Task</div>
+          <div className="col-span-1 text-right">Est Time</div>
+          <div className="col-span-1 text-right">Actual Time</div>
+          <div className="col-span-1 text-right">Distracted</div>
+          <div className="col-span-1 text-right">Actions</div>
         </div>
       </div>
 
@@ -152,8 +153,8 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                 }`}
               >
                 {/* Desktop Layout - Hidden on mobile/tablet */}
-                <div className="hidden lg:grid grid-cols-12 gap-0 items-center">
-                  <div className="col-span-1 flex justify-start pl-2">
+                <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
+                  <div className="col-span-1 flex justify-center">
                     {!task.completed ? (
                       <Button
                         variant="ghost"
@@ -170,16 +171,16 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       </div>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-start pl-2">
+                  <div className="col-span-1 flex justify-center">
                     <Checkbox 
                       checked={task.completed} 
                       onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
                       className="cursor-pointer w-6 h-6"
                     />
                   </div>
-                  <div className="col-span-1 flex justify-start pl-2">
+                  <div className="col-span-1 flex justify-center">
                     <span
-                      className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-lg font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center w-10 h-8 rounded-md text-lg font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -187,7 +188,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-6 pl-2">
+                  <div className="col-span-5">
                     <span className={`font-medium text-lg leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
@@ -196,13 +197,13 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       {task.title}
                     </span>
                   </div>
-                  <div className="col-span-1 flex justify-end pr-2">
+                  <div className="col-span-1 flex justify-end">
                     <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
                       <Clock className="h-3 w-3 mr-1" />
                       <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                     </div>
                   </div>
-                  <div className="col-span-1 flex justify-end pr-2">
+                  <div className="col-span-1 flex justify-end">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
                       <div className="flex items-center text-xs text-green-600 dark:text-green-400">
                         <CheckCircle className="h-3 w-3 mr-1" />
@@ -212,7 +213,16 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-end pr-2 gap-1">
+                  <div className="col-span-1 flex justify-end">
+                    {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
+                      <span className={`text-xs font-bold ${getDistractionColor(task.distractionLevel)}`}>
+                        {task.distractionLevel}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
+                    )}
+                  </div>
+                  <div className="col-span-1 flex justify-end gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
