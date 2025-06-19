@@ -40,25 +40,26 @@ export function useTasks() {
   const { user } = useAuth();
   const previousUserRef = useRef(null);
 
-  // Detect user changes and clear cache immediately
+  // Detect user changes and clear cache immediately with forced refetch
   useEffect(() => {
     const currentUserId = user?.uid;
     const previousUserId = previousUserRef.current;
     const currentIsAnonymous = user?.isAnonymous || false;
-    const previousIsAnonymous = previousUserRef.current ? 
-      JSON.parse(sessionStorage.getItem('currentUser') || '{}').isAnonymous || false : 
-      false;
+    const previousUser = previousUserRef.current ? 
+      JSON.parse(sessionStorage.getItem('currentUser') || '{}') : null;
+    const previousIsAnonymous = previousUser?.isAnonymous || false;
 
-    // Clear cache when:
+    // Clear cache and force refetch when:
     // 1. Switching between different authenticated users
     // 2. Switching from authenticated to anonymous
     // 3. Switching from anonymous to authenticated
-    if (previousUserId && currentUserId) {
+    // 4. Any user state change
+    if (previousUserId !== null && currentUserId) {
       const userChanged = previousUserId !== currentUserId;
       const authStatusChanged = previousIsAnonymous !== currentIsAnonymous;
       
       if (userChanged || authStatusChanged) {
-        console.log('🔄 User/auth status changed, clearing all cached data...');
+        console.log('🔄 User/auth status changed, clearing cache and forcing refresh...');
         console.log(`Previous: ${previousUserId} (anonymous: ${previousIsAnonymous})`);
         console.log(`Current: ${currentUserId} (anonymous: ${currentIsAnonymous})`);
         
@@ -69,6 +70,12 @@ export function useTasks() {
         // Clear session storage
         sessionStorage.removeItem('currentUser');
         sessionStorage.removeItem('authToken');
+        
+        // Force immediate refetch of tasks for the new user
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+          queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        }, 100);
       }
     }
 
@@ -98,6 +105,23 @@ export function useTasks() {
     }
   }, [user, queryClient]);
 
+  // Listen for forced task refresh events
+  useEffect(() => {
+    const handleForceRefresh = () => {
+      console.log('🔄 Forcing task refresh due to auth state change...');
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+    };
+
+    window.addEventListener('force-task-refresh', handleForceRefresh);
+    window.addEventListener('auth-state-changed', handleForceRefresh);
+    
+    return () => {
+      window.removeEventListener('force-task-refresh', handleForceRefresh);
+      window.removeEventListener('auth-state-changed', handleForceRefresh);
+    };
+  }, [queryClient]);
+
   const { data: tasks, isLoading, error } = useQuery({
     queryKey: ["/api/tasks", user?.uid, user?.isAnonymous], // Include user ID and auth status in query key
     queryFn: async () => {
@@ -108,8 +132,10 @@ export function useTasks() {
       console.log('📋 Fetched tasks for user', currentUserId, ':', data.length, 'tasks');
       return data;
     },
-    staleTime: 10000, // Reduced to 10 seconds for better responsiveness
+    staleTime: 0, // Always consider data stale to ensure fresh fetch on user change
+    cacheTime: 0, // Don't cache between user switches
     refetchOnWindowFocus: false,
+    refetchOnMount: true, // Always refetch when component mounts
     enabled: !!user, // Only fetch when user is available
   });
 

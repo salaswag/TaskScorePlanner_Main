@@ -38,17 +38,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all tasks
   app.get("/api/tasks", async (req, res) => {
     try {
-      // Always try MongoDB first
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+      
+      // Anonymous users ALWAYS use in-memory storage
+      if (isAnonymous) {
+        console.log("👤 Anonymous user - using in-memory storage");
+        const tasks = await storage.getTasks(userId);
+        res.json(tasks);
+        return;
+      }
+      
+      // Authenticated users try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
       if (!mongoAvailable) {
-        console.warn("⚠️  Using in-memory storage - MongoDB unavailable");
+        console.warn("⚠️  Authenticated user using in-memory storage - MongoDB unavailable");
       } else {
-        console.log("✅ Using MongoDB storage");
+        console.log("✅ Authenticated user using MongoDB storage");
       }
       
-      const userId = req.user?.uid || 'anonymous';
       const tasks = await storageToUse.getTasks(userId);
       res.json(tasks);
     } catch (error) {
@@ -67,17 +77,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertTaskSchema.parse(req.body);
       console.log('Validated data:', validatedData);
       
-      // Always try MongoDB first
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+      
+      // Anonymous users ALWAYS use in-memory storage
+      if (isAnonymous) {
+        console.log("👤 Anonymous user - creating task in in-memory storage");
+        const taskWithUser = { ...validatedData, userId };
+        const task = await storage.createTask(taskWithUser);
+        console.log('Anonymous task created successfully:', task);
+        res.status(201).json(task);
+        return;
+      }
+      
+      // Authenticated users try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
       if (!mongoAvailable) {
-        console.warn("⚠️  Creating task in in-memory storage - MongoDB unavailable");
+        console.warn("⚠️  Authenticated user creating task in in-memory storage - MongoDB unavailable");
       } else {
-        console.log("✅ Creating task in MongoDB storage");
+        console.log("✅ Authenticated user creating task in MongoDB storage");
       }
       
-      const userId = req.user?.uid || 'anonymous';
       const taskWithUser = { ...validatedData, userId };
       console.log('Task with user:', taskWithUser);
       
@@ -101,14 +123,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = req.params.id;
       console.log('Updating task with ID:', id, 'Data:', req.body);
 
-      // Always try MongoDB first
+      const isAnonymous = !req.user || req.user.isAnonymous;
+      
+      // Anonymous users ALWAYS use in-memory storage
+      if (isAnonymous) {
+        console.log("👤 Anonymous user - updating task in in-memory storage");
+        const updateData = { id: Number(id), ...req.body };
+        const updatedTask = await storage.updateTask(updateData);
+        
+        if (!updatedTask) {
+          return res.status(404).json({ message: "Task not found" });
+        }
+        
+        res.json(updatedTask);
+        return;
+      }
+
+      // Authenticated users try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
       if (!mongoAvailable) {
-        console.warn("⚠️  Updating task in in-memory storage - MongoDB unavailable");
+        console.warn("⚠️  Authenticated user updating task in in-memory storage - MongoDB unavailable");
       } else {
-        console.log("✅ Updating task in MongoDB storage");
+        console.log("✅ Authenticated user updating task in MongoDB storage");
       }
 
       let updateData;
@@ -138,15 +176,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/tasks/:id", async (req, res) => {
     try {
       const idParam = req.params.id;
+      const isAnonymous = !req.user || req.user.isAnonymous;
       
-      // Always try MongoDB first
+      // Anonymous users ALWAYS use in-memory storage
+      if (isAnonymous) {
+        console.log("👤 Anonymous user - deleting task from in-memory storage");
+        const idNum = Number(idParam);
+        if (isNaN(idNum)) {
+          return res.status(400).json({ message: "Invalid task id" });
+        }
+        const deleted = await storage.deleteTask(idNum);
+        
+        if (!deleted) {
+          return res.status(404).json({ message: "Task not found" });
+        }
+        
+        res.status(204).send();
+        return;
+      }
+      
+      // Authenticated users try MongoDB first
       const mongoAvailable = await testMongoConnection();
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
       if (!mongoAvailable) {
-        console.warn("⚠️  Deleting task from in-memory storage - MongoDB unavailable");
+        console.warn("⚠️  Authenticated user deleting task from in-memory storage - MongoDB unavailable");
       } else {
-        console.log("✅ Deleting task from MongoDB storage");
+        console.log("✅ Authenticated user deleting task from MongoDB storage");
       }
       
       let deleted: boolean;

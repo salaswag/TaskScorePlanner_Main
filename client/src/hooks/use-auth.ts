@@ -53,29 +53,33 @@ export function useAuth() {
   useEffect(() => {
     console.log('🔧 Setting up Firebase auth listener...');
     let previousUser: User | null = null;
-    
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       // Detect any user change that requires data clearing
       if (previousUser && user) {
         const userIdChanged = previousUser.uid !== user.uid;
         const authStatusChanged = previousUser.isAnonymous !== user.isAnonymous;
-        
+
         if (userIdChanged || authStatusChanged) {
           console.log('🔄 User/auth change detected, clearing data...');
           console.log(`Previous: ${previousUser.uid} (anonymous: ${previousUser.isAnonymous})`);
           console.log(`Current: ${user.uid} (anonymous: ${user.isAnonymous})`);
-          
+
           // Clear all cached data immediately
           if (typeof window !== 'undefined') {
             sessionStorage.removeItem('currentUser');
             sessionStorage.removeItem('authToken');
             localStorage.removeItem('user-tasks');
             localStorage.removeItem('user-preferences');
-            
-            // Only reload for significant changes (different authenticated users)
-            if (!previousUser.isAnonymous && !user.isAnonymous && userIdChanged) {
-              window.location.reload();
-              return;
+
+            // Force task refresh for user changes
+            if (typeof window !== 'undefined') {
+              // Use a small delay to ensure auth state is fully updated
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('auth-state-changed', {
+                  detail: { user, previousUser }
+                }));
+              }, 200);
             }
           }
         }
@@ -86,7 +90,7 @@ export function useAuth() {
       } else {
         console.log('👤 No user authenticated, continuing as anonymous');
       }
-      
+
       previousUser = user;
       setUser(user);
     });
@@ -142,7 +146,7 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       console.log('🔓 Starting logout process...');
-      
+
       // Clear session data immediately before signing out
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem('currentUser');
@@ -150,14 +154,16 @@ export function useAuth() {
         localStorage.removeItem('user-tasks');
         localStorage.removeItem('user-preferences');
       }
-      
+
       await signOut(auth);
       console.log('✅ Logout successful');
-      
+
       // Force page reload to ensure clean state
       if (typeof window !== 'undefined') {
         setTimeout(() => {
-          window.location.reload();
+          window.dispatchEvent(new CustomEvent('auth-state-changed', {
+            detail: { user, previousUser }
+          }));
         }, 50); // Reduced delay for faster response
       }
     } catch (error: any) {
