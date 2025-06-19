@@ -77,6 +77,63 @@
     -webkit-appearance: none;
     appearance: none;
     width: 20px;
+
+
+/* Keyboard-aware form styles */
+.input-focused {
+  @apply ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400;
+}
+
+/* Improved mobile input styles */
+@media (max-width: 768px) {
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"], 
+  textarea {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    transform: scale(1);
+  }
+  
+  /* Enhanced slider styles for mobile */
+  input[type="range"] {
+    height: 40px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #000;
+    cursor: pointer;
+    -webkit-appearance: none;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #000;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+}
+
+/* Smooth transitions for keyboard appearance */
+.keyboard-aware-container {
+  transition: transform 0.3s ease-in-out, margin 0.3s ease-in-out;
+}
+
+/* Focus ring improvements */
+.focus-visible:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
     height: 20px;
     border-radius: 50%;
     background: #000;

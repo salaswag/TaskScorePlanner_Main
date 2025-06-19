@@ -1,13 +1,23 @@
 import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Save } from "lucide-react";
+import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
+import { useInputFocus } from "@/hooks/use-input-focus";
 
-export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
+export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
-  const [isSaving, setIsSaving] = useState(false);
+
+  const { isKeyboardVisible } = useKeyboardAware();
+  const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
 
   useEffect(() => {
     if (task) {
@@ -53,7 +63,11 @@ export default function TaskEditModal({ isOpen, task, onClose, onSave }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-6">
+      <DialogContent 
+        className={`w-[90vw] max-w-md mx-auto max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-0 transition-all duration-300 ${
+          isKeyboardVisible ? 'translate-y-[-10vh]' : ''
+        }`}
+      >
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Edit Task</DialogTitle>
         </DialogHeader>

@@ -16,8 +16,20 @@ import { Moon, Sun, CheckSquare, GripVertical, ChevronDown, ChevronUp } from "lu
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import UserMenu from '../components/user-menu';
+import { useKeyboardAware } from '@/hooks/use-keyboard-aware';
+import { useInputFocus } from '@/hooks/use-input-focus';
 
 export default function TodoApp() {
+  const { user, login, register, logout, isLoading: authLoading } = useAuth();
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [notification, setNotification] = useState(null);
+
+  const { isKeyboardVisible } = useKeyboardAware();
+  const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
+
   const [currentTask, setCurrentTask] = useState(null);
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
