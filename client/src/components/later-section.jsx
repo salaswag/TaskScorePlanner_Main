@@ -101,14 +101,14 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
 
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="grid grid-cols-12 gap-0.5 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
           <div className="col-span-1 text-center">Priority</div>
           <div className="col-span-4 text-left">Task</div>
           <div className="col-span-1 text-center">Est Time</div>
           <div className="col-span-1 text-center">Actual Time</div>
-          <div className="col-span-1 text-center">Dist</div>
+          <div className="col-span-1 text-center">Distraction</div>
           <div className="col-span-2 text-center">Actions</div>
         </div>
       </div>
@@ -130,20 +130,20 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   : ''
               }`}
             >
-              <div className="grid grid-cols-12 gap-1 items-center">
+              <div className="grid grid-cols-12 gap-0.5 items-center">
                 <div className="col-span-1 flex justify-center">
                   {!task.completed ? (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onMoveToMain(task)}
-                      className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-2 py-1 h-6 font-medium"
+                      className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-1.5 py-1 h-6 font-medium"
                       title="Move to Main"
                     >
                       ↑ Main
                     </Button>
                   ) : (
-                    <div className="w-8 h-8 flex items-center justify-center">
+                    <div className="w-6 h-6 flex items-center justify-center">
                       <span className="text-gray-400 text-xs">✓</span>
                     </div>
                   )}
@@ -157,7 +157,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                 </div>
                 <div className="col-span-1 flex justify-center">
                   <span
-                    className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                    className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -199,12 +199,12 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
                   )}
                 </div>
-                <div className="col-span-2 flex justify-center space-x-1">
+                <div className="col-span-2 flex justify-start space-x-0.5 ml-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onEditTask && onEditTask(task)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs px-2 py-1 h-6"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs px-1.5 py-1 h-6"
                     title="Edit Task"
                   >
                     <Edit className="h-3 w-3" />
@@ -216,7 +216,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       variant="ghost"
                       size="sm"
                       onClick={() => onArchiveTask && onArchiveTask(task)}
-                      className="text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-xs px-2 py-1 h-6"
+                      className="text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/20 text-xs px-1.5 py-1 h-6"
                       title="Archive Task"
                     >
                       <Archive className="h-3 w-3" />
@@ -226,7 +226,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       variant="ghost"
                       size="sm"
                       onClick={() => onDeleteTask(task)}
-                      className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-2 py-1 h-6"
+                      className="text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/20 text-xs px-1.5 py-1 h-6"
                       title="Delete Task"
                     >
                       <Trash2 className="h-3 w-3" />

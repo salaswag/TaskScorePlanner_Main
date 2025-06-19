@@ -127,14 +127,14 @@ export default function TaskTable({
 
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-[73px] z-10">
-        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="grid grid-cols-12 gap-0.5 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
           <div className="col-span-1 text-center">Priority</div>
           <div className="col-span-4 text-left">Task</div>
           <div className="col-span-1 text-center">Est Time</div>
           <div className="col-span-1 text-center">Actual Time</div>
-          <div className="col-span-1 text-center">Dist</div>
+          <div className="col-span-1 text-center">Distraction</div>
           <div className="col-span-2 text-center">Actions</div>
         </div>
       </div>
@@ -172,20 +172,20 @@ export default function TaskTable({
                     : 'cursor-grab active:cursor-grabbing'
                 }`}
               >
-                <div className="grid grid-cols-12 gap-1 items-center">
+                <div className="grid grid-cols-12 gap-0.5 items-center">
                   <div className="col-span-1 flex justify-center">
                     {!task.completed ? (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onMoveToLater && onMoveToLater(task)}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs px-2 py-1 h-6 font-medium"
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs px-1.5 py-1 h-6 font-medium"
                         title="Move to Later"
                       >
                         Later
                       </Button>
                     ) : (
-                      <div className="w-8 h-8 flex items-center justify-center">
+                      <div className="w-6 h-6 flex items-center justify-center">
                         <GripVertical className="h-4 w-4 text-gray-400" />
                       </div>
                     )}
@@ -205,7 +205,7 @@ export default function TaskTable({
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
-                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                         task.priority,
                         task.completed,
                       )}`}
@@ -247,12 +247,12 @@ export default function TaskTable({
                       <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
                     )}
                   </div>
-                  <div className="col-span-2 flex justify-center space-x-1">
+                  <div className="col-span-2 flex justify-start space-x-0.5 ml-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onEditTask && onEditTask(task)}
-                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2"
                       title="Edit Task"
                     >
                       <Edit className="h-4 w-4" />
@@ -264,7 +264,7 @@ export default function TaskTable({
                         variant="ghost"
                         size="sm"
                         onClick={() => onArchive && onArchive(task)}
-                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20 px-2"
                         title="Archive Task"
                       >
                         <Archive className="h-4 w-4" />
@@ -274,7 +274,7 @@ export default function TaskTable({
                         variant="ghost"
                         size="sm"
                         onClick={() => onDeleteTask && onDeleteTask(task)}
-                        className="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        className="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-2"
                         title="Delete Task"
                       >
                         <Trash2 className="h-4 w-4" />
