@@ -33,8 +33,8 @@ function TaskForm({ onSubmit, isLoading }) {
   };
 
   return (
-    <div className="w-full flex justify-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/95 dark:bg-black/95 rounded-lg p-3">
+    <div className="sticky top-0 z-30 w-full flex justify-center bg-white/95 dark:bg-black/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 shadow-sm">
+      <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/95 dark:bg-black/95 rounded-lg p-3 m-2">
           {/* Desktop: All Elements in One Line, Mobile: Stacked Layout */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-4 w-full">
             {/* Task Input - Full width on mobile, flexible on desktop */}

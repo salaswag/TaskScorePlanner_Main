@@ -265,10 +265,10 @@ export default function TodoApp() {
   const handleTouchMove = (e) => {
     if (window.innerWidth >= 1024) return; // Only on mobile/tablet
     if (!touchStart) return;
-    
+
     const currentTouch = e.touches[0].clientY;
     const diff = touchStart - currentTouch;
-    
+
     // Swipe up to hide header (when header is visible)
     if (diff > 50 && isHeaderVisible && user && !user.isAnonymous) {
       setIsHeaderVisible(false);
@@ -419,15 +419,6 @@ export default function TodoApp() {
               {/* Floating Add Button - Only on mobile/tablet */}
               <div className="lg:hidden">
                 <FloatingAddButton
-                  onSubmit={handleCreateTask}
-                  isLoading={createTask.isPending}
-                />
-              </div>
-
-              {/* Floating Task Form - Desktop only */}
-              <div className="hidden lg:block fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-4xl px-6">
-                <TaskFormModal
-                  isInline={true}
                   onSubmit={handleCreateTask}
                   isLoading={createTask.isPending}
                 />
