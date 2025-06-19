@@ -114,8 +114,8 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
         }
       }}
     >
-      <div className="px-4 sm:px-6 py-3 border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <h3 className="text-lg font-medium text-gray-500 dark:text-gray-400">Later (Not counted in score)</h3>
+      <div className="px-3 sm:px-4 py-1.5 border-b border-gray-200 dark:border-gray-700 border-dashed">
+        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400">Later (Not counted in score)</h3>
       </div>
 
       {/* Table Header - Only visible on larger screens */}
