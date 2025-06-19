@@ -27,7 +27,6 @@ export function useAuth() {
   // Listen to Firebase auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('Auth state changed:', user);
       setFirebaseUser(user);
       
       if (user) {
@@ -62,8 +61,12 @@ export function useAuth() {
           }
         }
       } else {
-        setUser(null);
-        console.log('No user authenticated, continuing as anonymous');
+        // No user authenticated - treat as anonymous
+        setUser({
+          id: 'anonymous',
+          email: undefined,
+          isAnonymous: true
+        });
       }
       
       setIsLoading(false);

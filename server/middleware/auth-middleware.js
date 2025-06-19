@@ -1,6 +1,9 @@
 
 import { auth } from '../firebase-admin.js';
 
+// Cache anonymous user to prevent excessive logging
+let hasLoggedAnonymousWarning = false;
+
 export async function verifyFirebaseToken(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
@@ -14,7 +17,12 @@ export async function verifyFirebaseToken(req, res, next) {
         email: null,
         isAnonymous: true
       };
-      console.log('No token provided, using anonymous user');
+      
+      // Only log once to prevent spam
+      if (!hasLoggedAnonymousWarning) {
+        console.log('No token provided, using anonymous user (further anonymous requests will be silent)');
+        hasLoggedAnonymousWarning = true;
+      }
       return next();
     }
 
@@ -26,20 +34,21 @@ export async function verifyFirebaseToken(req, res, next) {
         isAnonymous: decodedToken.firebase?.sign_in_provider === 'anonymous'
       };
       console.log('Token verified successfully for user:', req.user.uid);
+      // Reset anonymous warning flag since we have a real user
+      hasLoggedAnonymousWarning = false;
     } catch (error) {
-      console.error('Firebase token verification failed:', error);
+      console.error('Firebase token verification failed:', error.message);
       // If token verification fails, treat as anonymous
       req.user = {
         uid: 'anonymous',
         email: null,
         isAnonymous: true
       };
-      console.log('Token verification failed, using anonymous user');
     }
 
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    console.error('Auth middleware error:', error.message);
     req.user = {
       uid: 'anonymous',
       email: null,

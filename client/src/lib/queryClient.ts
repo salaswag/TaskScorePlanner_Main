@@ -9,12 +9,16 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
 
   // Add Firebase token if user is authenticated
   const currentUser = auth.currentUser;
-  if (currentUser && !currentUser.isAnonymous) {
+  if (currentUser) {
     try {
-      const idToken = await currentUser.getIdToken();
+      // Always try to get token, even for anonymous users in case they were upgraded
+      const idToken = await currentUser.getIdToken(false); // false = don't force refresh
       headers['Authorization'] = `Bearer ${idToken}`;
     } catch (error) {
-      console.error('Failed to get ID token:', error);
+      // Silently handle token errors for anonymous users
+      if (!currentUser.isAnonymous) {
+        console.error('Failed to get ID token:', error);
+      }
     }
   }
 
