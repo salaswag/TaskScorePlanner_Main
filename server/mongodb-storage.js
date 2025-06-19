@@ -497,6 +497,10 @@ export class MongoStorage {
 
       return false;
     } catch (error) {
+      console.error('Error archiving task:', error);
+      return false;
+    }
+  }
 
   async transferUserData(fromUserId, toUserId) {
     try {
@@ -531,105 +535,6 @@ export class MongoStorage {
       return true;
     } catch (error) {
       console.error('Error transferring user data:', error);
-      return false;
-    }
-  }
-
-  async archiveTask(id) {
-    try {
-      console.log('Archive task with ID:', id);
-      
-      // First, find the task to archive from both collections
-      let task = null;
-      let sourceCollection = null;
-
-      // Try to find by numeric id in main collection first
-      if (!isNaN(Number(id))) {
-        task = await this.tasksCollection.findOne({ id: Number(id) });
-        if (task) {
-          sourceCollection = this.tasksCollection;
-          console.log('Found task in main collection by numeric id');
-        }
-      }
-
-      // If not found in main, try later collection
-      if (!task && !isNaN(Number(id))) {
-        task = await this.laterTasksCollection.findOne({ id: Number(id) });
-        if (task) {
-          sourceCollection = this.laterTasksCollection;
-          console.log('Found task in later collection by numeric id');
-        }
-      }
-
-      // If not found by numeric id, try by _id (ObjectId) in both collections
-      if (!task) {
-        try {
-          const { ObjectId } = await import('mongodb');
-          let objectId;
-
-          if (typeof id === 'string' && id.length === 24) {
-            objectId = new ObjectId(id);
-          } else {
-            // Search for any task with this numeric id and get its _id from both collections
-            let foundTask = await this.tasksCollection.findOne({ id: Number(id) });
-            if (foundTask) {
-              objectId = foundTask._id;
-              sourceCollection = this.tasksCollection;
-            } else {
-              foundTask = await this.laterTasksCollection.findOne({ id: Number(id) });
-              if (foundTask) {
-                objectId = foundTask._id;
-                sourceCollection = this.laterTasksCollection;
-              }
-            }
-          }
-
-          if (objectId && sourceCollection) {
-            task = await sourceCollection.findOne({ _id: objectId });
-            console.log('Found task by ObjectId in', sourceCollection === this.tasksCollection ? 'main' : 'later', 'collection');
-          }
-        } catch (objectIdError) {
-          console.error('Error with ObjectId conversion:', objectIdError);
-        }
-      }
-
-      if (!task || !sourceCollection) {
-        console.error('Task not found for archiving:', id);
-        return false;
-      }
-
-      console.log('Task to archive:', JSON.stringify(task, null, 2));
-
-      // Add archived timestamp
-      const archivedTask = {
-        ...task,
-        archived: true,
-        archivedAt: new Date()
-      };
-
-      // Insert into archive collection
-      const insertResult = await this.archiveCollection.insertOne(archivedTask);
-      console.log('Archive insert result:', insertResult);
-
-      if (insertResult.acknowledged) {
-        // Remove from source collection
-        const deleteResult = await sourceCollection.deleteOne({ _id: task._id });
-        console.log('Delete from source collection result:', deleteResult);
-        
-        if (deleteResult && deleteResult.deletedCount > 0) {
-          console.log('✅ Task successfully archived');
-          return true;
-        } else {
-          console.error('❌ Failed to remove task from source collection after archiving');
-          // Remove from archive since source deletion failed
-          await this.archiveCollection.deleteOne({ _id: insertResult.insertedId });
-          return false;
-        }
-      }
-
-      return false;
-    } catch (error) {
-      console.error('Error archiving task:', error);
       return false;
     }
   }
