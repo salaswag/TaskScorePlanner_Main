@@ -1,12 +1,14 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import { EventEmitter } from "events";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { MongoStorage } from "./mongodb-storage.js";
 
 // Simple in-memory session store that persists across requests
-class MemorySessionStore {
+class MemorySessionStore extends EventEmitter {
   constructor() {
+    super();
     this.sessions = new Map();
   }
 
