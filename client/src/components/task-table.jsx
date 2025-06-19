@@ -134,7 +134,7 @@ export default function TaskTable({
           <div className="col-span-4 text-left">Task</div>
           <div className="col-span-1 text-center">Est Time</div>
           <div className="col-span-1 text-center">Actual Time</div>
-          <div className="col-span-1 text-center">Distraction</div>
+          <div className="col-span-1 text-center">Distracted</div>
           <div className="col-span-2 text-center">Actions</div>
         </div>
       </div>
