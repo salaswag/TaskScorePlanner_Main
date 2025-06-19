@@ -189,7 +189,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     </span>
                   </div>
                   <div className="col-span-5">
-                    <span className={`font-medium text-xl leading-relaxed ${
+                    <span className={`font-medium text-lg leading-relaxed ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
                         : 'text-gray-900 dark:text-gray-100'
@@ -279,7 +279,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     {/* Task Title and Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <span className={`font-medium text-lg sm:text-xl leading-relaxed break-words ${
+                        <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
                           task.completed 
                             ? 'text-gray-400 dark:text-gray-500 line-through' 
                             : 'text-gray-900 dark:text-gray-100'
