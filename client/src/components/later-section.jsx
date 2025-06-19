@@ -9,12 +9,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/use-auth";
 
 function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchiveTask }) {
   const [expandedTasks, setExpandedTasks] = useState(new Set());
-  const { user } = useAuth();
-  const isAnonymous = !user || user.isAnonymous;
 
   const toggleExpanded = (taskId) => {
     const newExpanded = new Set(expandedTasks);
@@ -236,27 +233,15 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       <Edit className="h-4 w-4" />
                     </Button>
                     {task.completed ? (
-                      isAnonymous ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDeleteTask && onDeleteTask(task)}
-                          className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 h-7"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onArchiveTask && onArchiveTask(task)}
-                          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
-                          title="Archive"
-                        >
-                          <Archive className="h-4 w-4" />
-                        </Button>
-                      )
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onArchiveTask && onArchiveTask(task)}
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                        title="Archive"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
                     ) : (
                       <Button
                         variant="ghost"
@@ -350,20 +335,10 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                                 Edit
                               </DropdownMenuItem>
                               {task.completed ? (
-                                isAnonymous ? (
-                                  <DropdownMenuItem
-                                    onClick={() => onDeleteTask(task)}
-                                    className="text-red-600 focus:text-red-600"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem onClick={() => onArchiveTask && onArchiveTask(task)}>
-                                    <Archive className="h-4 w-4 mr-2" />
-                                    Archive
-                                  </DropdownMenuItem>
-                                )
+                                <DropdownMenuItem onClick={() => onArchiveTask && onArchiveTask(task)}>
+                                  <Archive className="h-4 w-4 mr-2" />
+                                  Archive
+                                </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem 
                                   onClick={() => onDeleteTask(task)}

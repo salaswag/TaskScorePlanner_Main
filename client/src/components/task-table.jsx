@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/use-auth";
 
 export default function TaskTable({
   tasks,
@@ -27,8 +27,6 @@ export default function TaskTable({
   totalEstimatedTime,
 }) {
   const [expandedTasks, setExpandedTasks] = useState(new Set());
-  const { user } = useAuth();
-  const isAnonymous = !user || user.isAnonymous;
 
   const toggleExpanded = (taskId) => {
     const newExpanded = new Set(expandedTasks);
@@ -154,7 +152,7 @@ export default function TaskTable({
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-black z-10">
         <div className="flex items-center justify-between">
           <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white">Main Tasks</h3>
-
+          
           {/* Score Display - moved from separate component */}
           <div className="flex items-center justify-end divide-x divide-gray-300 dark:divide-gray-600">
             {/* Score Fraction */}
@@ -209,7 +207,7 @@ export default function TaskTable({
         ) : (
           sortedTasks.map((task) => {
             const isExpanded = expandedTasks.has(task.id);
-
+            
             return (
               <div 
                 key={task.id}
@@ -306,27 +304,15 @@ export default function TaskTable({
                       <Edit className="h-4 w-4" />
                     </Button>
                     {task.completed ? (
-                      isAnonymous ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDeleteTask && onDeleteTask(task)}
-                          className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 h-7"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onArchive && onArchive(task)}
-                          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
-                          title="Archive"
-                        >
-                          <Archive className="h-4 w-4" />
-                        </Button>
-                      )
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onArchive && onArchive(task)}
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                        title="Archive"
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
                     ) : (
                       <Button
                         variant="ghost"
@@ -356,7 +342,7 @@ export default function TaskTable({
                       }}
                       className="cursor-pointer flex-shrink-0 w-5 h-5"
                     />
-
+                    
                     {/* Priority */}
                     <span
                       className={`inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md text-lg sm:text-xl font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
@@ -377,7 +363,7 @@ export default function TaskTable({
                         }`}>
                           {task.title}
                         </span>
-
+                        
                         {/* Time and Actions Row */}
                         <div className="flex items-start gap-2 flex-shrink-0 mt-1">
                           {/* Estimated Time */}
@@ -402,7 +388,7 @@ export default function TaskTable({
                               )}
                             </Button>
                           )}
-
+                          
                           {/* Actions Menu */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -425,20 +411,10 @@ export default function TaskTable({
                                 Edit
                               </DropdownMenuItem>
                               {task.completed ? (
-                                isAnonymous ? (
-                                  <DropdownMenuItem
-                                    onClick={() => onDeleteTask && onDeleteTask(task)}
-                                    className="text-red-600 focus:text-red-600"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem onClick={() => onArchive && onArchive(task)}>
-                                    <Archive className="h-4 w-4 mr-2" />
-                                    Archive
-                                  </DropdownMenuItem>
-                                )
+                                <DropdownMenuItem onClick={() => onArchive && onArchive(task)}>
+                                  <Archive className="h-4 w-4 mr-2" />
+                                  Archive
+                                </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem 
                                   onClick={() => onDeleteTask && onDeleteTask(task)}
