@@ -255,9 +255,9 @@ function UserMenu() {
                         </Button>
                       </form>
                     </TabsContent>
-        
-        </TabsContent>
-      </Dialog>
+                </Tabs>
+              </DialogContent>
+            </Dialog>
 
       <Button 
         variant="default" 
