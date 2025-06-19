@@ -313,36 +313,6 @@ export function useAuth() {
       const previousUser = user; // Store current user before logout
 
       // Clear session data immediately before signing out
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('currentUser');
-        sessionStorage.removeItem('authToken');
-        localStorage.removeItem('user-tasks');
-        localStorage.removeItem('user-preferences');
-      }
-
-      await signOut(auth);
-      console.log('✅ Logout successful');
-
-      // Force page reload to ensure clean state
-      if (typeof window !== 'undefined') {
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent('auth-state-changed', {
-            detail: { user: null, previousUser }
-          }));
-        }, 50); // Reduced delay for faster response
-      }
-    } catch (error: any) {
-      console.error('❌ Logout failed:', error.message);
-      throw error;
-    }
-  }, [user]);
-
-  const logout = useCallback(async () => {
-    try {
-      console.log('🔓 Starting logout process...');
-      const previousUser = user; // Store current user before logout
-
-      // Clear session data immediately before signing out
       try {
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('currentUser');
