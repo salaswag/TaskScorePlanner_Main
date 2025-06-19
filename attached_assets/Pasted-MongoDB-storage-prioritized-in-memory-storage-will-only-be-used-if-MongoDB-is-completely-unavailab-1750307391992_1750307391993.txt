@@ -1,0 +1,232 @@
+MongoDB storage prioritized - in-memory storage will only be used if MongoDB is completely unavailable
+4:29:23 AM [express] serving on port 5000
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+No token provided, using anonymous user
+MongoDB client not available, attempting reconnection...
+✅ Connected to MongoDB successfully
+📊 Database: ClusterforTask
+📦 Main Collection: Tasks
+📦 Archive Collection: Archive
+📦 Later Tasks Collection: Later Tasks
+📦 Time Entries Collection: TimeEntries
+✅ Using MongoDB storage
+Raw main tasks from MongoDB: [
+  {
+    "_id": "68539129a46557eca29d31f8",
+    "title": "hi",
+    "priority": 5,
+    "estimatedTime": 30,
+    "userId": "anonymous",
+    "id": 7,
+    "completed": false,
+    "actualTime": null,
+    "distractionLevel": null,
+    "isLater": false,
+    "isFocus": false,
+    "archived": false,
+    "createdAt": "2025-06-19T04:25:13.793Z",
+    "completedAt": null
+  },
+  {
+    "_id": "68538ec2b5a66e6c94242291",
+    "title": "sooo",
+    "priority": 5,
+    "estimatedTime": 30,
+    "userId": "anonymous",
+    "id": 6,
+    "completed": false,
+    "actualTime": null,
+    "distractionLevel": null,
+    "isLater": false,
+    "isFocus": false,
+    "archived": false,
+    "createdAt": "2025-06-19T04:14:58.792Z",
+    "completedAt": null
+  },
+  {
+    "_id": "68538e60a23d8b7f2f6ba640",
+    "title": "broo",
+    "priority": 5,
+    "estimatedTime": 30,
+    "userId": "anonymous",
+    "id": 5,
+    "completed": false,
+    "actualTime": null,
+    "distractionLevel": null,
+    "isLater": false,
+    "isFocus": false,
+    "archived": false,
+    "createdAt": "2025-06-19T04:13:20.327Z",
+    "completedAt": null
+  }
+]
+Fetched main tasks from MongoDB: 3
+Raw later tasks from MongoDB: []
+Fetched later tasks from MongoDB: 0
+Total combined tasks: 3
+4:29:32 AM [express] GET /api/tasks 200 in 578ms :: [{"_id":"68539129a46557eca29d31f8","title":"hi",…
+No token provided, using anonymous user
+✅ Using MongoDB storage
+Raw main tasks from MongoDB: [
+  {
+    "_id": "68539129a46557eca29d31f8",
+    "title": "hi",
+    "priority": 5,
+    "estimatedTime": 30,
+    "userId": "anonymous",
+    "id": 7,
+    "completed": false,
+    "actualTime": null,
+    "distractionLevel": null,
+    "isLater": false,
+    "isFocus": false,
+    "archived": false,
+    "createdAt": "2025-06-19T04:25:13.793Z",
+    "completedAt": null
+  },
+  {
+    "_id": "68538ec2b5a66e6c94242291",
+    "title": "sooo",
+    "priority": 5,
+    "estimatedTime": 30,
+    "userId": "anonymous",
+    "id": 6,
+    "completed": false,
+    "actualTime": null,
+    "distractionLevel": null,
+    "isLater": false,
+    "isFocus": false,
+    "archived": false,
+    "createdAt": "2025-06-19T04:14:58.792Z",
+    "completedAt": null
+  },
+  {
+    "_id": "68538e60a23d8b7f2f6ba640",
+    "title": "broo",
+    "priority": 5,
+    "estimatedTime": 30,
+    "userId": "anonymous",
+    "id": 5,
+    "completed": false,
+    "actualTime": null,
+    "distractionLevel": null,
+    "isLater": false,
+    "isFocus": false,
+    "archived": false,
+    "createdAt": "2025-06-19T04:13:20.327Z",
+    "completedAt": null
+  }
+]
+Fetched main tasks from MongoDB: 3
+Raw later tasks from MongoDB: []
+Fetched later tasks from MongoDB: 0
+Total combined tasks: 3
+4:29:32 AM [express] GET /api/tasks 304 in 91ms :: [{"_id":"68539129a46557eca29d31f8","title":"hi","…
