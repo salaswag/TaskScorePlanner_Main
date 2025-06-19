@@ -37,25 +37,68 @@ function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({ email: "", password: "", confirmPassword: "" });
+  const [activeTab, setActiveTab] = useState("login");
+  const [localErrors, setLocalErrors] = useState({ login: "", signup: "" });
+
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (loginData.email && loginData.password) {
-      login(loginData);
+    setLocalErrors(prev => ({ ...prev, login: "" }));
+
+    if (!loginData.email || !loginData.password) {
+      setLocalErrors(prev => ({ ...prev, login: "Please fill in all fields" }));
+      return;
+    }
+
+    if (!validateEmail(loginData.email)) {
+      setLocalErrors(prev => ({ ...prev, login: "Please enter a valid email address" }));
+      return;
+    }
+
+    try {
+      await login(loginData.email, loginData.password);
       setIsOpen(false);
       setLoginData({ email: "", password: "" });
+      setLocalErrors({ login: "", signup: "" });
+    } catch (error) {
+      // Error is handled in the hook
     }
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (signupData.password !== signupData.confirmPassword) {
+    setLocalErrors(prev => ({ ...prev, signup: "" }));
+
+    if (!signupData.email || !signupData.password || !signupData.confirmPassword) {
+      setLocalErrors(prev => ({ ...prev, signup: "Please fill in all fields" }));
       return;
     }
-    if (signupData.email && signupData.password) {
-      signup({ email: signupData.email, password: signupData.password });
+
+    if (!validateEmail(signupData.email)) {
+      setLocalErrors(prev => ({ ...prev, signup: "Please enter a valid email address" }));
+      return;
+    }
+
+    if (signupData.password.length < 6) {
+      setLocalErrors(prev => ({ ...prev, signup: "Password must be at least 6 characters long" }));
+      return;
+    }
+
+    if (signupData.password !== signupData.confirmPassword) {
+      setLocalErrors(prev => ({ ...prev, signup: "Passwords don't match" }));
+      return;
+    }
+
+    try {
+      await signup(signupData.email, signupData.password);
       setIsOpen(false);
       setSignupData({ email: "", password: "", confirmPassword: "" });
+      setLocalErrors({ login: "", signup: "" });
+    } catch (error) {
+      // Error is handled in the hook
     }
   };
 
@@ -105,13 +148,19 @@ function UserMenu() {
   return (
     <div className="flex items-center gap-2">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <LogIn className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign In</span>
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-1 text-sm">
+                  <User className="h-3 w-3" />
+                  Sign In / Up
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-sm">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <TabsTrigger value="login" className="text-sm">Sign In</TabsTrigger>
+                    <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
+                  </TabsList>
+
           <DialogHeader>
             <DialogTitle>Welcome to TaskMaster Pro</DialogTitle>
             <DialogDescription>
@@ -119,158 +168,95 @@ function UserMenu() {
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
+          
+                    <TabsContent value="login" className="space-y-3">
+                      <form onSubmit={handleLogin} className="space-y-3">
+                        {(loginError || localErrors.login) && (
+                          <div className="p-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded">
+                            {localErrors.login || loginError}
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                          <Label htmlFor="login-email" className="text-sm">Email</Label>
+                          <Input
+                            id="login-email"
+                            type="email"
+                            placeholder="Email"
+                            className="h-8 text-sm"
+                            value={loginData.email}
+                            onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                            disabled={isLoginLoading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="login-password" className="text-sm">Password</Label>
+                          <Input
+                            id="login-password"
+                            type="password"
+                            placeholder="Password"
+                            className="h-8 text-sm"
+                            value={loginData.password}
+                            onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                            disabled={isLoginLoading}
+                          />
+                        </div>
+                        <Button type="submit" className="w-full h-8 text-sm" disabled={isLoginLoading}>
+                          {isLoginLoading ? "Signing in..." : "Sign In"}
+                        </Button>
+                      </form>
+                    </TabsContent>
 
-            <TabsContent value="signin" className="space-y-4">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                {loginError && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {loginError.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={isLoginLoading}
-                >
-                  {isLoginLoading ? (
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Signing in...
-                    </div>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Sign In
-                    </>
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup" className="space-y-4">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={signupData.email}
-                      onChange={(e) => setSignupData(prev => ({ ...prev, email: e.target.value }))}
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Create a password"
-                      value={signupData.password}
-                      onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password">Confirm Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="signup-confirm-password"
-                      type="password"
-                      placeholder="Confirm your password"
-                      value={signupData.confirmPassword}
-                      onChange={(e) => setSignupData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                  {signupData.password && signupData.confirmPassword && signupData.password !== signupData.confirmPassword && (
-                    <p className="text-sm text-red-600">Passwords do not match</p>
-                  )}
-                </div>
-
-                {signupError && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {signupError.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={isSignupLoading || (signupData.password !== signupData.confirmPassword)}
-                >
-                  {isSignupLoading ? (
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Creating account...
-                    </div>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Create Account
-                    </>
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
+          
+                    <TabsContent value="signup" className="space-y-3">
+                      <form onSubmit={handleSignup} className="space-y-3">
+                        {(signupError || localErrors.signup) && (
+                          <div className="p-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded">
+                            {localErrors.signup || signupError}
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                          <Label htmlFor="signup-email" className="text-sm">Email</Label>
+                          <Input
+                            id="signup-email"
+                            type="email"
+                            placeholder="Email"
+                            className="h-8 text-sm"
+                            value={signupData.email}
+                            onChange={(e) => setSignupData(prev => ({ ...prev, email: e.target.value }))}
+                            disabled={isSignupLoading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="signup-password" className="text-sm">Password</Label>
+                          <Input
+                            id="signup-password"
+                            type="password"
+                            placeholder="Password (min 6 chars)"
+                            className="h-8 text-sm"
+                            value={signupData.password}
+                            onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
+                            disabled={isSignupLoading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="signup-confirm-password" className="text-sm">Confirm Password</Label>
+                          <Input
+                            id="signup-confirm-password"
+                            type="password"
+                            placeholder="Confirm password"
+                            className="h-8 text-sm"
+                            value={signupData.confirmPassword}
+                            onChange={(e) => setSignupData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                            disabled={isSignupLoading}
+                          />
+                        </div>
+                        <Button type="submit" className="w-full h-8 text-sm" disabled={isSignupLoading}>
+                          {isSignupLoading ? "Creating account..." : "Sign Up"}
+                        </Button>
+                      </form>
+                    </TabsContent>
+        
+        </TabsContent>
       </Dialog>
 
       <Button 

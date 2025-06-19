@@ -1,56 +1,52 @@
+import admin from '../firebase-admin.js';
 
-import { auth } from '../firebase-admin.js';
-
-// Cache anonymous user to prevent excessive logging
-let hasLoggedAnonymousWarning = false;
+// Cache for anonymous users to avoid repeated logs
+const loggedAnonymousUsers = new Set();
+const lastLogTime = new Map();
 
 export async function verifyFirebaseToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const anonymousId = `anonymous-${req.ip}`;
+    const now = Date.now();
+    const lastLog = lastLogTime.get(req.ip) || 0;
+
+    // Only log once per IP per 30 seconds to reduce spam significantly
+    if (now - lastLog > 30000) {
+      console.log(`No token provided, using anonymous user for IP: ${req.ip}`);
+      lastLogTime.set(req.ip, now);
+
+      // Clean up old entries every hour
+      setTimeout(() => {
+        lastLogTime.delete(req.ip);
+      }, 60 * 60 * 1000);
+    }
+
+    req.user = {
+      uid: anonymousId,
+      email: null,
+      isAnonymous: true
+    };
+    next();
+    return;
+  }
+
+  const token = authHeader.split(' ')[1];
+
   try {
-    const authHeader = req.headers.authorization;
-    const token = req.headers['x-firebase-token'] || 
-                  (authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null);
-
-    if (!token) {
-      // No token provided - create anonymous user session
-      req.user = {
-        uid: 'anonymous',
-        email: null,
-        isAnonymous: true
-      };
-      
-      // Only log once to prevent spam
-      if (!hasLoggedAnonymousWarning) {
-        console.log('No token provided, using anonymous user (further anonymous requests will be silent)');
-        hasLoggedAnonymousWarning = true;
-      }
-      return next();
-    }
-
-    try {
-      const decodedToken = await auth.verifyIdToken(token);
-      req.user = {
-        uid: decodedToken.uid,
-        email: decodedToken.email,
-        isAnonymous: decodedToken.firebase?.sign_in_provider === 'anonymous'
-      };
-      console.log('Token verified successfully for user:', req.user.uid);
-      // Reset anonymous warning flag since we have a real user
-      hasLoggedAnonymousWarning = false;
-    } catch (error) {
-      console.error('Firebase token verification failed:', error.message);
-      // If token verification fails, treat as anonymous
-      req.user = {
-        uid: 'anonymous',
-        email: null,
-        isAnonymous: true
-      };
-    }
-
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = {
+      uid: decodedToken.uid,
+      email: decodedToken.email,
+      isAnonymous: false
+    };
+    console.log(`Authenticated user: ${decodedToken.email}`);
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error.message);
+    console.error('Firebase token verification failed:', error.message);
     req.user = {
-      uid: 'anonymous',
+      uid: `anonymous-${req.ip}`,
       email: null,
       isAnonymous: true
     };

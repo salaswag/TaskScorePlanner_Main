@@ -1,154 +1,116 @@
-import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { auth } from '@/lib/firebase-config';
 import { 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  linkWithCredential,
-  EmailAuthProvider,
-  signOut as firebaseSignOut,
+  createUserWithEmailAndPassword, 
+  signOut,
   onAuthStateChanged,
-  User as FirebaseUser
-} from "firebase/auth";
-import { auth } from "@/lib/firebase-config";
+  User
+} from 'firebase/auth';
+import { useState, useEffect, useCallback } from 'react';
 
-type User = {
-  id: string;
-  email?: string;
-  isAnonymous: boolean;
+// Error message mapping for better user experience
+const getErrorMessage = (errorCode: string): string => {
+  switch (errorCode) {
+    case 'auth/user-not-found':
+      return 'No account found with this email address. Please sign up first.';
+    case 'auth/wrong-password':
+      return 'Incorrect password. Please try again.';
+    case 'auth/invalid-password':
+      return 'Invalid password. Please try again.';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists. Please sign in instead.';
+    case 'auth/weak-password':
+      return 'Password is too weak. Please use at least 6 characters.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/user-disabled':
+      return 'This account has been disabled. Please contact support.';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Please try again later.';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your connection and try again.';
+    case 'auth/api-key-not-valid':
+      return 'Authentication service is temporarily unavailable. Please try again later.';
+    default:
+      return 'An unexpected error occurred. Please try again.';
+  }
 };
 
 export function useAuth() {
-  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [previousAnonymousUid, setPreviousAnonymousUid] = useState<string | null>(null);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isSignupLoading, setIsSignupLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [signupError, setSignupError] = useState<string | null>(null);
 
-  // Listen to Firebase auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
-      
-      if (user) {
-        setUser({
-          id: user.uid,
-          email: user.email || undefined,
-          isAnonymous: user.isAnonymous
-        });
-        
-        // Transfer data if we have a previous anonymous UID and now have a permanent user
-        if (!user.isAnonymous && previousAnonymousUid && user.uid !== previousAnonymousUid) {
-          try {
-            const response = await fetch('/api/auth/transfer-data', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${await user.getIdToken()}`,
-              },
-              body: JSON.stringify({
-                anonymousUid: previousAnonymousUid,
-                permanentUid: user.uid,
-              }),
-            });
-
-            if (response.ok) {
-              console.log('Data transfer successful');
-              setPreviousAnonymousUid(null);
-              queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-            }
-          } catch (error) {
-            console.error('Failed to transfer data:', error);
-          }
-        }
-      } else {
-        // No user authenticated - treat as anonymous
-        setUser({
-          id: 'anonymous',
-          email: undefined,
-          isAnonymous: true
-        });
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('Auth state changed:', user);
+      setUser(user);
+      if (!user) {
+        console.log('No user authenticated, continuing as anonymous');
       }
-      
-      setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, [previousAnonymousUid, queryClient]);
+  }, []);
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string }) => {
-      // Store current anonymous state for potential data transfer
-      if (!firebaseUser || (!firebaseUser.email && !firebaseUser.isAnonymous)) {
-        setPreviousAnonymousUid('anonymous');
-      }
+  const login = useCallback(async (email: string, password: string) => {
+    setIsLoginLoading(true);
+    setLoginError(null);
 
-      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-      return userCredential.user;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    },
-    onError: (error: any) => {
-      console.error('Login failed:', error.message);
-    },
-  });
-
-  const signupMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string }) => {
-      if (firebaseUser?.isAnonymous) {
-        // Link anonymous account with email/password
-        const credential = EmailAuthProvider.credential(data.email, data.password);
-        await linkWithCredential(firebaseUser, credential);
-      } else {
-        await createUserWithEmailAndPassword(auth, data.email, data.password);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    },
-    onError: (error: any) => {
-      console.error('Signup failed:', error.message);
-    },
-  });
-
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await firebaseSignOut(auth);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
-    },
-  });
-
-  const transferAnonymousData = async (anonymousUid: string, permanentUid: string) => {
     try {
-      const response = await fetch('/api/auth/transfer-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
-        },
-        body: JSON.stringify({ anonymousUid, permanentUid })
-      });
-
-      if (!response.ok) {
-        console.error('Failed to transfer anonymous data');
-      }
-    } catch (error) {
-      console.error('Error transferring data:', error);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Login successful:', userCredential.user);
+      return userCredential.user;
+    } catch (error: any) {
+      console.error('Login failed:', error.message);
+      const errorCode = error.code || 'unknown';
+      const friendlyMessage = getErrorMessage(errorCode);
+      setLoginError(friendlyMessage);
+      throw error;
+    } finally {
+      setIsLoginLoading(false);
     }
-  };
+  }, []);
+
+  const signup = useCallback(async (email: string, password: string) => {
+    setIsSignupLoading(true);
+    setSignupError(null);
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('Signup successful:', userCredential.user);
+      return userCredential.user;
+    } catch (error: any) {
+      console.error('Signup failed:', error.message);
+      const errorCode = error.code || 'unknown';
+      const friendlyMessage = getErrorMessage(errorCode);
+      setSignupError(friendlyMessage);
+      throw error;
+    } finally {
+      setIsSignupLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await signOut(auth);
+      console.log('Logout successful');
+    } catch (error: any) {
+      console.error('Logout failed:', error.message);
+      throw error;
+    }
+  }, []);
 
   return {
     user,
-    isLoading,
-    login: loginMutation.mutate,
-    signup: signupMutation.mutate,
-    logout: logoutMutation.mutate,
-    isLoginLoading: loginMutation.isPending,
-    isSignupLoading: signupMutation.isPending,
-    isLogoutLoading: logoutMutation.isPending,
-    loginError: loginMutation.error,
-    signupError: signupMutation.error,
+    login,
+    signup,
+    logout,
+    isLoginLoading,
+    isSignupLoading,
+    loginError,
+    signupError
   };
 }
