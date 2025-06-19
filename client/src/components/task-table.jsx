@@ -205,10 +205,10 @@ export default function TaskTable({
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
-                      className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
-                        task.priority,
-                        task.completed,
-                      )}`}
+                      className={`inline-flex items-center justify-center w-8 h-7 rounded-md text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      task.priority,
+                      task.completed,
+                    )}`}
                     >
                       {task.priority}
                     </span>

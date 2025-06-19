@@ -84,7 +84,7 @@ export default function FocusSwitchList({
             >
               <div className="flex items-center gap-3">
                 <span
-                  className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2 flex-shrink-0 ${getPriorityColor(task.priority)}`}
+                  className={`inline-flex items-center justify-center w-10 h-8 rounded-md text-base font-bold border-2 flex-shrink-0 ${getPriorityColor(task.priority)}`}
                 >
                   {task.priority}
                 </span>
