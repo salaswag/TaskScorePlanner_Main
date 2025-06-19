@@ -4,6 +4,54 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { MongoStorage } from "./mongodb-storage.js";
 
+// Simple in-memory session store that persists across requests
+class MemorySessionStore {
+  constructor() {
+    this.sessions = new Map();
+  }
+
+  get(sessionId, callback) {
+    const session = this.sessions.get(sessionId);
+    callback(null, session);
+  }
+
+  set(sessionId, session, callback) {
+    this.sessions.set(sessionId, session);
+    callback();
+  }
+
+  destroy(sessionId, callback) {
+    this.sessions.delete(sessionId);
+    callback();
+  }
+
+  length(callback) {
+    callback(null, this.sessions.size);
+  }
+
+  clear(callback) {
+    this.sessions.clear();
+    callback();
+  }
+
+  // Clean up expired sessions periodically
+  cleanup() {
+    const now = Date.now();
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (session.cookie && session.cookie.expires && session.cookie.expires < now) {
+        this.sessions.delete(sessionId);
+      }
+    }
+  }
+}
+
+const sessionStore = new MemorySessionStore();
+
+// Clean up expired sessions every hour
+setInterval(() => {
+  sessionStore.cleanup();
+}, 60 * 60 * 1000);
+
 export const mongoStorage = new MongoStorage();
 
 const app = express();
@@ -17,13 +65,12 @@ app.use(session({
   saveUninitialized: false,
   rolling: true, // Reset expiry on activity
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production', // HTTPS in production
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true, // Prevent XSS
     sameSite: 'lax' // CSRF protection
   },
-  // Add session store error handling
-  store: undefined, // Using default memory store for development
+  store: sessionStore
 }));
 
 app.use((req, res, next) => {

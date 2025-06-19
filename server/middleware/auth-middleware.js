@@ -1,4 +1,5 @@
 import { admin } from '../firebase-admin.js';
+import { Logger } from '../logger.js';
 
 // Cache for anonymous users to avoid repeated logs
 const loggedAnonymousUsers = new Set();
@@ -16,7 +17,7 @@ export const authenticateUser = async (req, res, next) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       // Only log once per unique anonymous ID to reduce spam
       if (!loggedAnonymousUsers.has(anonymousId)) {
-        console.log(`👤 No token provided, using anonymous user: ${anonymousId}`);
+        Logger.debug(`👤 No token provided, using anonymous user: ${anonymousId}`);
         loggedAnonymousUsers.add(anonymousId);
       }
 
@@ -29,10 +30,10 @@ export const authenticateUser = async (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    console.log('🔐 Verifying Firebase token...');
+    Logger.debug('🔐 Verifying Firebase token...');
     const decodedToken = await admin.auth().verifyIdToken(token);
 
-    console.log(`✅ Token verified for user: ${decodedToken.email}`);
+    Logger.info(`✅ Token verified for user: ${decodedToken.email}`);
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
@@ -41,14 +42,14 @@ export const authenticateUser = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('❌ Token verification failed:', error.code || 'unknown', '-', error.message);
+    Logger.warn('❌ Token verification failed:', error.code || 'unknown', '-', error.message);
 
     // Fall back to anonymous user on error
     const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
     const anonymousId = `anonymous-${clientIP}-${Buffer.from(userAgent).toString('base64').substring(0, 8)}`;
     
-    console.log(`🔄 Falling back to anonymous user: ${anonymousId}`);
+    Logger.debug(`🔄 Falling back to anonymous user: ${anonymousId}`);
     req.user = { 
       uid: anonymousId, 
       email: null, 

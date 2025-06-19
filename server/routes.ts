@@ -5,16 +5,58 @@ import { mongoStorage } from "./mongodb-storage.js";
 import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
 import { z } from "zod";
 import { authenticateUser } from "./middleware/auth-middleware.js";
+import { Logger } from "./logger.js";
 import "./types"; // Import session type declarations
 
+// Simple rate limiting middleware
+const rateLimitMap = new Map();
+const rateLimit = (maxRequests = 100, windowMs = 60000) => {
+  return (req, res, next) => {
+    const clientId = req.ip || req.connection.remoteAddress || 'unknown';
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    
+    if (!rateLimitMap.has(clientId)) {
+      rateLimitMap.set(clientId, []);
+    }
+    
+    const requests = rateLimitMap.get(clientId);
+    const recentRequests = requests.filter(time => time > windowStart);
+    
+    if (recentRequests.length >= maxRequests) {
+      return res.status(429).json({ message: 'Too many requests' });
+    }
+    
+    requests.push(now);
+    rateLimitMap.set(clientId, recentRequests.concat([now]));
+    
+    // Clean up old entries periodically
+    if (Math.random() < 0.01) {
+      for (const [key, times] of rateLimitMap.entries()) {
+        const filtered = times.filter(time => time > windowStart);
+        if (filtered.length === 0) {
+          rateLimitMap.delete(key);
+        } else {
+          rateLimitMap.set(key, filtered);
+        }
+      }
+    }
+    
+    next();
+  };
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add rate limiting to API routes
+  app.use('/api', rateLimit(200, 60000)); // 200 requests per minute
+  
   // Add Firebase authentication middleware to all routes
   app.use(authenticateUser);
   
   // Always try to use MongoDB storage, only fallback to in-memory if MongoDB is completely unavailable
   let activeStorage = mongoStorage;
   
-  // Test MongoDB connection before each request by trying a simple operation
+  // Test MongoDB connection with timeout
   const testMongoConnection = async () => {
     try {
       if (!mongoStorage.client || !mongoStorage.tasksCollection) {
@@ -24,8 +66,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           throw new Error("Failed to reconnect to MongoDB");
         }
       }
-      // Test with a simple ping operation
-      await mongoStorage.tasksCollection.findOne({}, { limit: 1 });
+      
+      // Test with a simple ping operation with timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('MongoDB connection timeout')), 3000)
+      );
+      
+      await Promise.race([
+        mongoStorage.tasksCollection.findOne({}, { limit: 1 }),
+        timeoutPromise
+      ]);
+      
       return true;
     } catch (error) {
       console.error("MongoDB connection test failed:", error);
@@ -70,19 +121,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new task
   app.post("/api/tasks", async (req, res) => {
     try {
-      console.log('Task creation request received');
-      console.log('Request body:', req.body);
-      console.log('User:', req.user);
+      Logger.debug('Task creation request received');
+      Logger.debug('Request body:', req.body);
+      Logger.debug('User:', req.user);
       
       const validatedData = insertTaskSchema.parse(req.body);
-      console.log('Validated data:', validatedData);
+      
+      // Ensure isLater and isFocus are mutually exclusive
+      if (validatedData.isLater && validatedData.isFocus) {
+        return res.status(400).json({ message: "Task cannot be both in 'Later' and 'Focus' state simultaneously" });
+      }
+      
+      Logger.debug('Validated data:', validatedData);
       
       const userId = req.user?.uid || 'anonymous';
       const isAnonymous = !req.user || req.user.isAnonymous;
       
       // Anonymous users ALWAYS use in-memory storage
       if (isAnonymous) {
-        console.log("👤 Anonymous user - creating task in in-memory storage for session:", userId);
+        Logger.debug("👤 Anonymous user - creating task in in-memory storage for session:", userId);
         const task = await storage.createTask(validatedData, userId);
         console.log('Anonymous task created successfully:', task);
         res.status(201).json(task);
@@ -121,6 +178,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = req.params.id;
       console.log('Updating task with ID:', id, 'Data:', req.body);
+
+      // Validate mutually exclusive fields
+      if (req.body.isLater && req.body.isFocus) {
+        return res.status(400).json({ message: "Task cannot be both in 'Later' and 'Focus' state simultaneously" });
+      }
 
       const isAnonymous = !req.user || req.user.isAnonymous;
       
@@ -271,30 +333,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Both anonymousUid and permanentUid are required" });
       }
 
+      Logger.info("Starting data transfer", { anonymousUid, permanentUid });
+
       // Try MongoDB first for authenticated users
       const mongoAvailable = await testMongoConnection();
       
       if (mongoAvailable) {
-        console.log("📤 Transferring data via MongoDB...");
-        const success = await mongoStorage.transferUserData(anonymousUid, permanentUid);
-        
-        if (success) {
-          res.json({ message: "Data transferred successfully" });
-          return;
+        Logger.info("📤 Transferring data via MongoDB...");
+        try {
+          const success = await mongoStorage.transferUserData(anonymousUid, permanentUid);
+          
+          if (success) {
+            Logger.info("Data transfer completed successfully via MongoDB");
+            res.json({ message: "Data transferred successfully" });
+            return;
+          } else {
+            Logger.warn("MongoDB transfer reported failure, trying in-memory fallback");
+          }
+        } catch (mongoError) {
+          Logger.error("MongoDB transfer failed:", mongoError);
         }
       }
       
       // Fall back to in-memory storage transfer
-      console.log("📤 Transferring session data from in-memory storage...");
-      const success = await storage.transferSessionData(anonymousUid, permanentUid);
-      
-      if (success) {
-        res.json({ message: "Session data transferred successfully" });
-      } else {
-        res.status(500).json({ message: "Failed to transfer session data" });
+      Logger.info("📤 Transferring session data from in-memory storage...");
+      try {
+        const success = await storage.transferSessionData(anonymousUid, permanentUid);
+        
+        if (success) {
+          Logger.info("Session data transfer completed successfully");
+          res.json({ message: "Session data transferred successfully" });
+        } else {
+          Logger.error("In-memory transfer also failed");
+          res.status(500).json({ message: "Failed to transfer session data" });
+        }
+      } catch (memoryError) {
+        Logger.error("In-memory transfer error:", memoryError);
+        res.status(500).json({ message: "Failed to transfer data" });
       }
     } catch (error) {
-      console.error("Error transferring data:", error);
+      Logger.error("Error in data transfer endpoint:", error);
       res.status(500).json({ message: "Failed to transfer data" });
     }
   });
