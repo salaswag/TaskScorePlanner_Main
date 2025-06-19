@@ -82,9 +82,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Anonymous users ALWAYS use in-memory storage
       if (isAnonymous) {
-        console.log("👤 Anonymous user - creating task in in-memory storage");
-        const taskWithUser = { ...validatedData, userId };
-        const task = await storage.createTask(taskWithUser);
+        console.log("👤 Anonymous user - creating task in in-memory storage for session:", userId);
+        const task = await storage.createTask(validatedData, userId);
         console.log('Anonymous task created successfully:', task);
         res.status(201).json(task);
         return;
@@ -272,19 +271,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Both anonymousUid and permanentUid are required" });
       }
 
+      // Try MongoDB first for authenticated users
       const mongoAvailable = await testMongoConnection();
       
-      if (!mongoAvailable) {
-        console.warn("⚠️  Data transfer requires MongoDB - unavailable");
-        return res.status(503).json({ message: "Data transfer requires MongoDB" });
+      if (mongoAvailable) {
+        console.log("📤 Transferring data via MongoDB...");
+        const success = await mongoStorage.transferUserData(anonymousUid, permanentUid);
+        
+        if (success) {
+          res.json({ message: "Data transferred successfully" });
+          return;
+        }
       }
       
-      const success = await mongoStorage.transferUserData(anonymousUid, permanentUid);
+      // Fall back to in-memory storage transfer
+      console.log("📤 Transferring session data from in-memory storage...");
+      const success = await storage.transferSessionData(anonymousUid, permanentUid);
       
       if (success) {
-        res.json({ message: "Data transferred successfully" });
+        res.json({ message: "Session data transferred successfully" });
       } else {
-        res.status(500).json({ message: "Failed to transfer data" });
+        res.status(500).json({ message: "Failed to transfer session data" });
       }
     } catch (error) {
       console.error("Error transferring data:", error);
