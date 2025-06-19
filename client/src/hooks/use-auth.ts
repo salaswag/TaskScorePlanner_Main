@@ -146,6 +146,7 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       console.log('🔓 Starting logout process...');
+      const previousUser = user; // Store current user before logout
 
       // Clear session data immediately before signing out
       if (typeof window !== 'undefined') {
@@ -162,7 +163,7 @@ export function useAuth() {
       if (typeof window !== 'undefined') {
         setTimeout(() => {
           window.dispatchEvent(new CustomEvent('auth-state-changed', {
-            detail: { user, previousUser }
+            detail: { user: null, previousUser }
           }));
         }, 50); // Reduced delay for faster response
       }
@@ -170,7 +171,7 @@ export function useAuth() {
       console.error('❌ Logout failed:', error.message);
       throw error;
     }
-  }, []);
+  }, [user]);
 
   return {
     user,

@@ -123,9 +123,9 @@ export function useTasks() {
   }, [queryClient]);
 
   const { data: tasks, isLoading, error } = useQuery({
-    queryKey: ["/api/tasks", user?.uid, user?.isAnonymous], // Include user ID and auth status in query key
+    queryKey: ["/api/tasks", user?.uid || 'anonymous', user?.isAnonymous], // Include user ID and auth status in query key
     queryFn: async () => {
-      const currentUserId = user?.uid;
+      const currentUserId = user?.uid || 'anonymous';
       console.log('🔍 Fetching tasks for user:', currentUserId, 'anonymous:', user?.isAnonymous);
       const response = await apiRequest("/api/tasks");
       const data = await response.json();
@@ -136,7 +136,7 @@ export function useTasks() {
     cacheTime: 0, // Don't cache between user switches
     refetchOnWindowFocus: false,
     refetchOnMount: true, // Always refetch when component mounts
-    enabled: !!user, // Only fetch when user is available
+    enabled: true, // Always fetch tasks (for both authenticated and anonymous users)
   });
 
   const createTask = useMutation({
