@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Clock, Check, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Check, X, Lock } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -13,6 +13,7 @@ export function CalendarView() {
   const [sliderTime, setSliderTime] = useState(0);
   const [timeData, setTimeData] = useState({}); // Store manual time entries
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false); // Mock anonymous state
 
   useEffect(() => {
     fetchTimeEntries();
@@ -111,7 +112,7 @@ export function CalendarView() {
     setIsLoading(true);
     if (selectedDate) {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
-      
+
       try {
         // Save to MongoDB via API
         const response = await apiRequest('/api/time-entries', {
@@ -131,11 +132,11 @@ export function CalendarView() {
             ...prev,
             [dateKey]: sliderTime
           }));
-          
+
           // Also update localStorage as backup
           const newTimeData = { ...timeData, [dateKey]: sliderTime };
           localStorage.setItem('timeData', JSON.stringify(newTimeData));
-          
+
           console.log('Time entry saved successfully to MongoDB');
         } else {
           console.error('Failed to save time entry to MongoDB');
@@ -156,7 +157,7 @@ export function CalendarView() {
         localStorage.setItem('timeData', JSON.stringify({ ...timeData, [dateKey]: sliderTime }));
       }
     }
-    
+
     setShowTimeModal(false);
     setSelectedDate(null);
     setSliderTime(0);

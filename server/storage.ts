@@ -7,7 +7,7 @@ export interface IStorage {
   createTask(task: InsertTask, userId?: string): Promise<Task>;
   updateTask(task: UpdateTask): Promise<Task | undefined>;
   deleteTask(id: number | string): Promise<boolean>;
-  
+
   // User operations
   getUser(id: string): Promise<any>;
   getUserByUsername(username: string): Promise<any>;

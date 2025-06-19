@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 
-export default function TaskForm({ onSubmit, isLoading }) {
+function TaskForm({ onSubmit, isLoading }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
@@ -93,3 +93,5 @@ export default function TaskForm({ onSubmit, isLoading }) {
     </Card>
   );
 }
+
+export default TaskForm;

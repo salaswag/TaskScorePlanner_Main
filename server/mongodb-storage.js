@@ -59,9 +59,9 @@ export class MongoStorage {
     try {
       // Always filter by userId - never return all tasks
       const userFilter = userId ? { userId } : { userId: 'no-user-specified' };
-      
+
       console.log('Getting tasks for userId:', userId, 'Filter:', userFilter);
-      
+
       // Fetch tasks from main Tasks collection
       const mainTasks = await this.tasksCollection.find(userFilter).sort({ createdAt: -1 }).toArray();
       console.log('Fetched main tasks from MongoDB for user', userId, ':', mainTasks.length);
@@ -129,7 +129,7 @@ export class MongoStorage {
       // Get the next numeric ID from both collections
       const lastMainTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
       const lastLaterTask = await this.laterTasksCollection.findOne({}, { sort: { id: -1 } });
-      
+
       const lastMainId = lastMainTask ? (lastMainTask.id || 0) : 0;
       const lastLaterId = lastLaterTask ? (lastLaterTask.id || 0) : 0;
       const nextId = Math.max(lastMainId, lastLaterId) + 1;
@@ -159,11 +159,11 @@ export class MongoStorage {
 
       console.log('Final task object to insert:', JSON.stringify(task, null, 2));
       console.log('Will insert into collection:', task.isLater ? 'Later Tasks' : 'Main Tasks');
-      
+
       // Choose collection based on isLater flag
       const targetCollection = task.isLater ? this.laterTasksCollection : this.tasksCollection;
       const collectionName = task.isLater ? 'Later Tasks' : 'Main Tasks';
-      
+
       const result = await targetCollection.insertOne(task);
       console.log(`MongoDB insert result in ${collectionName}:`, result);
       console.log('Task created successfully with ID:', task.id);
@@ -287,17 +287,17 @@ export class MongoStorage {
 
       if (currentIsLater !== newIsLater) {
         console.log(`Moving task from ${currentIsLater ? 'later' : 'main'} to ${newIsLater ? 'later' : 'main'} collection`);
-        
+
         // Create updated task
         const updatedTask = { ...currentTask, ...updateFields };
-        
+
         // Insert into target collection
         const targetCollection = newIsLater ? this.laterTasksCollection : this.tasksCollection;
         await targetCollection.insertOne(updatedTask);
-        
+
         // Remove from current collection
         await currentCollection.deleteOne({ _id: currentTask._id });
-        
+
         console.log('Task moved successfully between collections');
         return {
           ...updatedTask,
@@ -339,7 +339,7 @@ export class MongoStorage {
   async deleteTask(id) {
     try {
       console.log('Delete task with ID:', id);
-      
+
       let result = null;
 
       // Try to find by numeric id in main collection first
@@ -379,7 +379,7 @@ export class MongoStorage {
             // Try main collection first
             result = await this.tasksCollection.deleteOne({ _id: objectId });
             console.log('Delete result in main collection by ObjectId:', result.deletedCount);
-            
+
             // If not found in main, try later collection
             if (result.deletedCount === 0) {
               result = await this.laterTasksCollection.deleteOne({ _id: objectId });
@@ -407,7 +407,7 @@ export class MongoStorage {
   async archiveTask(id) {
     try {
       console.log('Archive task with ID:', id);
-      
+
       // First, find the task to archive from both collections
       let task = null;
       let sourceCollection = null;
@@ -484,7 +484,7 @@ export class MongoStorage {
         // Remove from source collection
         const deleteResult = await sourceCollection.deleteOne({ _id: task._id });
         console.log('Delete from source collection result:', deleteResult);
-        
+
         if (deleteResult && deleteResult.deletedCount > 0) {
           console.log('✅ Task successfully archived');
           return true;
@@ -506,33 +506,33 @@ export class MongoStorage {
   async transferUserData(fromUserId, toUserId) {
     try {
       console.log(`Transferring data from ${fromUserId} to ${toUserId}`);
-      
+
       // Update all tasks in main collection
       const mainResult = await this.tasksCollection.updateMany(
         { userId: fromUserId },
         { $set: { userId: toUserId } }
       );
-      
+
       // Update all tasks in later collection
       const laterResult = await this.laterTasksCollection.updateMany(
         { userId: fromUserId },
         { $set: { userId: toUserId } }
       );
-      
+
       // Update all archived tasks
       const archiveResult = await this.archiveCollection.updateMany(
         { userId: fromUserId },
         { $set: { userId: toUserId } }
       );
-      
+
       // Update all time entries
       const timeResult = await this.timeEntriesCollection.updateMany(
         { userId: fromUserId },
         { $set: { userId: toUserId } }
       );
-      
+
       console.log(`Transfer completed: ${mainResult.modifiedCount} main tasks, ${laterResult.modifiedCount} later tasks, ${archiveResult.modifiedCount} archived tasks, ${timeResult.modifiedCount} time entries`);
-      
+
       return true;
     } catch (error) {
       console.error('Error transferring user data:', error);
@@ -574,7 +574,7 @@ export class MongoStorage {
   async createTimeEntry(entryData) {
     try {
       console.log('Creating time entry:', entryData);
-      
+
       const entry = {
         ...entryData,
         createdAt: new Date(),
@@ -594,39 +594,53 @@ export class MongoStorage {
     }
   }
 
-  async updateTimeEntry(date, timeInMinutes) {
+  async updateTimeEntry(date, timeInMinutes, userId) {
     try {
-      console.log('Updating time entry for date:', date, 'time:', timeInMinutes);
-      
-      const result = await this.timeEntriesCollection.findOneAndUpdate(
-        { date: date },
-        { 
-          $set: { 
-            timeInMinutes: timeInMinutes,
-            updatedAt: new Date()
-          }
-        },
-        { 
-          upsert: true,
-          returnDocument: 'after'
-        }
-      );
+      console.log('Updating time entry for date:', date, 'with time:', timeInMinutes, 'for user:', userId);
 
-      console.log('Time entry updated/created:', result);
-      return {
-        ...result,
-        id: result._id.toString()
-      };
+      const existingEntry = await this.timeEntriesCollection.findOne({ date, userId });
+
+      if (existingEntry) {
+        // Update existing entry
+        const result = await this.timeEntriesCollection.updateOne(
+          { date, userId },
+          { 
+            $set: { 
+              timeInMinutes,
+              updatedAt: new Date()
+            }
+          }
+        );
+
+        if (result.modifiedCount > 0) {
+          console.log('Time entry updated successfully');
+          return await this.timeEntriesCollection.findOne({ date, userId });
+        }
+      } else {
+        // Create new entry
+        const entry = {
+          date,
+          timeInMinutes,
+          userId,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        const result = await this.timeEntriesCollection.insertOne(entry);
+        console.log('Time entry created successfully:', result.insertedId);
+        return { id: result.insertedId, ...entry };
+      }
     } catch (error) {
       console.error('Error updating time entry:', error);
       throw error;
     }
   }
 
-  async deleteTimeEntry(date) {
+  async deleteTimeEntry(date, userId) {
     try {
-      const result = await this.timeEntriesCollection.deleteOne({ date: date });
-      console.log('Time entry deleted for date:', date, 'deleted count:', result.deletedCount);
+      console.log('Deleting time entry for date:', date, 'for user:', userId);
+      const result = await this.timeEntriesCollection.deleteOne({ date, userId });
+      console.log('Time entry deletion result:', result.deletedCount);
       return result.deletedCount > 0;
     } catch (error) {
       console.error('Error deleting time entry:', error);

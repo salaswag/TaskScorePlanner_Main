@@ -313,6 +313,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get time entries
   app.get("/api/time-entries", async (req, res) => {
     try {
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+      
+      // Anonymous users cannot access time entries
+      if (isAnonymous) {
+        console.log("👤 Anonymous user - time entries not available");
+        return res.status(401).json({ message: "Authentication required for time entries" });
+      }
+      
       const mongoAvailable = await testMongoConnection();
       
       if (!mongoAvailable) {
@@ -320,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({});
       }
       
-      const timeEntries = await mongoStorage.getTimeEntries();
+      const timeEntries = await mongoStorage.getTimeEntries(userId);
       
       // Convert to date-indexed object for easier frontend usage
       const timeData = {};
@@ -339,6 +348,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/time-entries", async (req, res) => {
     try {
       const { date, timeInMinutes } = req.body;
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+      
+      // Anonymous users cannot create time entries
+      if (isAnonymous) {
+        console.log("👤 Anonymous user - time entries not available");
+        return res.status(401).json({ message: "Authentication required for time entries" });
+      }
       
       if (!date || timeInMinutes === undefined) {
         return res.status(400).json({ message: "Date and timeInMinutes are required" });
@@ -351,7 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Time entries require MongoDB" });
       }
       
-      const timeEntry = await mongoStorage.updateTimeEntry(date, timeInMinutes);
+      const timeEntry = await mongoStorage.updateTimeEntry(date, timeInMinutes, userId);
       res.json(timeEntry);
     } catch (error) {
       console.error("Error updating time entry:", error);
@@ -363,6 +380,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/time-entries/:date", async (req, res) => {
     try {
       const { date } = req.params;
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+      
+      // Anonymous users cannot delete time entries
+      if (isAnonymous) {
+        console.log("👤 Anonymous user - time entries not available");
+        return res.status(401).json({ message: "Authentication required for time entries" });
+      }
       
       const mongoAvailable = await testMongoConnection();
       
@@ -371,7 +396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Time entries require MongoDB" });
       }
       
-      const deleted = await mongoStorage.deleteTimeEntry(date);
+      const deleted = await mongoStorage.deleteTimeEntry(date, userId);
       
       if (!deleted) {
         return res.status(404).json({ message: "Time entry not found" });
