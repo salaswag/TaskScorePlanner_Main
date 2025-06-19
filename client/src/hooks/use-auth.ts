@@ -49,183 +49,70 @@ export function useAuth() {
   const [isSignupLoading, setIsSignupLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [signupError, setSignupError] = useState<string | null>(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [authListenerError, setAuthListenerError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Monitor network connectivity
-    const handleOnline = () => {
-      console.log('🌐 Network connection restored');
-      setIsOnline(true);
-    };
-    
-    const handleOffline = () => {
-      console.log('📵 Network connection lost');
-      setIsOnline(false);
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
 
   useEffect(() => {
     console.log('🔧 Setting up Firebase auth listener...');
     let previousUser: User | null = null;
-    let retryCount = 0;
-    const maxRetries = 3;
 
-    const setupAuthListener = () => {
-      try {
-        const unsubscribe = onAuthStateChanged(auth, 
-          (user) => {
-            setAuthListenerError(null);
-            retryCount = 0; // Reset retry count on successful connection
-            
-            // Detect any user change that requires data clearing
-            if (previousUser && user) {
-              const userIdChanged = previousUser.uid !== user.uid;
-              const authStatusChanged = previousUser.isAnonymous !== user.isAnonymous;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      // Detect any user change that requires data clearing
+      if (previousUser && user) {
+        const userIdChanged = previousUser.uid !== user.uid;
+        const authStatusChanged = previousUser.isAnonymous !== user.isAnonymous;
 
-              if (userIdChanged || authStatusChanged) {
-                console.log('🔄 User/auth change detected, clearing data...');
-                console.log(`Previous: ${previousUser.uid} (anonymous: ${previousUser.isAnonymous})`);
-                console.log(`Current: ${user.uid} (anonymous: ${user.isAnonymous})`);
+        if (userIdChanged || authStatusChanged) {
+          console.log('🔄 User/auth change detected, clearing data...');
+          console.log(`Previous: ${previousUser.uid} (anonymous: ${previousUser.isAnonymous})`);
+          console.log(`Current: ${user.uid} (anonymous: ${user.isAnonymous})`);
 
-                // Clear all cached data immediately with error handling
-                try {
-                  if (typeof window !== 'undefined') {
-                    sessionStorage.removeItem('currentUser');
-                    sessionStorage.removeItem('authToken');
-                    localStorage.removeItem('user-tasks');
-                    localStorage.removeItem('user-preferences');
+          // Clear all cached data immediately
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('user-tasks');
+            localStorage.removeItem('user-preferences');
 
-                    // Force task refresh for user changes
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent('auth-state-changed', {
-                        detail: { user, previousUser }
-                      }));
-                    }, 200);
-                  }
-                } catch (storageError) {
-                  console.warn('⚠️ Failed to clear storage:', storageError);
-                }
-              }
-            }
-
-            if (user && !user.isAnonymous) {
-              console.log('✅ User authenticated:', user.email);
-              
-              // Validate user object structure
-              if (!user.uid || !user.email) {
-                console.error('❌ Invalid user object structure');
-                setAuthListenerError('Invalid user data received');
-                return;
-              }
-            } else {
-              console.log('👤 No user authenticated, continuing as anonymous');
-            }
-
-            previousUser = user;
-            setUser(user);
-          },
-          (error) => {
-            console.error('❌ Auth state change error:', error);
-            setAuthListenerError(error.message);
-            
-            // Retry logic for auth listener
-            if (retryCount < maxRetries && isOnline) {
-              retryCount++;
-              console.log(`🔄 Retrying auth listener setup (${retryCount}/${maxRetries})...`);
-              setTimeout(() => setupAuthListener(), 2000 * retryCount);
-            } else {
-              console.error('💥 Auth listener failed after maximum retries');
+            // Force task refresh for user changes
+            if (typeof window !== 'undefined') {
+              // Use a small delay to ensure auth state is fully updated
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('auth-state-changed', {
+                  detail: { user, previousUser }
+                }));
+              }, 200);
             }
           }
-        );
-
-        return unsubscribe;
-      } catch (error) {
-        console.error('❌ Failed to setup auth listener:', error);
-        setAuthListenerError('Failed to initialize authentication');
-        return null;
+        }
       }
-    };
 
-    const unsubscribe = setupAuthListener();
+      if (user && !user.isAnonymous) {
+        console.log('✅ User authenticated:', user.email);
+      } else {
+        console.log('👤 No user authenticated, continuing as anonymous');
+      }
+
+      previousUser = user;
+      setUser(user);
+    });
 
     return () => {
       console.log('🔧 Cleaning up Firebase auth listener');
-      if (unsubscribe) {
-        try {
-          unsubscribe();
-        } catch (error) {
-          console.warn('⚠️ Error during auth listener cleanup:', error);
-        }
-      }
+      unsubscribe();
     };
-  }, [isOnline]);
+  }, []);
 
-  const login = useCallback(async (email: string, password: string, retryCount = 0) => {
+  const login = useCallback(async (email: string, password: string) => {
     setIsLoginLoading(true);
     setLoginError(null);
 
-    // Input validation
-    if (!email || !password) {
-      const error = 'Email and password are required';
-      setLoginError(error);
-      setIsLoginLoading(false);
-      throw new Error(error);
-    }
-
-    if (!email.includes('@') || email.length < 3) {
-      const error = 'Please enter a valid email address';
-      setLoginError(error);
-      setIsLoginLoading(false);
-      throw new Error(error);
-    }
-
-    if (!isOnline) {
-      const error = 'No internet connection. Please check your network and try again.';
-      setLoginError(error);
-      setIsLoginLoading(false);
-      throw new Error(error);
-    }
-
     try {
       console.log('🔐 Attempting login for:', email);
-      
-      // Add timeout to login attempt
-      const loginPromise = signInWithEmailAndPassword(auth, email, password);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Login timeout')), 30000)
-      );
-      
-      const userCredential = await Promise.race([loginPromise, timeoutPromise]);
-      
-      // Validate user credential
-      if (!userCredential || !userCredential.user) {
-        throw new Error('Invalid login response');
-      }
-      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('✅ Login successful:', userCredential.user.email);
       return userCredential.user;
     } catch (error: any) {
       console.error('❌ Login failed:', error.code, '-', error.message);
-      
       const errorCode = error.code || 'unknown';
-      
-      // Retry logic for network-related errors
-      if ((errorCode === 'auth/network-request-failed' || error.message?.includes('timeout')) && retryCount < 2 && isOnline) {
-        console.log(`🔄 Retrying login (${retryCount + 1}/2)...`);
-        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-        return login(email, password, retryCount + 1);
-      }
-      
       const friendlyMessage = getErrorMessage(errorCode);
       console.log('🔄 Displaying error to user:', friendlyMessage);
       setLoginError(friendlyMessage);
@@ -233,71 +120,20 @@ export function useAuth() {
     } finally {
       setIsLoginLoading(false);
     }
-  }, [isOnline]);
+  }, []);
 
-  const signup = useCallback(async (email: string, password: string, retryCount = 0) => {
+  const signup = useCallback(async (email: string, password: string) => {
     setIsSignupLoading(true);
     setSignupError(null);
 
-    // Input validation
-    if (!email || !password) {
-      const error = 'Email and password are required';
-      setSignupError(error);
-      setIsSignupLoading(false);
-      throw new Error(error);
-    }
-
-    if (!email.includes('@') || email.length < 3) {
-      const error = 'Please enter a valid email address';
-      setSignupError(error);
-      setIsSignupLoading(false);
-      throw new Error(error);
-    }
-
-    if (password.length < 6) {
-      const error = 'Password must be at least 6 characters long';
-      setSignupError(error);
-      setIsSignupLoading(false);
-      throw new Error(error);
-    }
-
-    if (!isOnline) {
-      const error = 'No internet connection. Please check your network and try again.';
-      setSignupError(error);
-      setIsSignupLoading(false);
-      throw new Error(error);
-    }
-
     try {
       console.log('📝 Attempting signup for:', email);
-      
-      // Add timeout to signup attempt
-      const signupPromise = createUserWithEmailAndPassword(auth, email, password);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Signup timeout')), 30000)
-      );
-      
-      const userCredential = await Promise.race([signupPromise, timeoutPromise]);
-      
-      // Validate user credential
-      if (!userCredential || !userCredential.user) {
-        throw new Error('Invalid signup response');
-      }
-      
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('✅ Signup successful:', userCredential.user.email);
       return userCredential.user;
     } catch (error: any) {
       console.error('❌ Signup failed:', error.code, '-', error.message);
-      
       const errorCode = error.code || 'unknown';
-      
-      // Retry logic for network-related errors
-      if ((errorCode === 'auth/network-request-failed' || error.message?.includes('timeout')) && retryCount < 2 && isOnline) {
-        console.log(`🔄 Retrying signup (${retryCount + 1}/2)...`);
-        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-        return signup(email, password, retryCount + 1);
-      }
-      
       const friendlyMessage = getErrorMessage(errorCode);
       console.log('🔄 Displaying error to user:', friendlyMessage);
       setSignupError(friendlyMessage);
@@ -305,7 +141,7 @@ export function useAuth() {
     } finally {
       setIsSignupLoading(false);
     }
-  }, [isOnline]);
+  }, []);
 
   const logout = useCallback(async () => {
     try {
@@ -313,24 +149,14 @@ export function useAuth() {
       const previousUser = user; // Store current user before logout
 
       // Clear session data immediately before signing out
-      try {
-        if (typeof window !== 'undefined') {
-          sessionStorage.removeItem('currentUser');
-          sessionStorage.removeItem('authToken');
-          localStorage.removeItem('user-tasks');
-          localStorage.removeItem('user-preferences');
-        }
-      } catch (storageError) {
-        console.warn('⚠️ Failed to clear storage during logout:', storageError);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('currentUser');
+        sessionStorage.removeItem('authToken');
+        localStorage.removeItem('user-tasks');
+        localStorage.removeItem('user-preferences');
       }
 
-      // Add timeout to logout
-      const logoutPromise = signOut(auth);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Logout timeout')), 10000)
-      );
-      
-      await Promise.race([logoutPromise, timeoutPromise]);
+      await signOut(auth);
       console.log('✅ Logout successful');
 
       // Force page reload to ensure clean state
@@ -339,23 +165,10 @@ export function useAuth() {
           window.dispatchEvent(new CustomEvent('auth-state-changed', {
             detail: { user: null, previousUser }
           }));
-        }, 50);
+        }, 50); // Reduced delay for faster response
       }
     } catch (error: any) {
       console.error('❌ Logout failed:', error.message);
-      
-      // Even if logout fails, clear local state
-      try {
-        setUser(null);
-        if (typeof window !== 'undefined') {
-          sessionStorage.clear();
-          localStorage.removeItem('user-tasks');
-          localStorage.removeItem('user-preferences');
-        }
-      } catch (cleanupError) {
-        console.error('❌ Failed to clean up state after logout error:', cleanupError);
-      }
-      
       throw error;
     }
   }, [user]);
@@ -368,8 +181,6 @@ export function useAuth() {
     isLoginLoading,
     isSignupLoading,
     loginError,
-    signupError,
-    isOnline,
-    authListenerError
+    signupError
   };
 }
