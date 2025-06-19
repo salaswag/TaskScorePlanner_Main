@@ -31,90 +31,84 @@ export class MemStorage implements IStorage {
   }
 
   // Task operations
-  async getTasks(userId?: string): Promise<Task[]> {
-    // For anonymous users, use session storage
-    if (userId?.startsWith('anonymous-')) {
-      const sessionTasks = this.sessionStorage.get(userId) || [];
-      return sessionTasks.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+  async getTasks(userId?: string): Promise<any[]> {
+    if (userId && userId.startsWith('anonymous-')) {
+      // Return tasks for this specific anonymous session
+      const sessionTasks = Array.from(this.tasks.values()).filter(task => task.userId === userId);
+      console.log(`In-memory storage: Retrieved ${sessionTasks.length} tasks for anonymous session ${userId}`);
+      return sessionTasks;
     }
-    
-    return Array.from(this.tasks.values())
-      .filter(task => {
-        if (!userId) return !task.userId;
-        return task.userId === userId;
-      })
-      .sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+
+    // For authenticated users, filter by their userId
+    if (userId && !userId.startsWith('anonymous-')) {
+      const userTasks = Array.from(this.tasks.values()).filter(task => task.userId === userId);
+      console.log(`In-memory storage: Retrieved ${userTasks.length} tasks for authenticated user ${userId}`);
+      return userTasks;
+    }
+
+    // Fallback: return all tasks (should rarely happen)
+    const allTasks = Array.from(this.tasks.values());
+    console.log(`In-memory storage: Retrieved ${allTasks.length} total tasks (fallback)`);
+    return allTasks;
   }
 
   async getTask(id: number): Promise<Task | undefined> {
     return this.tasks.get(id);
   }
 
-  async createTask(insertTask: InsertTask, userId?: string): Promise<Task> {
+  async createTask(taskData: any, userId?: string): Promise<any> {
     const id = this.currentTaskId++;
-    const task: Task = {
-      ...insertTask,
+    const task = {
       id,
-      priority: insertTask.priority || 5,
-      completed: false,
-      actualTime: null,
+      ...taskData,
+      userId: userId || taskData.userId || 'anonymous',
       createdAt: new Date(),
       completedAt: null,
-      userId: userId || null,
+      completed: taskData.completed || false,
+      isLater: Boolean(taskData.isLater),
+      isFocus: Boolean(taskData.isFocus),
+      actualTime: taskData.actualTime || null,
+      distractionLevel: taskData.distractionLevel || null,
     };
-
-    // For anonymous users, store in session storage
-    if (userId?.startsWith('anonymous-')) {
-      const sessionTasks = this.sessionStorage.get(userId) || [];
-      sessionTasks.push(task);
-      this.sessionStorage.set(userId, sessionTasks);
-      return task;
-    }
-
     this.tasks.set(id, task);
+    console.log('In-memory storage: Task created successfully', task);
     return task;
   }
 
-  async updateTask(updateTask: UpdateTask): Promise<Task | undefined> {
-    // First check session storage for anonymous users
-    for (const [sessionId, sessionTasks] of this.sessionStorage.entries()) {
-      const taskIndex = sessionTasks.findIndex(task => task.id === updateTask.id);
-      if (taskIndex !== -1) {
-        const existingTask = sessionTasks[taskIndex];
-        const updatedTask: Task = {
-          ...existingTask,
-          actualTime: updateTask.actualTime ?? existingTask.actualTime,
-          completed: updateTask.completed ?? existingTask.completed,
-          completedAt: updateTask.completedAt ? (typeof updateTask.completedAt === 'string' ? new Date(updateTask.completedAt) : updateTask.completedAt) : existingTask.completedAt,
-        };
-        sessionTasks[taskIndex] = updatedTask;
-        this.sessionStorage.set(sessionId, sessionTasks);
-        return updatedTask;
-      }
+  async updateTask(taskData: any): Promise<any> {
+    const task = this.tasks.get(taskData.id);
+    if (!task) {
+      return undefined;
     }
 
-    // Fall back to regular storage
-    const existingTask = this.tasks.get(updateTask.id);
-    if (!existingTask) return undefined;
+    // Handle completion timestamp
+    const updateFields = { ...taskData };
+    if (updateFields.completed === true && !updateFields.completedAt) {
+      updateFields.completedAt = new Date();
+    } else if (updateFields.completed === false) {
+      updateFields.completedAt = null;
+    }
 
-    const updatedTask: Task = {
-      ...existingTask,
-      actualTime: updateTask.actualTime ?? existingTask.actualTime,
-      completed: updateTask.completed ?? existingTask.completed,
-      completedAt: updateTask.completedAt ? (typeof updateTask.completedAt === 'string' ? new Date(updateTask.completedAt) : updateTask.completedAt) : existingTask.completedAt,
-    };
+    // Ensure boolean fields are properly handled
+    if (updateFields.isLater !== undefined) {
+      updateFields.isLater = Boolean(updateFields.isLater);
+    }
+    if (updateFields.isFocus !== undefined) {
+      updateFields.isFocus = Boolean(updateFields.isFocus);
+    }
+    if (updateFields.completed !== undefined) {
+      updateFields.completed = Boolean(updateFields.completed);
+    }
 
-    this.tasks.set(updateTask.id, updatedTask);
+    const updatedTask = { ...task, ...updateFields };
+    this.tasks.set(taskData.id, updatedTask);
+    console.log('In-memory storage: Task updated successfully', updatedTask);
     return updatedTask;
   }
 
   async deleteTask(id: number | string): Promise<boolean> {
     const numId = typeof id === 'string' ? parseInt(id) : id;
-    
+
     // First check session storage for anonymous users
     for (const [sessionId, sessionTasks] of this.sessionStorage.entries()) {
       const taskIndex = sessionTasks.findIndex(task => task.id === numId);
