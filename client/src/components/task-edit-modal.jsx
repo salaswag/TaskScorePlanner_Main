@@ -106,24 +106,24 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
               </div>
             </div>
 
-            {/* Estimated Time Slider */}
+            {/* Time Slider */}
             <div>
               <label className="block text-sm font-medium text-black dark:text-white mb-2">
-                Estimated Time: {formatTime(estimatedTime)}
+                Time: {formatTime(estimatedTime)}
               </label>
               <div className="relative">
                 <input
                   type="range"
                   min="5"
-                  max="120"
+                  max="180"
                   step="5"
                   value={estimatedTime}
                   onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
                   className="slider w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <span>5m</span>
-                  <span>2h</span>
+                  <span>5 min</span>
+                  <span>3 hours</span>
                 </div>
               </div>
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -153,7 +152,7 @@ export default function TaskTable({
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-black z-10">
         <div className="flex items-center justify-between">
           <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white">Main Tasks</h3>
-          
+
           {/* Score Display - moved from separate component */}
           <div className="flex items-center justify-end divide-x divide-gray-300 dark:divide-gray-600">
             {/* Score Fraction */}
@@ -208,7 +207,7 @@ export default function TaskTable({
         ) : (
           sortedTasks.map((task) => {
             const isExpanded = expandedTasks.has(task.id);
-            
+
             return (
               <div 
                 key={task.id}
@@ -355,7 +354,7 @@ export default function TaskTable({
                       }}
                       className="cursor-pointer flex-shrink-0 w-5 h-5"
                     />
-                    
+
                     {/* Priority */}
                     <span
                       className={`inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md text-lg sm:text-xl font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
@@ -376,7 +375,7 @@ export default function TaskTable({
                         }`}>
                           {task.title}
                         </span>
-                        
+
                         {/* Time and Actions Row */}
                         <div className="flex items-start gap-2 flex-shrink-0 mt-1">
                           {/* Estimated Time */}
@@ -401,7 +400,7 @@ export default function TaskTable({
                               )}
                             </Button>
                           )}
-                          
+
                           {/* Actions Menu */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -486,3 +485,4 @@ export default function TaskTable({
     </Card>
   );
 }
+```

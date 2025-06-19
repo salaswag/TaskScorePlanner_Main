@@ -96,20 +96,20 @@ function TaskForm({ onSubmit, isLoading }) {
               </div>
 
               {/* Time Slider */}
-              <div className="flex items-center gap-2 lg:min-w-[200px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              <div className="flex items-center gap-2 lg:min-w-[250px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                 <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
                   Time: {formatTime(estimatedTime)}
                 </label>
                 <input
                   type="range"
                   min="5"
-                  max="120"
+                  max="180"
                   step="5"
                   value={estimatedTime}
                   onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
                   onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
-                  className="slider flex-1 lg:w-20"
+                  className="slider flex-1 lg:w-32"
                 />
               </div>
             </div>

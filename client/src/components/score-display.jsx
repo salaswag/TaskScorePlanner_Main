@@ -29,14 +29,14 @@ export default function ScoreDisplay({
         <div className="flex items-center justify-center divide-x divide-gray-300 dark:divide-gray-600">
           {/* Score Fraction */}
           <div className="text-center px-4">
-            <div className={`text-lg font-bold ${scoreColor}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${scoreColor}`}>
               {totalScore} / {totalPossibleScore}
             </div>
           </div>
 
           {/* Percentage */}
           <div className="text-center px-4">
-            <div className={`text-lg font-bold ${scoreColor}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${scoreColor}`}>
               {percentage}%
             </div>
           </div>
