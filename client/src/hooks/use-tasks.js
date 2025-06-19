@@ -1,8 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "./use-auth";
-import { useEffect, useRef } from "react";
-
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useRef, useEffect } from "react";
 
@@ -55,7 +51,7 @@ export function useTasks() {
       queryClient.clear(); // Clear all cached data
     }
 
-    previousUserRef.current = currentUserId;Id;
+    previousUserRef.current = currentUserId;
 
     // Store user info for API requests
     if (user) {
@@ -84,54 +80,6 @@ export function useTasks() {
     },
     staleTime: 30000, // 30 seconds
     refetchOnWindowFocus: false,
-  });
-
-  const createTask = useMutation({
-    mutationFn: async (taskData) => {
-      const response = await apiRequest("/api/tasks", {
-        method: "POST",
-        body: JSON.stringify(taskData),
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-    },
-  });
-
-  const updateTask = useMutation({
-    mutationFn: async (taskData) => {
-      const response = await apiRequest(`/api/tasks/${taskData.id}`, {
-        method: "PUT",
-        body: JSON.stringify(taskData),
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-    },
-  });
-
-  const deleteTask = useMutation({
-    mutationFn: async (taskId) => {
-      const response = await apiRequest(`/api/tasks/${taskId}`, {
-        method: "DELETE",
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-    },
-  });
-
-  return {
-    tasks: tasks || [],
-    isLoading,
-    error,
-    createTask,
-    updateTask,
-    deleteTask,
-  };
   });
 
   const createTask = useMutation({
@@ -187,7 +135,7 @@ export function useTasks() {
     },
   });
 
-   const archiveTask = useMutation({
+  const archiveTask = useMutation({
     mutationFn: async (taskId) => {
       const response = await apiRequest(`/api/tasks/${taskId}/archive`, {
         method: "POST",
