@@ -55,15 +55,17 @@ export class MongoStorage {
     }
   }
 
-  async getTasks() {
+  async getTasks(userId = null) {
     try {
+      const userFilter = userId ? { userId } : {};
+      
       // Fetch tasks from main Tasks collection
-      const mainTasks = await this.tasksCollection.find({}).sort({ createdAt: -1 }).toArray();
+      const mainTasks = await this.tasksCollection.find(userFilter).sort({ createdAt: -1 }).toArray();
       console.log('Raw main tasks from MongoDB:', JSON.stringify(mainTasks, null, 2));
       console.log('Fetched main tasks from MongoDB:', mainTasks.length);
 
       // Fetch tasks from Later Tasks collection
-      const laterTasks = await this.laterTasksCollection.find({}).sort({ createdAt: -1 }).toArray();
+      const laterTasks = await this.laterTasksCollection.find(userFilter).sort({ createdAt: -1 }).toArray();
       console.log('Raw later tasks from MongoDB:', JSON.stringify(laterTasks, null, 2));
       console.log('Fetched later tasks from MongoDB:', laterTasks.length);
 
@@ -149,6 +151,7 @@ export class MongoStorage {
         isLater: isLaterFlag,
         isFocus: Boolean(taskData.isFocus),
         archived: Boolean(taskData.archived),
+        userId: taskData.userId || 'anonymous',
         createdAt: new Date(),
         completedAt: null
       };
@@ -494,6 +497,45 @@ export class MongoStorage {
 
       return false;
     } catch (error) {
+
+  async transferUserData(fromUserId, toUserId) {
+    try {
+      console.log(`Transferring data from ${fromUserId} to ${toUserId}`);
+      
+      // Update all tasks in main collection
+      const mainResult = await this.tasksCollection.updateMany(
+        { userId: fromUserId },
+        { $set: { userId: toUserId } }
+      );
+      
+      // Update all tasks in later collection
+      const laterResult = await this.laterTasksCollection.updateMany(
+        { userId: fromUserId },
+        { $set: { userId: toUserId } }
+      );
+      
+      // Update all archived tasks
+      const archiveResult = await this.archiveCollection.updateMany(
+        { userId: fromUserId },
+        { $set: { userId: toUserId } }
+      );
+      
+      // Update all time entries
+      const timeResult = await this.timeEntriesCollection.updateMany(
+        { userId: fromUserId },
+        { $set: { userId: toUserId } }
+      );
+      
+      console.log(`Transfer completed: ${mainResult.modifiedCount} main tasks, ${laterResult.modifiedCount} later tasks, ${archiveResult.modifiedCount} archived tasks, ${timeResult.modifiedCount} time entries`);
+      
+      return true;
+    } catch (error) {
+      console.error('Error transferring user data:', error);
+      return false;
+    }
+  }
+
+
       console.error('Error archiving task:', error);
       return false;
     }

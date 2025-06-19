@@ -4,9 +4,13 @@ import { storage } from "./storage";
 import { mongoStorage } from "./mongodb-storage.js";
 import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
 import { z } from "zod";
+import { verifyFirebaseToken } from "./middleware/auth-middleware.js";
 import "./types"; // Import session type declarations
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add Firebase authentication middleware to all routes
+  app.use(verifyFirebaseToken);
+  
   // Always try to use MongoDB storage, only fallback to in-memory if MongoDB is completely unavailable
   let activeStorage = mongoStorage;
   
@@ -44,7 +48,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("✅ Using MongoDB storage");
       }
       
-      const tasks = await storageToUse.getTasks();
+      const userId = req.user?.uid || 'anonymous';
+      const tasks = await storageToUse.getTasks(userId);
       res.json(tasks);
     } catch (error) {
       console.error("Error fetching tasks:", error);
@@ -67,7 +72,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("✅ Creating task in MongoDB storage");
       }
       
-      const task = await storageToUse.createTask(validatedData);
+      const userId = req.user?.uid || 'anonymous';
+      const taskWithUser = { ...validatedData, userId };
+      const task = await storageToUse.createTask(taskWithUser);
       res.status(201).json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -190,6 +197,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
+
+  // Transfer anonymous data to authenticated user
+  app.post("/api/auth/transfer-data", async (req, res) => {
+    try {
+      const { anonymousUid, permanentUid } = req.body;
+      
+      if (!anonymousUid || !permanentUid) {
+        return res.status(400).json({ message: "Both anonymousUid and permanentUid are required" });
+      }
+
+      const mongoAvailable = await testMongoConnection();
+      
+      if (!mongoAvailable) {
+        console.warn("⚠️  Data transfer requires MongoDB - unavailable");
+        return res.status(503).json({ message: "Data transfer requires MongoDB" });
+      }
+      
+      const success = await mongoStorage.transferUserData(anonymousUid, permanentUid);
+      
+      if (success) {
+        res.json({ message: "Data transferred successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to transfer data" });
+      }
+    } catch (error) {
+      console.error("Error transferring data:", error);
+      res.status(500).json({ message: "Failed to transfer data" });
+    }
+  });
+
+
       const storageToUse = mongoAvailable ? mongoStorage : storage;
       
       if (!mongoAvailable) {
