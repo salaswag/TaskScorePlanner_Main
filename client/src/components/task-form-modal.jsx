@@ -32,16 +32,12 @@ export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, is
 
   if (isInline) {
     return (
-      <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
-        <CardContent>
-          <TaskForm 
-            onSubmit={handleSubmit} 
-            isLoading={isLoading}
-            formData={formData}
-            setFormData={setFormData}
-          />
-        </CardContent>
-      </Card>
+      <TaskForm 
+        onSubmit={handleSubmit} 
+        isLoading={isLoading}
+        formData={formData}
+        setFormData={setFormData}
+      />
     );
   }
 
