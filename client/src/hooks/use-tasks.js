@@ -18,14 +18,25 @@ export function useTasks() {
 
   const createTask = useMutation({
     mutationFn: async (taskData) => {
-      const response = await apiRequest("/api/tasks", {
-        method: "POST",
-        body: JSON.stringify(taskData)
-      });
-      return response.json();
+      console.log('Creating task with data:', taskData);
+      try {
+        const response = await apiRequest("/api/tasks", {
+          method: "POST",
+          body: JSON.stringify(taskData)
+        });
+        const result = await response.json();
+        console.log('Task created successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('Task creation failed:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+    onError: (error) => {
+      console.error('Task creation mutation failed:', error);
     },
   });
 

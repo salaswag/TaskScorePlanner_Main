@@ -14,6 +14,7 @@ export async function verifyFirebaseToken(req, res, next) {
         email: null,
         isAnonymous: true
       };
+      console.log('No token provided, using anonymous user');
       return next();
     }
 
@@ -24,6 +25,7 @@ export async function verifyFirebaseToken(req, res, next) {
         email: decodedToken.email,
         isAnonymous: decodedToken.firebase?.sign_in_provider === 'anonymous'
       };
+      console.log('Token verified successfully for user:', req.user.uid);
     } catch (error) {
       console.error('Firebase token verification failed:', error);
       // If token verification fails, treat as anonymous
@@ -32,6 +34,7 @@ export async function verifyFirebaseToken(req, res, next) {
         email: null,
         isAnonymous: true
       };
+      console.log('Token verification failed, using anonymous user');
     }
 
     next();

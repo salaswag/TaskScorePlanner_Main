@@ -60,7 +60,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new task
   app.post("/api/tasks", async (req, res) => {
     try {
+      console.log('Task creation request received');
+      console.log('Request body:', req.body);
+      console.log('User:', req.user);
+      
       const validatedData = insertTaskSchema.parse(req.body);
+      console.log('Validated data:', validatedData);
       
       // Always try MongoDB first
       const mongoAvailable = await testMongoConnection();
@@ -74,10 +79,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.user?.uid || 'anonymous';
       const taskWithUser = { ...validatedData, userId };
+      console.log('Task with user:', taskWithUser);
+      
       const task = await storageToUse.createTask(taskWithUser);
+      console.log('Task created successfully:', task);
       res.status(201).json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error('Validation error:', error.errors);
         res.status(400).json({ message: "Invalid task data", errors: error.errors });
       } else {
         console.error("Error creating task:", error);

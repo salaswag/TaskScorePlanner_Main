@@ -1,49 +1,42 @@
 import { QueryClient } from "@tanstack/react-query";
-import { auth } from "./firebase-config";
+import { auth } from './firebase-config.js';
 
-const API_BASE_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
-
-async function apiRequest(url: string, options: RequestInit = {}): Promise<Response> {
-  // Get Firebase token if user is authenticated
-  const token = localStorage.getItem('firebase-token');
-
-  const headers: HeadersInit = {
+export async function apiRequest(url: string, options: RequestInit = {}) {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...options.headers,
   };
 
-  if (token) {
-    headers['X-Firebase-Token'] = token;
+  // Add Firebase token if user is authenticated
+  const currentUser = auth.currentUser;
+  if (currentUser && !currentUser.isAnonymous) {
+    try {
+      const idToken = await currentUser.getIdToken();
+      headers['Authorization'] = `Bearer ${idToken}`;
+    } catch (error) {
+      console.error('Failed to get ID token:', error);
+    }
   }
 
-  const response = await fetch(`${API_BASE_URL}${url}`, {
+  const response = await fetch(url, {
     ...options,
     headers,
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
   }
 
   return response;
 }
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: async ({ queryKey }) => {
         const response = await apiRequest(queryKey[0] as string);
         return response.json();
       },
-      staleTime: 1000 * 60, // 1 minute
-      retry: (failureCount, error) => {
-        if (error instanceof Error && error.message.includes('401')) {
-          return false;
-        }
-        return failureCount < 3;
-      },
     },
   },
 });
-
-export { queryClient, apiRequest };

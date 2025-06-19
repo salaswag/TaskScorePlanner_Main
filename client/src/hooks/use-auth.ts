@@ -28,32 +28,43 @@ export function useAuth() {
   // Listen to Firebase auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // Check if this is a newly authenticated user who was previously anonymous
-        if (previousAnonymousUid && !user.isAnonymous && user.uid !== previousAnonymousUid) {
-          console.log('User authenticated, transferring data from anonymous session');
-          await transferAnonymousData(previousAnonymousUid, user.uid);
-          setPreviousAnonymousUid(null);
-        }
-
-        setFirebaseUser(user);
-        setUser({
-          id: user.uid,
-          email: user.email || undefined,
-          isAnonymous: user.isAnonymous
-        });
-      } else {
-        // Don't try anonymous sign-in if it's not configured
-        // Just set user to null and continue
-        console.log('No user authenticated, continuing as anonymous');
-        setFirebaseUser(null);
-        setUser(null);
-      }
+      console.log('Auth state changed:', user);
+      setFirebaseUser(user);
       setIsLoading(false);
+
+      // Don't attempt anonymous sign-in, just continue as anonymous
+      if (!user) {
+        console.log('No user authenticated, continuing as anonymous');
+      }
+
+      // Transfer data if we have a previous anonymous UID and now have a permanent user
+      if (user && !user.isAnonymous && previousAnonymousUid && user.uid !== previousAnonymousUid) {
+        try {
+          const response = await fetch('/api/auth/transfer-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${await user.getIdToken()}`,
+            },
+            body: JSON.stringify({
+              anonymousUid: previousAnonymousUid,
+              permanentUid: user.uid,
+            }),
+          });
+
+          if (response.ok) {
+            console.log('Data transfer successful');
+            setPreviousAnonymousUid(null);
+            queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+          }
+        } catch (error) {
+          console.error('Failed to transfer data:', error);
+        }
+      }
     });
 
     return () => unsubscribe();
-  }, [previousAnonymousUid]);
+  }, [previousAnonymousUid, queryClient]);
 
   const loginMutation = useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
