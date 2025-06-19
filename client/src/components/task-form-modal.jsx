@@ -33,9 +33,6 @@ export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, is
   if (isInline) {
     return (
       <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold">Add New Task</CardTitle>
-        </CardHeader>
         <CardContent>
           <TaskForm 
             onSubmit={handleSubmit} 
