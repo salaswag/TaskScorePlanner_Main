@@ -101,13 +101,13 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
 
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-100/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 border-dashed">
-        <div className="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
           <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-2 text-left">Task</div>
-          <div className="col-span-2 text-center">Est Time</div>
-          <div className="col-span-2 text-center">Actual Time</div>
+          <div className="col-span-4 text-left">Task</div>
+          <div className="col-span-1 text-center">Est Time</div>
+          <div className="col-span-1 text-center">Actual Time</div>
           <div className="col-span-1 text-center">Dist</div>
           <div className="col-span-2 text-center">Actions</div>
         </div>
@@ -130,14 +130,14 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                   : ''
               }`}
             >
-              <div className="grid grid-cols-12 gap-2 items-center">
+              <div className="grid grid-cols-12 gap-1 items-center">
                 <div className="col-span-1 flex justify-center">
                   {!task.completed ? (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onMoveToMain(task)}
-                      className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-3 py-2 h-8 font-medium"
+                      className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-2 py-1 h-6 font-medium"
                       title="Move to Main"
                     >
                       ↑ Main
@@ -157,7 +157,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                 </div>
                 <div className="col-span-1 flex justify-center">
                   <span
-                    className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                    className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -165,8 +165,8 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     {task.priority}
                   </span>
                 </div>
-                <div className="col-span-2">
-                  <span className={`font-medium truncate block ${
+                <div className="col-span-4">
+                  <span className={`font-medium block ${
                     task.completed 
                       ? 'text-gray-400 dark:text-gray-500 line-through' 
                       : 'text-gray-900 dark:text-gray-100'
@@ -174,29 +174,29 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     {task.title}
                   </span>
                 </div>
-                <div className="col-span-2 flex justify-center">
-                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                    <Clock className="h-4 w-4 mr-1" />
+                <div className="col-span-1 flex justify-center">
+                  <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                    <Clock className="h-3 w-3 mr-1" />
                     <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                   </div>
                 </div>
-                <div className="col-span-2 flex justify-center">
+                <div className="col-span-1 flex justify-center">
                   {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
-                    <div className="flex items-center text-sm text-green-600 dark:text-green-400">
-                      <CheckCircle className="h-4 w-4 mr-1" />
+                    <div className="flex items-center text-xs text-green-600 dark:text-green-400">
+                      <CheckCircle className="h-3 w-3 mr-1" />
                       <span className="font-medium">{formatTime(task.actualTime)}</span>
                     </div>
                   ) : (
-                    <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
                   )}
                 </div>
                 <div className="col-span-1 flex justify-center">
                   {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
-                    <span className={`text-sm font-bold ${getDistractionColor(task.distractionLevel)}`}>
+                    <span className={`text-xs font-bold ${getDistractionColor(task.distractionLevel)}`}>
                       {task.distractionLevel}
                     </span>
                   ) : (
-                    <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
                   )}
                 </div>
                 <div className="col-span-2 flex justify-center space-x-1">

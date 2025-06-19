@@ -127,13 +127,13 @@ export default function TaskTable({
 
       {/* Table Header */}
       <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-[73px] z-10">
-        <div className="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
           <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-2 text-left">Task</div>
-          <div className="col-span-2 text-center">Est Time</div>
-          <div className="col-span-2 text-center">Actual Time</div>
+          <div className="col-span-4 text-left">Task</div>
+          <div className="col-span-1 text-center">Est Time</div>
+          <div className="col-span-1 text-center">Actual Time</div>
           <div className="col-span-1 text-center">Dist</div>
           <div className="col-span-2 text-center">Actions</div>
         </div>
@@ -172,7 +172,7 @@ export default function TaskTable({
                     : 'cursor-grab active:cursor-grabbing'
                 }`}
               >
-                <div className="grid grid-cols-12 gap-2 items-center">
+                <div className="grid grid-cols-12 gap-1 items-center">
                   <div className="col-span-1 flex justify-center">
                     {!task.completed ? (
                       <Button
@@ -205,7 +205,7 @@ export default function TaskTable({
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
-                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                         task.priority,
                         task.completed,
                       )}`}
@@ -213,8 +213,8 @@ export default function TaskTable({
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-2">
-                    <span className={`font-medium truncate block ${
+                  <div className="col-span-4">
+                    <span className={`font-medium block ${
                       task.completed 
                         ? 'text-gray-400 dark:text-gray-500 line-through' 
                         : 'text-gray-900 dark:text-gray-100'
@@ -222,43 +222,29 @@ export default function TaskTable({
                       {task.title}
                     </span>
                   </div>
-                  <div className="col-span-2 flex justify-center">
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Clock className="h-3 w-3" />
-                      <span className="font-semibold">Est: {formatTime(task.estimatedTime)}</span>
-                      {task.actualTime && (
-                        <>
-                          <span>•</span>
-                          <span className="font-semibold">Actual: {formatTime(task.actualTime)}</span>
-                        </>
-                      )}
-                      {task.distractionLevel && (
-                        <>
-                          <span>•</span>
-                          <span className={`font-semibold ${getDistractionColor(task.distractionLevel)}`}>
-                            Distraction: {task.distractionLevel}/5
-                          </span>
-                        </>
-                      )}
+                  <div className="col-span-1 flex justify-center">
+                    <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                     </div>
                   </div>
-                  <div className="col-span-2 flex justify-center">
+                  <div className="col-span-1 flex justify-center">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
-                      <div className="flex items-center text-sm text-green-600 dark:text-green-400">
-                        <CheckCircle className="h-4 w-4 mr-1" />
+                      <div className="flex items-center text-xs text-green-600 dark:text-green-400">
+                        <CheckCircle className="h-3 w-3 mr-1" />
                         <span className="font-medium">{formatTime(task.actualTime)}</span>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">-</span>
                     )}
                   </div>
                   <div className="col-span-1 flex justify-center">
                     {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
-                      <span className={`text-sm font-bold ${getDistractionColor(task.distractionLevel)}`}>
+                      <span className={`text-xs font-bold ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
                       </span>
                     ) : (
-                      <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">-</span>
                     )}
                   </div>
                   <div className="col-span-2 flex justify-center space-x-1">

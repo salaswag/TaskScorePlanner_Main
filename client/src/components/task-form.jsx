@@ -37,18 +37,18 @@ export default function TaskForm({ onSubmit, isLoading }) {
       <CardContent className="p-2 h-full flex items-center justify-center">
         <form onSubmit={handleSubmit} className="w-full">
           {/* All Elements in One Line */}
-          <div className="flex items-center gap-3 justify-center">
-            {/* Task Input - Reduced for more slider space */}
+          <div className="flex items-center gap-4 w-full">
+            {/* Task Input - Flexible width */}
             <Input
               type="text"
               placeholder="Add new task..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="flex-[0.5] px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
+              className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
             />
 
             {/* Priority Slider - Bigger with descriptive label */}
-            <div className="flex items-center gap-2 min-w-[160px]">
+            <div className="flex items-center gap-2 min-w-[180px]">
               <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
                 Priority: {priority}
               </label>
@@ -58,12 +58,12 @@ export default function TaskForm({ onSubmit, isLoading }) {
                 max="10"
                 value={priority}
                 onChange={(e) => setPriority(parseInt(e.target.value))}
-                className="slider w-32"
+                className="slider w-20 flex-1"
               />
             </div>
 
             {/* Time Slider - Bigger with descriptive label */}
-            <div className="flex items-center gap-2 min-w-[180px]">
+            <div className="flex items-center gap-2 min-w-[200px]">
               <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
                 Time: {formatTime(estimatedTime)}
               </label>
@@ -74,7 +74,7 @@ export default function TaskForm({ onSubmit, isLoading }) {
                 step="5"
                 value={estimatedTime}
                 onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
-                className="slider w-32"
+                className="slider w-20 flex-1"
               />
             </div>
 

@@ -16,23 +16,23 @@ export default function ScoreDisplay({
   return (
     <Card className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800">
       <CardContent className="p-2 h-full flex items-center justify-center">
-        <div className="flex items-center gap-3 justify-center">
+        <div className="flex items-center justify-center divide-x divide-gray-300 dark:divide-gray-600">
           {/* Score Fraction */}
-          <div className="text-center">
+          <div className="text-center px-4">
             <div className="text-lg font-bold text-black dark:text-white">
               {totalScore} / {totalPossibleScore}
             </div>
           </div>
           
           {/* Percentage */}
-          <div className="text-center">
+          <div className="text-center px-4">
             <div className="text-lg font-bold text-black dark:text-white">
               {percentage}%
             </div>
           </div>
           
           {/* Time Left */}
-          <div className="text-center">
+          <div className="text-center px-4">
             <div className="text-sm font-medium text-black dark:text-white">
               {formatTime(totalEstimatedTime)}
             </div>
