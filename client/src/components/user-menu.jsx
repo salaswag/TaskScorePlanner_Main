@@ -31,16 +31,22 @@ export default function UserMenu() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    login(loginData);
-    setIsLoginOpen(false);
-    setLoginData({ username: "", password: "" });
+    login(loginData, {
+      onSuccess: () => {
+        setIsLoginOpen(false);
+        setLoginData({ username: "", password: "" });
+      }
+    });
   };
 
   const handleSignup = (e) => {
     e.preventDefault();
-    signup(signupData);
-    setIsSignupOpen(false);
-    setSignupData({ username: "", password: "" });
+    signup(signupData, {
+      onSuccess: () => {
+        setIsSignupOpen(false);
+        setSignupData({ username: "", password: "" });
+      }
+    });
   };
 
   const handleLogout = () => {
@@ -51,23 +57,17 @@ export default function UserMenu() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="relative h-10 w-10 rounded-full">
-            <User className="h-5 w-5" />
+          <Button variant="ghost" size="sm" className="text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800">
+            <User className="mr-2 h-4 w-4" />
+            {user.username}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.username}</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                Logged in
-              </p>
-            </div>
-          </DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
+            Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -76,90 +76,104 @@ export default function UserMenu() {
 
   return (
     <div className="flex items-center space-x-2">
+      {/* Login Dialog */}
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
         <DialogTrigger asChild>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800">
             <LogIn className="mr-2 h-4 w-4" />
             Login
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
           <DialogHeader>
-            <DialogTitle>Login</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-black dark:text-white">Login</DialogTitle>
+            <DialogDescription className="text-gray-600 dark:text-gray-400">
               Enter your credentials to access your tasks.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="login-username">Username</Label>
+              <Label htmlFor="login-username" className="text-black dark:text-white">Username</Label>
               <Input
                 id="login-username"
                 type="text"
                 value={loginData.username}
                 onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
                 required
+                className="bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="login-password">Password</Label>
+              <Label htmlFor="login-password" className="text-black dark:text-white">Password</Label>
               <Input
                 id="login-password"
                 type="password"
                 value={loginData.password}
                 onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
                 required
+                className="bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-700"
               />
             </div>
             {loginError && (
-              <p className="text-sm text-red-600">{loginError.message}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{loginError.message}</p>
             )}
-            <Button type="submit" className="w-full" disabled={isLoginLoading}>
+            <Button 
+              type="submit" 
+              className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200" 
+              disabled={isLoginLoading}
+            >
               {isLoginLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
         </DialogContent>
       </Dialog>
 
+      {/* Signup Dialog */}
       <Dialog open={isSignupOpen} onOpenChange={setIsSignupOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button variant="ghost" size="sm" className="text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800">
             <UserPlus className="mr-2 h-4 w-4" />
             Sign Up
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
           <DialogHeader>
-            <DialogTitle>Sign Up</DialogTitle>
-            <DialogDescription>
-              Create a new account to save your tasks.
+            <DialogTitle className="text-black dark:text-white">Sign Up</DialogTitle>
+            <DialogDescription className="text-gray-600 dark:text-gray-400">
+              Create a new account to start managing your tasks.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="signup-username">Username</Label>
+              <Label htmlFor="signup-username" className="text-black dark:text-white">Username</Label>
               <Input
                 id="signup-username"
                 type="text"
                 value={signupData.username}
                 onChange={(e) => setSignupData(prev => ({ ...prev, username: e.target.value }))}
                 required
+                className="bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-700"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signup-password">Password</Label>
+              <Label htmlFor="signup-password" className="text-black dark:text-white">Password</Label>
               <Input
                 id="signup-password"
                 type="password"
                 value={signupData.password}
                 onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
                 required
+                className="bg-white dark:bg-gray-800 text-black dark:text-white border border-gray-300 dark:border-gray-700"
               />
             </div>
             {signupError && (
-              <p className="text-sm text-red-600">{signupError.message}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{signupError.message}</p>
             )}
-            <Button type="submit" className="w-full" disabled={isSignupLoading}>
+            <Button 
+              type="submit" 
+              className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200" 
+              disabled={isSignupLoading}
+            >
               {isSignupLoading ? "Creating account..." : "Sign Up"}
             </Button>
           </form>

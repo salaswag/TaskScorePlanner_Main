@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import TaskForm from "@/components/task-form";
 import TaskTable from "@/components/task-table";
@@ -15,6 +14,7 @@ import { useTheme } from "@/components/theme-provider";
 import { Moon, Sun, CheckSquare, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import UserMenu from '../components/user-menu';
 
 export default function TodoApp() {
   const [currentTask, setCurrentTask] = useState(null);
@@ -289,6 +289,7 @@ export default function TodoApp() {
                   <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                 )}
               </Button>
+              <UserMenu />
             </div>
           </div>
         </div>
@@ -308,7 +309,7 @@ export default function TodoApp() {
                     totalPossibleScore={totalPossibleScore}
                     totalEstimatedTime={totalEstimatedTime}
                   />
-                  
+
                   {/* Task Form - Takes remaining space */}
                   <div className="lg:col-span-3">
                     <TaskForm
@@ -332,7 +333,7 @@ export default function TodoApp() {
                     onMoveToMain={handleMoveToMain}
                     onMoveToLater={handleMoveToLater}
                   />
-                  
+
                   {/* Later Section */}
                   <LaterSection
                     tasks={laterTasks}
