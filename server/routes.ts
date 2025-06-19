@@ -128,8 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Anonymous users ALWAYS use in-memory storage
       if (isAnonymous) {
         console.log("👤 Anonymous user - updating task in in-memory storage");
-        const userId = req.user?.uid || 'anonymous';
-        const updateData = { id: Number(id), userId, ...req.body };
+        const updateData = { id: Number(id), ...req.body };
         const updatedTask = await storage.updateTask(updateData);
         
         if (!updatedTask) {
@@ -186,8 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (isNaN(idNum)) {
           return res.status(400).json({ message: "Invalid task id" });
         }
-        const userId = req.user?.uid || 'anonymous';
-        const deleted = await storage.deleteTask(idNum, userId);
+        const deleted = await storage.deleteTask(idNum);
         
         if (!deleted) {
           return res.status(404).json({ message: "Task not found" });
@@ -315,14 +313,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get time entries
   app.get("/api/time-entries", async (req, res) => {
     try {
-      const userId = req.user?.uid;
-      const isAnonymous = !req.user || req.user.isAnonymous;
-      
-      // Anonymous users can't access time entries
-      if (isAnonymous) {
-        return res.json({});
-      }
-      
       const mongoAvailable = await testMongoConnection();
       
       if (!mongoAvailable) {
@@ -330,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({});
       }
       
-      const timeEntries = await mongoStorage.getTimeEntries(userId);
+      const timeEntries = await mongoStorage.getTimeEntries();
       
       // Convert to date-indexed object for easier frontend usage
       const timeData = {};
@@ -349,16 +339,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/time-entries", async (req, res) => {
     try {
       const { date, timeInMinutes } = req.body;
-      const userId = req.user?.uid;
-      const isAnonymous = !req.user || req.user.isAnonymous;
       
       if (!date || timeInMinutes === undefined) {
         return res.status(400).json({ message: "Date and timeInMinutes are required" });
-      }
-      
-      // Anonymous users can't create time entries
-      if (isAnonymous) {
-        return res.status(401).json({ message: "Authentication required for time tracking" });
       }
       
       const mongoAvailable = await testMongoConnection();
@@ -368,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Time entries require MongoDB" });
       }
       
-      const timeEntry = await mongoStorage.updateTimeEntry(date, timeInMinutes, userId);
+      const timeEntry = await mongoStorage.updateTimeEntry(date, timeInMinutes);
       res.json(timeEntry);
     } catch (error) {
       console.error("Error updating time entry:", error);
@@ -380,13 +363,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/time-entries/:date", async (req, res) => {
     try {
       const { date } = req.params;
-      const userId = req.user?.uid;
-      const isAnonymous = !req.user || req.user.isAnonymous;
-      
-      // Anonymous users can't delete time entries
-      if (isAnonymous) {
-        return res.status(401).json({ message: "Authentication required for time tracking" });
-      }
       
       const mongoAvailable = await testMongoConnection();
       
@@ -395,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Time entries require MongoDB" });
       }
       
-      const deleted = await mongoStorage.deleteTimeEntry(date, userId);
+      const deleted = await mongoStorage.deleteTimeEntry(date);
       
       if (!deleted) {
         return res.status(404).json({ message: "Time entry not found" });
@@ -418,52 +394,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // In-memory storage implementation
 class InMemoryStorage {
-  private tasks: Map<string, Map<number, any>> = new Map(); // User-specific task storage
+  private tasks: Map<number, any> = new Map();
   private timelineEvents: Map<number, any> = new Map();
   private taskIdCounter: number = 1;
   private timelineIdCounter: number = 1;
 
-  async getTasks(userId = 'anonymous') {
-    if (!this.tasks.has(userId)) {
-      this.tasks.set(userId, new Map());
-    }
-    return Array.from(this.tasks.get(userId)!.values());
+  async getTasks() {
+    return Array.from(this.tasks.values());
   }
 
   async createTask(taskData: any) {
     const id = this.taskIdCounter++;
     const task = { id, ...taskData };
-    const userId = taskData.userId || 'anonymous';
-    
-    if (!this.tasks.has(userId)) {
-      this.tasks.set(userId, new Map());
-    }
-    
-    this.tasks.get(userId)!.set(id, task);
+    this.tasks.set(id, task);
     return task;
   }
 
   async updateTask(taskData: any) {
-    const userId = taskData.userId || 'anonymous';
-    
-    if (!this.tasks.has(userId)) {
+    if (!this.tasks.has(taskData.id)) {
       return null;
     }
-    
-    const userTasks = this.tasks.get(userId)!;
-    if (!userTasks.has(taskData.id)) {
-      return null;
-    }
-    
-    userTasks.set(taskData.id, { ...userTasks.get(taskData.id), ...taskData });
-    return userTasks.get(taskData.id);
+    this.tasks.set(taskData.id, { ...this.tasks.get(taskData.id), ...taskData });
+    return this.tasks.get(taskData.id);
   }
 
-  async deleteTask(id: number, userId = 'anonymous'): Promise<boolean> {
-    if (!this.tasks.has(userId)) {
-      return false;
-    }
-    return this.tasks.get(userId)!.delete(id);
+  async deleteTask(id: number): Promise<boolean> {
+    return this.tasks.delete(id);
   }
 
   async archiveTask(id: number): Promise<boolean> {

@@ -557,11 +557,10 @@ export class MongoStorage {
     }
   }
 
-  async getTimeEntries(userId = null) {
+  async getTimeEntries() {
     try {
-      const userFilter = userId ? { userId } : { userId: 'no-user-specified' };
-      const timeEntries = await this.timeEntriesCollection.find(userFilter).toArray();
-      console.log('Fetched time entries from MongoDB for user', userId, ':', timeEntries.length);
+      const timeEntries = await this.timeEntriesCollection.find({}).toArray();
+      console.log('Fetched time entries from MongoDB:', timeEntries.length);
       return timeEntries.map(entry => ({
         ...entry,
         id: entry.id || entry._id.toString()
@@ -578,7 +577,6 @@ export class MongoStorage {
       
       const entry = {
         ...entryData,
-        userId: entryData.userId || 'anonymous',
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -596,12 +594,12 @@ export class MongoStorage {
     }
   }
 
-  async updateTimeEntry(date, timeInMinutes, userId = 'anonymous') {
+  async updateTimeEntry(date, timeInMinutes) {
     try {
-      console.log('Updating time entry for date:', date, 'time:', timeInMinutes, 'user:', userId);
+      console.log('Updating time entry for date:', date, 'time:', timeInMinutes);
       
       const result = await this.timeEntriesCollection.findOneAndUpdate(
-        { date: date, userId: userId },
+        { date: date },
         { 
           $set: { 
             timeInMinutes: timeInMinutes,
@@ -625,10 +623,10 @@ export class MongoStorage {
     }
   }
 
-  async deleteTimeEntry(date, userId = 'anonymous') {
+  async deleteTimeEntry(date) {
     try {
-      const result = await this.timeEntriesCollection.deleteOne({ date: date, userId: userId });
-      console.log('Time entry deleted for date:', date, 'user:', userId, 'deleted count:', result.deletedCount);
+      const result = await this.timeEntriesCollection.deleteOne({ date: date });
+      console.log('Time entry deleted for date:', date, 'deleted count:', result.deletedCount);
       return result.deletedCount > 0;
     } catch (error) {
       console.error('Error deleting time entry:', error);

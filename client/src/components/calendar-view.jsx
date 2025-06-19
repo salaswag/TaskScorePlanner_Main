@@ -1,28 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Clock, Check, X, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Check, X } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useAuth } from '@/hooks/use-auth';
 
 export function CalendarView() {
-  const { user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [sliderTime, setSliderTime] = useState(0);
   const [timeData, setTimeData] = useState({}); // Store manual time entries
   const [isLoading, setIsLoading] = useState(false);
-  
-  const isAuthenticated = user && !user.isAnonymous;
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchTimeEntries();
-    }
-  }, [isAuthenticated]);
+    fetchTimeEntries();
+  }, []);
 
   const fetchTimeEntries = async () => {
     try {
@@ -195,21 +189,7 @@ export function CalendarView() {
   };
 
   return (
-    <div className="w-full space-y-4 relative">
-      {/* Authentication Required Overlay */}
-      {!isAuthenticated && (
-        <div className="absolute inset-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-          <div className="text-center p-8 max-w-md">
-            <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Authentication Required
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Please log in to track your daily work hours. Time tracking requires a user account to save your data securely.
-            </p>
-          </div>
-        </div>
-      )}
+    <div className="w-full space-y-4">
 
       {/* Calendar Header */}
       <div className="flex items-center justify-between">
@@ -285,8 +265,8 @@ export function CalendarView() {
                   ${isCurrentMonth && !isFuture && timeSpent > 0 ? getTimeColorClasses(timeSpent) : ''}
                   ${isCurrentMonth && !isFuture && timeSpent === 0 ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800' : ''}
                 `}
-                  onClick={() => !isFuture && isCurrentMonth && isAuthenticated && handleTimeEdit(day)}
-                  title={!isAuthenticated ? "Login required" : (!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked - Click to edit` : "Click to add time") : "")}
+                  onClick={() => !isFuture && isCurrentMonth && handleTimeEdit(day)}
+                  title={!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked - Click to edit` : "Click to add time") : ""}
                 >
                   <div className="flex flex-col h-full relative z-10">
                     {/* Date Number */}
@@ -343,7 +323,7 @@ export function CalendarView() {
       <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4" />
-          <span>{isAuthenticated ? "Click any day to manually enter time worked" : "Login required to track time"}</span>
+          <span>Click any day to manually enter time worked</span>
         </div>
         <div className="text-xs text-gray-400 dark:text-gray-500">
           Manual time tracking - not connected to tasks

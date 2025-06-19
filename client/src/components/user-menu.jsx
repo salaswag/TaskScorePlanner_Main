@@ -61,7 +61,7 @@ function UserMenu() {
     try {
       const currentUser = user;
       const loggedInUser = await login(loginData.email, loginData.password);
-
+      
       // Transfer data if user was anonymous
       if (currentUser && currentUser.isAnonymous && loggedInUser) {
         try {
@@ -126,7 +126,7 @@ function UserMenu() {
     try {
       const currentUser = user;
       const newUser = await signup(signupData.email, signupData.password);
-
+      
       // Transfer data if user was anonymous
       if (currentUser && currentUser.isAnonymous && newUser) {
         try {
@@ -229,7 +229,7 @@ function UserMenu() {
             </DialogDescription>
           </DialogHeader>
 
-
+          
                     <TabsContent value="login" className="space-y-3">
                       <form onSubmit={handleLogin} className="space-y-3">
                         {(loginError || localErrors.login) && (
@@ -267,7 +267,7 @@ function UserMenu() {
                       </form>
                     </TabsContent>
 
-
+          
                     <TabsContent value="signup" className="space-y-3">
                       <form onSubmit={handleSignup} className="space-y-3">
                         {(signupError || localErrors.signup) && (
