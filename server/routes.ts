@@ -4,12 +4,12 @@ import { storage } from "./storage";
 import { mongoStorage } from "./mongodb-storage.js";
 import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
 import { z } from "zod";
-import { verifyFirebaseToken } from "./middleware/auth-middleware.js";
+import { authenticateUser } from "./middleware/auth-middleware.js";
 import "./types"; // Import session type declarations
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add Firebase authentication middleware to all routes
-  app.use(verifyFirebaseToken);
+  app.use(authenticateUser);
   
   // Always try to use MongoDB storage, only fallback to in-memory if MongoDB is completely unavailable
   let activeStorage = mongoStorage;
