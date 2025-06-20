@@ -3,16 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
-import { useInputFocus } from "@/hooks/use-input-focus";
+
 
 function TaskForm({ onSubmit, isLoading }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
   
-  const { isKeyboardVisible, viewportHeight, keyboardHeight } = useKeyboardAware();
-  const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -38,19 +36,10 @@ function TaskForm({ onSubmit, isLoading }) {
   };
 
   return (
-    <div 
-      className="w-full flex justify-center transition-all duration-300 ease-in-out"
-      style={{
-        transform: isKeyboardVisible ? 'translateY(-10px)' : 'translateY(0)',
-        marginBottom: isKeyboardVisible ? '10px' : '0',
-        minHeight: 'auto'
-      }}
-    >
+    <div className="w-full flex justify-center">
       <form 
         onSubmit={handleSubmit} 
-        className={`w-full max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 transition-all duration-300 ${
-          isKeyboardVisible ? 'shadow-xl border-blue-300 dark:border-blue-600' : ''
-        }`}
+        className="w-full max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3"
       >
           {/* Desktop: All Elements in One Line, Mobile: Stacked Layout */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-4 w-full">
@@ -60,14 +49,7 @@ function TaskForm({ onSubmit, isLoading }) {
               placeholder="Add new task..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              onKeyDown={(e) => {
-                if (e.key === 'Tab' || e.key === 'Enter') {
-                  e.preventDefault();
-                  focusNextInput();
-                }
-              }}
+              
               className="w-full lg:flex-1 px-4 py-4 h-12 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md"
             />
 
@@ -84,14 +66,7 @@ function TaskForm({ onSubmit, isLoading }) {
                   max="10"
                   value={priority}
                   onChange={(e) => setPriority(parseInt(e.target.value))}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Tab') {
-                      e.preventDefault();
-                      focusNextInput();
-                    }
-                  }}
+                  
                   className="slider flex-1 lg:w-20"
                 />
               </div>
@@ -108,8 +83,7 @@ function TaskForm({ onSubmit, isLoading }) {
                   step="5"
                   value={estimatedTime}
                   onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
+                  
                   className="slider flex-1 lg:w-32"
                 />
               </div>
