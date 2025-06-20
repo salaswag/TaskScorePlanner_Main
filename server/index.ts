@@ -142,8 +142,9 @@ app.use((req, res, next) => {
   // Use PORT environment variable for production deployments (like Render)
   // or fallback to 5000 for development
   const port = process.env.PORT || 5000;
-  server.listen(port, "0.0.0.0", () => {
-    log(`serving on port ${port}`);
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0';
+  server.listen(port, host, () => {
+    log(`serving on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
   });
 })();
 
