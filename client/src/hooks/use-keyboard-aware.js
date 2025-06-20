@@ -16,8 +16,8 @@ export function useKeyboardAware() {
         const currentHeight = window.innerHeight;
         const heightDifference = initialHeight - currentHeight;
         
-        // Keyboard is likely visible if height decreased by more than 150px
-        const keyboardVisible = heightDifference > 150;
+        // Keyboard is likely visible if height decreased by more than 100px
+        const keyboardVisible = heightDifference > 100;
         
         setIsKeyboardVisible(keyboardVisible);
         setViewportHeight(currentHeight);

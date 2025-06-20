@@ -41,13 +41,14 @@ function TaskForm({ onSubmit, isLoading }) {
     <div 
       className="w-full flex justify-center transition-all duration-300 ease-in-out"
       style={{
-        transform: isKeyboardVisible ? 'translateY(-20px)' : 'translateY(0)',
-        marginBottom: isKeyboardVisible ? '20px' : '0'
+        transform: isKeyboardVisible ? 'translateY(-10px)' : 'translateY(0)',
+        marginBottom: isKeyboardVisible ? '10px' : '0',
+        minHeight: 'auto'
       }}
     >
       <form 
         onSubmit={handleSubmit} 
-        className={`w-full max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 backdrop-blur-sm bg-white/95 dark:bg-black/95 rounded-lg p-3 transition-all duration-300 ${
+        className={`w-full max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 transition-all duration-300 ${
           isKeyboardVisible ? 'shadow-xl border-blue-300 dark:border-blue-600' : ''
         }`}
       >
