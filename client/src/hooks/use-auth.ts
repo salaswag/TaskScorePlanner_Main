@@ -8,39 +8,6 @@ import {
 } from 'firebase/auth';
 import { useState, useEffect, useCallback } from 'react';
 
-// Detect Brave browser
-const isBrave = () => {
-  return (navigator.brave && navigator.brave.isBrave) || false;
-};
-
-// Check if storage is available (Brave can block this)
-const isStorageAvailable = (type: 'localStorage' | 'sessionStorage') => {
-  try {
-    const storage = window[type];
-    const x = '__storage_test__';
-    storage.setItem(x, x);
-    storage.removeItem(x);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
-// Safe storage operations with fallbacks for Brave
-const safeStorageOperation = (operation: () => void, fallback?: () => void) => {
-  try {
-    if (isBrave() && !isStorageAvailable('localStorage')) {
-      console.log('🦁 Brave browser detected - storage blocked, using fallback');
-      if (fallback) fallback();
-      return;
-    }
-    operation();
-  } catch (error) {
-    console.warn('Storage operation failed:', error);
-    if (fallback) fallback();
-  }
-};
-
 // Error message mapping for better user experience
 const getErrorMessage = (errorCode: string): string => {
   switch (errorCode) {
@@ -87,12 +54,6 @@ export function useAuth() {
     console.log('🔧 Setting up Firebase auth listener...');
     let previousUser: User | null = null;
 
-    // Check if Firebase auth is available (might be blocked in Brave)
-    if (!auth) {
-      console.log('🦁 Firebase auth not available - likely blocked by Brave Shields');
-      return;
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       // Detect any user change that requires data clearing
       if (previousUser && user) {
@@ -104,14 +65,12 @@ export function useAuth() {
           console.log(`Previous: ${previousUser.uid} (anonymous: ${previousUser.isAnonymous})`);
           console.log(`Current: ${user.uid} (anonymous: ${user.isAnonymous})`);
 
-          // Clear all cached data immediately with Brave compatibility
+          // Clear all cached data immediately
           if (typeof window !== 'undefined') {
-            safeStorageOperation(() => {
-              sessionStorage.removeItem('currentUser');
-              sessionStorage.removeItem('authToken');
-              localStorage.removeItem('user-tasks');
-              localStorage.removeItem('user-preferences');
-            });
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('user-tasks');
+            localStorage.removeItem('user-preferences');
 
             // Force task refresh for user changes
             if (typeof window !== 'undefined') {
@@ -147,30 +106,16 @@ export function useAuth() {
     setLoginError(null);
 
     try {
-      if (!auth) {
-        throw new Error('auth/service-unavailable');
-      }
-
       console.log('🔐 Attempting login for:', email);
-      if (isBrave()) {
-        console.log('🦁 Brave browser detected - using enhanced auth flow');
-      }
-      
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('✅ Login successful:', userCredential.user.email);
       return userCredential.user;
     } catch (error: any) {
       console.error('❌ Login failed:', error.code, '-', error.message);
       const errorCode = error.code || 'unknown';
-      
-      // Special handling for Brave-specific errors
-      if (isBrave() && (errorCode === 'auth/network-request-failed' || errorCode === 'auth/service-unavailable')) {
-        setLoginError('Brave browser detected. Please disable Brave Shields for this site or try a different browser.');
-      } else {
-        const friendlyMessage = getErrorMessage(errorCode);
-        console.log('🔄 Displaying error to user:', friendlyMessage);
-        setLoginError(friendlyMessage);
-      }
+      const friendlyMessage = getErrorMessage(errorCode);
+      console.log('🔄 Displaying error to user:', friendlyMessage);
+      setLoginError(friendlyMessage);
       throw error;
     } finally {
       setIsLoginLoading(false);
@@ -203,14 +148,12 @@ export function useAuth() {
       console.log('🔓 Starting logout process...');
       const previousUser = user; // Store current user before logout
 
-      // Clear session data immediately before signing out with Brave compatibility
+      // Clear session data immediately before signing out
       if (typeof window !== 'undefined') {
-        safeStorageOperation(() => {
-          sessionStorage.removeItem('currentUser');
-          sessionStorage.removeItem('authToken');
-          localStorage.removeItem('user-tasks');
-          localStorage.removeItem('user-preferences');
-        });
+        sessionStorage.removeItem('currentUser');
+        sessionStorage.removeItem('authToken');
+        localStorage.removeItem('user-tasks');
+        localStorage.removeItem('user-preferences');
       }
 
       await signOut(auth);
