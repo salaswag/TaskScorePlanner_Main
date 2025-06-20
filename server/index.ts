@@ -137,23 +137,32 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    // Serve static files from the client build directory
-    const clientDistPath = path.join(__dirname, '../client/dist');
-    console.log('Serving static files from:', clientDistPath);
-    app.use(express.static(clientDistPath));
+    // Serve static files with proper cache headers
+    app.use(express.static(path.join(__dirname, '../client/dist'), {
+      setHeaders: (res, path) => {
+        if (path.endsWith('.html')) {
+          // Don't cache HTML files
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        } else if (path.includes('/static/') || path.endsWith('.js') || path.endsWith('.css')) {
+          // Cache JS/CSS for 1 hour but allow revalidation
+          res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+        }
+      }
+    }));
 
     // Handle all other routes by serving the main HTML file
     app.get('*', (req, res) => {
-      const indexPath = path.join(clientDistPath, 'index.html');
+      const indexPath = path.join(path.join(__dirname, '../client/dist'), 'index.html');
       console.log('Serving index.html from:', indexPath);
       res.sendFile(indexPath);
     });
   }
 
-  // Use PORT environment variable for production deployments (like Render)
-  // or fallback to 5000 for development
-  const port = process.env.PORT || 5000;
-  server.listen(port, "0.0.0.0", () => {
+  const port = parseInt(process.env.PORT || "5000");
+
+  server.listen(port, '0.0.0.0', () => {
     log(`serving on port ${port}`);
   });
 })();
