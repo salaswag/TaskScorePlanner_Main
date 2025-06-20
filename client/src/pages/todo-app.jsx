@@ -12,18 +12,25 @@ import { DashboardView } from "@/components/dashboard-view";
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/use-auth";
-import { Moon, Sun, CheckSquare, GripVertical, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  CheckSquare,
+  GripVertical,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import UserMenu from '../components/user-menu';
-import { useKeyboardAware } from '@/hooks/use-keyboard-aware';
-import { useInputFocus } from '@/hooks/use-input-focus';
+import UserMenu from "../components/user-menu";
+import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
+import { useInputFocus } from "@/hooks/use-input-focus";
 
 export default function TodoApp() {
   const { user, login, register, logout, isLoading: authLoading } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [notification, setNotification] = useState(null);
   const { isKeyboardVisible } = useKeyboardAware();
@@ -37,7 +44,8 @@ export default function TodoApp() {
   const [activeTab, setActiveTab] = useState("tasks");
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
-  const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } = useTasks();
+  const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } =
+    useTasks();
   const { theme, setTheme } = useTheme();
 
   const handleCompleteTask = (task) => {
@@ -69,8 +77,14 @@ export default function TodoApp() {
   };
 
   // Filter tasks into main and later sections
-  const mainTasks = tasks && Array.isArray(tasks) ? tasks.filter((task) => !task.archived && !task.isLater) : [];
-  const laterTasks = tasks && Array.isArray(tasks) ? tasks.filter((task) => !task.archived && Boolean(task.isLater)) : [];
+  const mainTasks =
+    tasks && Array.isArray(tasks)
+      ? tasks.filter((task) => !task.archived && !task.isLater)
+      : [];
+  const laterTasks =
+    tasks && Array.isArray(tasks)
+      ? tasks.filter((task) => !task.archived && Boolean(task.isLater))
+      : [];
 
   // Calculate statistics
   const completedTasks = mainTasks.filter((task) => task.completed) || [];
@@ -101,7 +115,7 @@ export default function TodoApp() {
         completedAt: new Date().toISOString(),
       };
 
-      console.log('Completing task with data:', updatedTask);
+      console.log("Completing task with data:", updatedTask);
       updateTask.mutate(updatedTask);
 
       const hours = Math.floor(actualTime / 60);
@@ -127,18 +141,15 @@ export default function TodoApp() {
       completed: false,
       completedAt: null,
     };
-    console.log('Undoing completion with data:', undoTask);
+    console.log("Undoing completion with data:", undoTask);
     updateTask.mutate(undoTask);
     showNotification("Task completion undone", "success");
   };
 
   const handleDeleteTask = (task) => {
     deleteTask.mutate(task.id);
-    showNotification(
-      `Task "${task.title}" deleted`,
-      "success",
-      true,
-      () => handleUndoDelete(task),
+    showNotification(`Task "${task.title}" deleted`, "success", true, () =>
+      handleUndoDelete(task),
     );
   };
 
@@ -157,39 +168,39 @@ export default function TodoApp() {
   };
 
   const handleSaveEditedTask = (editedTask) => {
-    console.log('Saving edited task:', editedTask);
+    console.log("Saving edited task:", editedTask);
     updateTask.mutate(editedTask, {
       onSuccess: () => {
         showNotification(
           `Task "${editedTask.title}" updated successfully!`,
-          "success"
+          "success",
         );
       },
       onError: (error) => {
-        console.error('Update error:', error);
+        console.error("Update error:", error);
         showNotification(
           `Failed to update task "${editedTask.title}"`,
-          "error"
+          "error",
         );
-      }
+      },
     });
   };
 
   const handleUpdateTask = (taskData) => {
-    console.log('Updating task:', taskData);
+    console.log("Updating task:", taskData);
     const properTaskData = {
       id: taskData.id,
-      ...taskData
+      ...taskData,
     };
     updateTask.mutate(properTaskData);
   };
 
   const handleArchiveTask = async (task) => {
     try {
-      console.log('Archiving task:', task);
+      console.log("Archiving task:", task);
       await archiveTask.mutateAsync(task.id);
     } catch (error) {
-      console.error('Failed to archive task:', error);
+      console.error("Failed to archive task:", error);
     }
   };
 
@@ -206,11 +217,8 @@ export default function TodoApp() {
       },
       onError: (error) => {
         console.error("Archive error:", error);
-        showNotification(
-          `Failed to archive task "${task.title}"`,
-          "error"
-        );
-      }
+        showNotification(`Failed to archive task "${task.title}"`, "error");
+      },
     });
   };
 
@@ -222,29 +230,26 @@ export default function TodoApp() {
       completed: task.completed,
       actualTime: task.actualTime,
       distractionLevel: task.distractionLevel,
-      isLater: task.isLater
+      isLater: task.isLater,
     });
     showNotification("Task archive undone", "success");
   };
 
   const handleCreateTask = (taskData) => {
-    console.log('Creating task from form:', taskData);
+    console.log("Creating task from form:", taskData);
     createTask.mutate(taskData, {
       onSuccess: (result) => {
-        console.log('Task created successfully:', result);
-        const section = taskData.isLater ? 'Later Tasks' : 'Main Tasks';
+        console.log("Task created successfully:", result);
+        const section = taskData.isLater ? "Later Tasks" : "Main Tasks";
         showNotification(
           `Task "${taskData.title}" added to ${section}!`,
-          "success"
+          "success",
         );
       },
       onError: (error) => {
-        console.error('Task creation failed:', error);
-        showNotification(
-          `Failed to create task "${taskData.title}"`,
-          "error"
-        );
-      }
+        console.error("Task creation failed:", error);
+        showNotification(`Failed to create task "${taskData.title}"`, "error");
+      },
     });
   };
 
@@ -263,7 +268,10 @@ export default function TodoApp() {
       isLater: false,
     };
     updateTask.mutate(updatedTask);
-    showNotification(`Task "${task.title}" moved back to main tasks`, "success");
+    showNotification(
+      `Task "${task.title}" moved back to main tasks`,
+      "success",
+    );
   };
 
   // Add touch handling for swipe gestures
@@ -303,12 +311,12 @@ export default function TodoApp() {
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isHeaderVisible]);
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-white dark:bg-black"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -329,14 +337,16 @@ export default function TodoApp() {
       )}
 
       {/* Header */}
-      <header className={`bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-4 transition-all duration-300 ${
-        user && !user.isAnonymous && !isHeaderVisible ? 'hidden' : ''
-      }`}>
+      <header
+        className={`bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-4 transition-all duration-300 ${
+          user && !user.isAnonymous && !isHeaderVisible ? "hidden" : ""
+        }`}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <CheckSquare className="h-8 w-8 text-black dark:text-white" />
-              <h1 className="text-xl font-semibold text-black dark:text-white">
+              <CheckSquare className="h-6 w-6 sm:h-8 sm:w-8 text-black dark:text-white" />
+              <h1 className="text-base sm:text-xl font-semibold text-black dark:text-white">
                 Task Master Pro
               </h1>
             </div>
@@ -345,11 +355,17 @@ export default function TodoApp() {
             <div className="flex-1 flex justify-center">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid grid-cols-2">
-                  <TabsTrigger value="tasks" className="text-xs sm:text-sm px-2 sm:px-3">
+                  <TabsTrigger
+                    value="tasks"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
                     <span className="hidden sm:inline">Task Management</span>
                     <span className="sm:hidden">Tasks</span>
                   </TabsTrigger>
-                  <TabsTrigger value="dashboard" className="text-xs sm:text-sm px-2 sm:px-3">
+                  <TabsTrigger
+                    value="dashboard"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
                     <span className="hidden sm:inline">Time Tracking</span>
                     <span className="sm:hidden">Time</span>
                   </TabsTrigger>
@@ -389,9 +405,15 @@ export default function TodoApp() {
       </header>
 
       {/* Main Content */}
-      <div className={`${user && !user.isAnonymous && !isHeaderVisible ? 'h-screen' : 'h-[calc(100vh-125px)]'} overflow-y-auto transition-all duration-300`}>
+      <div
+        className={`${user && !user.isAnonymous && !isHeaderVisible ? "h-screen" : "h-[calc(100vh-125px)]"} overflow-y-auto transition-all duration-300`}
+      >
         <main className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
                 {/* Task Form - Desktop only */}
