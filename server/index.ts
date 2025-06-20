@@ -4,6 +4,7 @@ import { EventEmitter } from "events";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { MongoStorage } from "./mongodb-storage.js";
+import path from 'path'; // Import the path module
 
 // Simple in-memory session store that persists across requests
 class MemorySessionStore extends EventEmitter {
@@ -136,7 +137,17 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    // Serve static files from the client build directory
+    const clientDistPath = path.join(__dirname, '../client/dist');
+    console.log('Serving static files from:', clientDistPath);
+    app.use(express.static(clientDistPath));
+
+    // Handle all other routes by serving the main HTML file
+    app.get('*', (req, res) => {
+      const indexPath = path.join(clientDistPath, 'index.html');
+      console.log('Serving index.html from:', indexPath);
+      res.sendFile(indexPath);
+    });
   }
 
   // Use PORT environment variable for production deployments (like Render)
@@ -146,4 +157,3 @@ app.use((req, res, next) => {
     log(`serving on port ${port}`);
   });
 })();
-
