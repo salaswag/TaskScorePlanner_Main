@@ -336,7 +336,7 @@ export default function TodoApp() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <CheckSquare className="h-8 w-8 text-black dark:text-white" />
-              <h1 className="text-xl font-semibold text-black dark:text-white">
+              <h1 className="text-lg sm:text-xl font-semibold text-black dark:text-white">
                 Task Master Pro
               </h1>
             </div>
