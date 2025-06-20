@@ -27,8 +27,6 @@ export default function TodoApp() {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [notification, setNotification] = useState(null);
   const { isKeyboardVisible } = useKeyboardAware();
-
-  const { isKeyboardVisible } = useKeyboardAware();
   const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
 
   const [currentTask, setCurrentTask] = useState(null);
