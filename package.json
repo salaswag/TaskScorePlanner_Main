@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx server/index.ts",
     "build": "npm run build:client && npm run build:server",
-    "build:client": "cd client && npm install && npm run build",
+    "build:client": "cd client && npm install && vite build", // Explicitly use Vite
     "build:server": "tsc server/index.ts --outDir dist --target es2020 --module commonjs --esModuleInterop --allowSyntheticDefaultImports --resolveJsonModule",
     "render-build": "npm install && npm run build",
     "start": "node dist/index.js"
