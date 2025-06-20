@@ -3,7 +3,7 @@ import App from "./App";
 import "./index.css";
 
 // Register service worker for PWA
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !window.location.hostname.includes('brave')) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
@@ -11,6 +11,7 @@ if ('serviceWorker' in navigator) {
       })
       .catch((registrationError) => {
         console.log('SW registration failed: ', registrationError);
+        // Continue without service worker if registration fails
       });
   });
 }

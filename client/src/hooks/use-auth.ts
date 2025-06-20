@@ -45,6 +45,21 @@ const getErrorMessage = (errorCode: string): string => {
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check if localStorage is available (Brave might block it)
+  const isStorageAvailable = (() => {
+    try {
+      const test = 'test';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      return true;
+    } catch(e) {
+      console.warn('localStorage not available, likely blocked by Brave');
+      return false;
+    }
+  })();
+
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const [isSignupLoading, setIsSignupLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
