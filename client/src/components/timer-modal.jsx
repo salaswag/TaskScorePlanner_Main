@@ -88,13 +88,13 @@ export default function TimerModal({ isOpen, task, onClose, onConfirm }) {
               <label className="block text-sm font-medium text-black dark:text-white mb-2">
                 Distraction Level: {distractionLevel}/5
               </label>
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 {[1, 2, 3, 4, 5].map((level) => (
                   <button
                     key={level}
                     type="button"
                     onClick={() => setDistractionLevel(level)}
-                    className={`px-3 py-2 text-xs rounded-lg border transition-all ${
+                    className={`px-4 py-2 text-sm rounded-lg border transition-all flex-1 sm:flex-none sm:min-w-[50px] ${
                       distractionLevel === level
                         ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
