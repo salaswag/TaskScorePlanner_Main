@@ -68,6 +68,21 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Add cache control headers to prevent browser caching issues
+app.use((req, res, next) => {
+  // For HTML files, prevent caching
+  if (req.path.endsWith('.html') || req.path === '/') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  // For static assets, allow short-term caching but enable revalidation
+  else if (req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+  }
+  next();
+});
+
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
