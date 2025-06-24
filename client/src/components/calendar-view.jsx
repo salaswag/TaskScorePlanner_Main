@@ -23,15 +23,15 @@ const SHALLOW_WORK_OPTIONS = [
   { value: 'no-shallow-work', label: 'No shallow work', color: 'bg-slate-500', lightColor: 'bg-slate-100 dark:bg-slate-900/30' }
 ];
 
-// Add "None" options
+// Add "None" options at the bottom
 const DEEP_WORK_OPTIONS_WITH_NONE = [
-  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30' },
-  ...DEEP_WORK_OPTIONS
+  ...DEEP_WORK_OPTIONS,
+  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30' }
 ];
 
 const SHALLOW_WORK_OPTIONS_WITH_NONE = [
-  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30' },
-  ...SHALLOW_WORK_OPTIONS
+  ...SHALLOW_WORK_OPTIONS,
+  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30' }
 ];
 
 const getHoursColorClass = (timeInMinutes) => {
@@ -429,7 +429,7 @@ export function CalendarView() {
 
       {/* Time Edit Modal */}
       <Dialog open={showTimeModal} onOpenChange={setShowTimeModal}>
-        <DialogContent className="sm:max-w-6xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-7xl max-w-[95vw] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <Clock className="h-5 w-5" />
