@@ -23,6 +23,25 @@ const SHALLOW_WORK_OPTIONS = [
   { value: 'lots-shallow-not-needed', label: 'A lot of shallow work not needed', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30' }
 ];
 
+// Add "None" options
+const DEEP_WORK_OPTIONS_WITH_NONE = [
+  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30' },
+  ...DEEP_WORK_OPTIONS
+];
+
+const SHALLOW_WORK_OPTIONS_WITH_NONE = [
+  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30' },
+  ...SHALLOW_WORK_OPTIONS
+];
+
+const getHoursColorClass = (timeInMinutes) => {
+  const hours = timeInMinutes / 60;
+  if (hours >= 8) return 'bg-green-100 dark:bg-green-900/30 border-l-4 border-green-500';
+  if (hours >= 6) return 'bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500';
+  if (hours > 0) return 'bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500';
+  return '';
+};
+
 export function CalendarView() {
   const { user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -62,8 +81,8 @@ export function CalendarView() {
             // Old format - just time
             formattedData[date] = {
               timeInMinutes: data[date],
-              deepWork: 'some-deep-work',
-              shallowWork: 'some-shallow-needed'
+              deepWork: 'none',
+              shallowWork: 'none'
             };
           } else {
             // New format - already has work types
@@ -107,14 +126,9 @@ export function CalendarView() {
 
   const getWorkTypeColorClasses = (timeEntry) => {
     if (!timeEntry || !timeEntry.timeInMinutes || timeEntry.timeInMinutes === 0) return '';
-
-    const deepWorkOption = DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry.deepWork);
-    const shallowWorkOption = SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry.shallowWork);
     
-    // Primary color from deep work, with accent from shallow work
-    const primaryColor = deepWorkOption ? deepWorkOption.lightColor : 'bg-gray-100 dark:bg-gray-900/30';
-    
-    return `${primaryColor} border-l-4 ${shallowWorkOption ? shallowWorkOption.color.replace('bg-', 'border-') : 'border-gray-400'}`;
+    // Use hours-based color coding instead of work type colors
+    return getHoursColorClass(timeEntry.timeInMinutes);
   };
 
   const handleTimeEdit = (date) => {
@@ -133,8 +147,8 @@ export function CalendarView() {
     setSelectedDate(date);
     setSliderTime(existingEntry?.timeInMinutes || 0);
     setWorkType({
-      deepWork: existingEntry?.deepWork || 'some-deep-work',
-      shallowWork: existingEntry?.shallowWork || 'some-shallow-needed'
+      deepWork: existingEntry?.deepWork || 'none',
+      shallowWork: existingEntry?.shallowWork || 'none'
     });
     setShowTimeModal(true);
   };
@@ -195,8 +209,8 @@ export function CalendarView() {
     setSelectedDate(null);
     setSliderTime(0);
     setWorkType({
-      deepWork: 'some-deep-work',
-      shallowWork: 'some-shallow-needed'
+      deepWork: 'none',
+      shallowWork: 'none'
     });
   };
 
@@ -359,22 +373,22 @@ export function CalendarView() {
                         
                         {/* Work Type Badges */}
                         <div className="flex flex-col gap-1 w-full">
-                          {timeEntry?.deepWork && (
+                          {timeEntry?.deepWork && timeEntry.deepWork !== 'none' && (
                             <Badge 
                               variant="secondary" 
-                              className={`text-xs px-1 py-0.5 w-full justify-center ${DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry.deepWork)?.lightColor || 'bg-gray-100'}`}
-                              title={DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry.deepWork)?.label}
+                              className={`text-xs px-1 py-0.5 w-full justify-center ${DEEP_WORK_OPTIONS_WITH_NONE.find(opt => opt.value === timeEntry.deepWork)?.lightColor || 'bg-gray-100'}`}
+                              title={DEEP_WORK_OPTIONS_WITH_NONE.find(opt => opt.value === timeEntry.deepWork)?.label}
                             >
-                              {DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry.deepWork)?.label.split(' ').slice(0, 2).join(' ')}
+                              {DEEP_WORK_OPTIONS_WITH_NONE.find(opt => opt.value === timeEntry.deepWork)?.label.split(' ').slice(0, 2).join(' ')}
                             </Badge>
                           )}
-                          {timeEntry?.shallowWork && (
+                          {timeEntry?.shallowWork && timeEntry.shallowWork !== 'none' && (
                             <Badge 
                               variant="secondary" 
-                              className={`text-xs px-1 py-0.5 w-full justify-center ${SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry.shallowWork)?.lightColor || 'bg-gray-100'}`}
-                              title={SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry.shallowWork)?.label}
+                              className={`text-xs px-1 py-0.5 w-full justify-center ${SHALLOW_WORK_OPTIONS_WITH_NONE.find(opt => opt.value === timeEntry.shallowWork)?.lightColor || 'bg-gray-100'}`}
+                              title={SHALLOW_WORK_OPTIONS_WITH_NONE.find(opt => opt.value === timeEntry.shallowWork)?.label}
                             >
-                              {SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry.shallowWork)?.label.split(' ').slice(0, 2).join(' ')}
+                              {SHALLOW_WORK_OPTIONS_WITH_NONE.find(opt => opt.value === timeEntry.shallowWork)?.label.split(' ').slice(0, 2).join(' ')}
                             </Badge>
                           )}
                         </div>
@@ -412,7 +426,7 @@ export function CalendarView() {
 
       {/* Time Edit Modal */}
       <Dialog open={showTimeModal} onOpenChange={setShowTimeModal}>
-        <DialogContent className="sm:max-w-4xl">
+        <DialogContent className="sm:max-w-6xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <Clock className="h-5 w-5" />
@@ -447,17 +461,17 @@ export function CalendarView() {
             </div>
 
             {/* Work Type Selectors - Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {/* Deep Work Selector */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Deep Work Level
                 </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {DEEP_WORK_OPTIONS.map((option) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2">
+                  {DEEP_WORK_OPTIONS_WITH_NONE.map((option) => (
                     <div
                       key={option.value}
-                      className={`cursor-pointer rounded-lg border-2 p-3 transition-all hover:shadow-md ${
+                      className={`cursor-pointer rounded-lg border-2 p-2.5 transition-all hover:shadow-md ${
                         workType.deepWork === option.value
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -465,7 +479,7 @@ export function CalendarView() {
                       onClick={() => setWorkType(prev => ({ ...prev, deepWork: option.value }))}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`w-4 h-4 rounded ${option.color}`}></div>
+                        <div className={`w-3 h-3 rounded ${option.color}`}></div>
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           {option.label}
                         </span>
@@ -483,11 +497,11 @@ export function CalendarView() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Shallow Work Level
                 </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {SHALLOW_WORK_OPTIONS.map((option) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2">
+                  {SHALLOW_WORK_OPTIONS_WITH_NONE.map((option) => (
                     <div
                       key={option.value}
-                      className={`cursor-pointer rounded-lg border-2 p-3 transition-all hover:shadow-md ${
+                      className={`cursor-pointer rounded-lg border-2 p-2.5 transition-all hover:shadow-md ${
                         workType.shallowWork === option.value
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -495,7 +509,7 @@ export function CalendarView() {
                       onClick={() => setWorkType(prev => ({ ...prev, shallowWork: option.value }))}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`w-4 h-4 rounded ${option.color}`}></div>
+                        <div className={`w-3 h-3 rounded ${option.color}`}></div>
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           {option.label}
                         </span>
