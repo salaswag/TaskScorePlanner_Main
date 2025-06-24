@@ -7,6 +7,21 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSam
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/use-auth';
 
+const DEEP_WORK_OPTIONS = [
+  { value: 'lots-deep-work', label: 'Lots of deep work', color: 'bg-emerald-500', lightColor: 'bg-emerald-100 dark:bg-emerald-900/30' },
+  { value: 'some-deep-work', label: 'Some deep work', color: 'bg-green-500', lightColor: 'bg-green-100 dark:bg-green-900/30' },
+  { value: 'little-deep-work', label: 'Very little deep work', color: 'bg-yellow-500', lightColor: 'bg-yellow-100 dark:bg-yellow-900/30' },
+  { value: 'no-deep-work', label: 'No deep work', color: 'bg-gray-500', lightColor: 'bg-gray-100 dark:bg-gray-900/30' }
+];
+
+const SHALLOW_WORK_OPTIONS = [
+  { value: 'lots-shallow-needed', label: 'Lots of shallow work but needed', color: 'bg-blue-500', lightColor: 'bg-blue-100 dark:bg-blue-900/30' },
+  { value: 'some-shallow-needed', label: 'Some shallow work but needed', color: 'bg-cyan-500', lightColor: 'bg-cyan-100 dark:bg-cyan-900/30' },
+  { value: 'no-shallow-work', label: 'No shallow work', color: 'bg-slate-500', lightColor: 'bg-slate-100 dark:bg-slate-900/30' },
+  { value: 'some-shallow-not-needed', label: 'Some shallow work kinda not needed', color: 'bg-orange-500', lightColor: 'bg-orange-100 dark:bg-orange-900/30' },
+  { value: 'lots-shallow-not-needed', label: 'A lot of shallow work not needed', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30' }
+];
+
 export function CalendarView() {
   const { user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -15,6 +30,10 @@ export function CalendarView() {
   const [sliderTime, setSliderTime] = useState(0);
   const [timeData, setTimeData] = useState({}); // Store manual time entries
   const [isLoading, setIsLoading] = useState(false);
+  const [workType, setWorkType] = useState({
+    deepWork: 'some-deep-work',
+    shallowWork: 'some-shallow-needed'
+  });
   
   const isAnonymous = !user || user.isAnonymous;
 
@@ -35,7 +54,22 @@ export function CalendarView() {
       const response = await apiRequest('/api/time-entries');
       if (response.ok) {
         const data = await response.json();
-        setTimeData(data);
+        // Convert old format to new format if needed
+        const formattedData = {};
+        Object.keys(data).forEach(date => {
+          if (typeof data[date] === 'number') {
+            // Old format - just time
+            formattedData[date] = {
+              timeInMinutes: data[date],
+              deepWork: 'some-deep-work',
+              shallowWork: 'some-shallow-needed'
+            };
+          } else {
+            // New format - already has work types
+            formattedData[date] = data[date];
+          }
+        });
+        setTimeData(formattedData);
       } else {
         console.error('Failed to fetch time entries:', response.status);
         setTimeData({});
@@ -70,41 +104,16 @@ export function CalendarView() {
     }
   };
 
-  const getTimeColorClasses = (timeInMinutes) => {
-    if (!timeInMinutes || timeInMinutes === 0) return '';
+  const getWorkTypeColorClasses = (timeEntry) => {
+    if (!timeEntry || !timeEntry.timeInMinutes || timeEntry.timeInMinutes === 0) return '';
 
-    const hours = timeInMinutes / 60;
-
-    if (hours >= 8) {
-      // Green for 8+ hours
-      return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200';
-    } else if (hours >= 7) {
-      // Light green for 7+ hours
-      return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300';
-    } else if (hours <= 1) {
-      // Red for 1 hour or less
-      return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
-    } else {
-      // Scale from red to green (2-6 hours)
-      const ratio = (hours - 1) / 6; // 0 to 1 scale for 2-6 hours
-      if (ratio < 0.2) {
-        // Red-ish
-        return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
-      }
-      else if (ratio < 0.4) {
-        // Orange-ish
-        return 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 text-orange-800 dark:text-orange-200';
-      } else if (ratio < 0.6) {
-        // Yellow-ish
-        return 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200';
-      } else if (ratio < 0.8) {
-        // Lime-ish
-        return 'bg-lime-100 dark:bg-lime-900/30 border-lime-300 dark:border-lime-700 text-lime-800 dark:text-lime-200';
-      } else {
-        // Light lime approaching green
-        return 'bg-lime-50 dark:bg-lime-900/20 border-lime-200 dark:border-lime-800 text-lime-700 dark:text-lime-300';
-      }
-    }
+    const deepWorkOption = DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry.deepWork);
+    const shallowWorkOption = SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry.shallowWork);
+    
+    // Primary color from deep work, with accent from shallow work
+    const primaryColor = deepWorkOption ? deepWorkOption.lightColor : 'bg-gray-100 dark:bg-gray-900/30';
+    
+    return `${primaryColor} border-l-4 ${shallowWorkOption ? shallowWorkOption.color.replace('bg-', 'border-') : 'border-gray-400'}`;
   };
 
   const handleTimeEdit = (date) => {
@@ -119,8 +128,13 @@ export function CalendarView() {
     }
 
     const dateKey = format(date, 'yyyy-MM-dd');
+    const existingEntry = timeData[dateKey];
     setSelectedDate(date);
-    setSliderTime(timeData[dateKey] || 0);
+    setSliderTime(existingEntry?.timeInMinutes || 0);
+    setWorkType({
+      deepWork: existingEntry?.deepWork || 'some-deep-work',
+      shallowWork: existingEntry?.shallowWork || 'some-shallow-needed'
+    });
     setShowTimeModal(true);
   };
 
@@ -143,7 +157,9 @@ export function CalendarView() {
           },
           body: JSON.stringify({
             date: dateKey,
-            timeInMinutes: sliderTime
+            timeInMinutes: sliderTime,
+            deepWork: workType.deepWork,
+            shallowWork: workType.shallowWork
           })
         });
 
@@ -151,7 +167,11 @@ export function CalendarView() {
           // Update local state
           setTimeData(prev => ({
             ...prev,
-            [dateKey]: sliderTime
+            [dateKey]: {
+              timeInMinutes: sliderTime,
+              deepWork: workType.deepWork,
+              shallowWork: workType.shallowWork
+            }
           }));
 
           console.log('Time entry saved successfully to MongoDB');
@@ -173,6 +193,10 @@ export function CalendarView() {
     setShowTimeModal(false);
     setSelectedDate(null);
     setSliderTime(0);
+    setWorkType({
+      deepWork: 'some-deep-work',
+      shallowWork: 'some-shallow-needed'
+    });
   };
 
   // Generate calendar days
@@ -276,7 +300,8 @@ export function CalendarView() {
           <div className="grid grid-cols-7">
             {calendarDays.map((day, index) => {
               const dateKey = format(day, 'yyyy-MM-dd');
-              const timeSpent = timeData[dateKey] || 0;
+              const timeEntry = timeData[dateKey];
+              const timeSpent = timeEntry?.timeInMinutes || 0;
               const isCurrentMonth = isSameMonth(day, currentMonth);
               const isToday = isSameDay(day, new Date());
               const isFuture = isAfter(day, new Date());
@@ -289,11 +314,11 @@ export function CalendarView() {
                   ${!isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30 text-gray-400' : ''}
                   ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
                   ${isFuture ? 'opacity-50' : ''}
-                  ${isCurrentMonth && !isFuture && timeSpent > 0 ? getTimeColorClasses(timeSpent) : ''}
+                  ${isCurrentMonth && !isFuture && timeSpent > 0 ? getWorkTypeColorClasses(timeEntry) : ''}
                   ${isCurrentMonth && !isFuture && timeSpent === 0 ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800' : ''}
                 `}
                   onClick={() => !isFuture && isCurrentMonth && !isAnonymous && handleTimeEdit(day)}
-                  title={isAnonymous ? "Login required to track time" : (!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked - Click to edit` : "Click to add time") : "")}
+                  title={isAnonymous ? "Login required to track time" : (!isFuture && isCurrentMonth ? (timeSpent > 0 ? `${formatTime(timeSpent)} worked\nDeep work: ${DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry?.deepWork)?.label || 'Some deep work'}\nShallow work: ${SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry?.shallowWork)?.label || 'Some shallow work but needed'}\nClick to edit` : "Click to add time") : "")}
                 >
                   <div className="flex flex-col h-full relative z-10">
                     {/* Date Number */}
@@ -403,6 +428,55 @@ export function CalendarView() {
                   <span>6h</span>
                   <span>9h</span>
                   <span>12h</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Work Type Selectors */}
+            <div className="space-y-4">
+              {/* Deep Work Selector */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Deep Work Level
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {DEEP_WORK_OPTIONS.map((option) => (
+                    <label key={option.value} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg">
+                      <input
+                        type="radio"
+                        name="deepWork"
+                        value={option.value}
+                        checked={workType.deepWork === option.value}
+                        onChange={(e) => setWorkType(prev => ({ ...prev, deepWork: e.target.value }))}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <div className={`w-4 h-4 rounded ${option.color}`}></div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Shallow Work Selector */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Shallow Work Level
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {SHALLOW_WORK_OPTIONS.map((option) => (
+                    <label key={option.value} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg">
+                      <input
+                        type="radio"
+                        name="shallowWork"
+                        value={option.value}
+                        checked={workType.shallowWork === option.value}
+                        onChange={(e) => setWorkType(prev => ({ ...prev, shallowWork: e.target.value }))}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <div className={`w-4 h-4 rounded ${option.color}`}></div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{option.label}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </div>

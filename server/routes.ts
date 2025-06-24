@@ -479,7 +479,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert to date-indexed object for easier frontend usage
       const timeData = {};
       timeEntries.forEach(entry => {
-        timeData[entry.date] = entry.timeInMinutes;
+        timeData[entry.date] = {
+          timeInMinutes: entry.timeInMinutes,
+          deepWork: entry.deepWork || 'some-deep-work',
+          shallowWork: entry.shallowWork || 'some-shallow-needed'
+        };
       });
       
       console.log("📅 Time entries for user", userId, ":", Object.keys(timeData).length, "entries");
@@ -493,7 +497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update/create time entry
   app.post("/api/time-entries", async (req, res) => {
     try {
-      const { date, timeInMinutes } = req.body;
+      const { date, timeInMinutes, deepWork, shallowWork } = req.body;
       const userId = req.user?.uid || 'anonymous';
       const isAnonymous = !req.user || req.user.isAnonymous;
       
@@ -514,7 +518,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Time entries require MongoDB" });
       }
       
-      const timeEntry = await mongoStorage.updateTimeEntry(date, timeInMinutes, userId);
+      const timeEntry = await mongoStorage.updateTimeEntry(
+        date, 
+        timeInMinutes, 
+        userId, 
+        deepWork || 'some-deep-work', 
+        shallowWork || 'some-shallow-needed'
+      );
       res.json(timeEntry);
     } catch (error) {
       console.error("Error updating time entry:", error);

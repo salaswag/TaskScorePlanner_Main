@@ -600,42 +600,25 @@ export class MongoStorage {
     }
   }
 
-  async updateTimeEntry(date, timeInMinutes, userId) {
+  async updateTimeEntry(date, timeInMinutes, userId, deepWork = 'some-deep-work', shallowWork = 'some-shallow-needed') {
     try {
-      console.log('Updating time entry for date:', date, 'with time:', timeInMinutes, 'for user:', userId);
+      const timeEntry = {
+        userId,
+        date,
+        timeInMinutes,
+        deepWork,
+        shallowWork,
+        updatedAt: new Date()
+      };
 
-      const existingEntry = await this.timeEntriesCollection.findOne({ date, userId });
+      const result = await this.timeEntriesCollection.updateOne(
+        { userId, date },
+        { $set: timeEntry },
+        { upsert: true }
+      );
 
-      if (existingEntry) {
-        // Update existing entry
-        const result = await this.timeEntriesCollection.updateOne(
-          { date, userId },
-          { 
-            $set: { 
-              timeInMinutes,
-              updatedAt: new Date()
-            }
-          }
-        );
-
-        if (result.modifiedCount > 0) {
-          console.log('Time entry updated successfully');
-          return await this.timeEntriesCollection.findOne({ date, userId });
-        }
-      } else {
-        // Create new entry
-        const entry = {
-          date,
-          timeInMinutes,
-          userId,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-
-        const result = await this.timeEntriesCollection.insertOne(entry);
-        console.log('Time entry created successfully:', result.insertedId);
-        return { id: result.insertedId, ...entry };
-      }
+      console.log(`Time entry updated for user ${userId} on ${date}: ${timeInMinutes} minutes, deep work: ${deepWork}, shallow work: ${shallowWork}`);
+      return timeEntry;
     } catch (error) {
       console.error('Error updating time entry:', error);
       throw error;
