@@ -138,7 +138,7 @@ export default function TaskEditModal({
             </div>
           </div>
 
-          <div className="flex space-x-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex space-x-3 pt-8 border-t border-gray-100 dark:border-gray-800">
             <Button onClick={handleClose} variant="outline" className="flex-1">
               Cancel
             </Button>
