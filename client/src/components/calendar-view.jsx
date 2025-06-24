@@ -34,15 +34,41 @@ const SHALLOW_WORK_OPTIONS_WITH_NONE = [
   { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30', borderColor: 'border-gray-400' }
 ];
 
-const getHoursColorClass = (timeInMinutes) => {
+const getTimeColorClasses = (timeInMinutes) => {
+  if (!timeInMinutes || timeInMinutes === 0) return '';
+
   const hours = timeInMinutes / 60;
-  if (hours >= 7.5) return 'bg-green-100 dark:bg-green-900/30 border-l-4 border-green-600';
-  if (hours >= 6.5) return 'bg-green-50 dark:bg-green-800/20 border-l-4 border-green-400';
-  if (hours >= 6) return 'bg-lime-50 dark:bg-lime-800/20 border-l-4 border-lime-400';
-  if (hours >= 4) return 'bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500';
-  if (hours >= 2) return 'bg-orange-100 dark:bg-orange-900/30 border-l-4 border-orange-500';
-  if (hours > 0) return 'bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500';
-  return '';
+
+  if (hours >= 8) {
+    // Green for 8+ hours
+    return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200';
+  } else if (hours >= 7) {
+    // Light green for 7+ hours
+    return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300';
+  } else if (hours <= 1) {
+    // Red for 1 hour or less
+    return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
+  } else {
+    // Scale from red to green (2-6 hours)
+    const ratio = (hours - 1) / 6; // 0 to 1 scale for 2-6 hours
+    if (ratio < 0.2) {
+      // Red-ish
+      return 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200';
+    }
+    else if (ratio < 0.4) {
+      // Orange-ish
+      return 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 text-orange-800 dark:text-orange-200';
+    } else if (ratio < 0.6) {
+      // Yellow-ish
+      return 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200';
+    } else if (ratio < 0.8) {
+      // Lime-ish
+      return 'bg-lime-100 dark:bg-lime-900/30 border-lime-300 dark:border-lime-700 text-lime-800 dark:text-lime-200';
+    } else {
+      // Light lime approaching green
+      return 'bg-lime-50 dark:bg-lime-900/20 border-lime-200 dark:border-lime-800 text-lime-700 dark:text-lime-300';
+    }
+  }
 };
 
 export function CalendarView() {
@@ -131,7 +157,7 @@ export function CalendarView() {
     if (!timeEntry || !timeEntry.timeInMinutes || timeEntry.timeInMinutes === 0) return '';
     
     // Combine hours-based background with work type border colors
-    const hoursClass = getHoursColorClass(timeEntry.timeInMinutes);
+    const hoursClass = getTimeColorClasses(timeEntry.timeInMinutes);
     
     // Add work type border color if available
     let borderClass = '';
