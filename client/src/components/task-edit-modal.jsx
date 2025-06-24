@@ -72,7 +72,7 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Edit Task</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6 px-6 pb-8"></div>
+        <div className="space-y-6 px-6 pb-8">
           {/* Task Input */}
           <div>
             <Input
