@@ -69,10 +69,10 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
           isKeyboardVisible ? 'translate-y-[-10vh]' : ''
         }`}
       >
-        <DialogHeader>
+        <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Edit Task</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6 p-4">
+        <div className="space-y-6 px-6 pb-6">
           {/* Task Input */}
           <div>
             <Input
@@ -85,13 +85,13 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
           </div>
 
           {/* Priority and Time Controls */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Priority Slider */}
-            <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-2">
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-black dark:text-white">
                 Priority: {priority}
               </label>
-              <div className="relative">
+              <div className="relative px-2">
                 <input
                   type="range"
                   min="1"
@@ -100,7 +100,7 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
                   onChange={(e) => setPriority(parseInt(e.target.value))}
                   className="slider w-full"
                 />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2 px-1">
                   <span>Low (1)</span>
                   <span>High (10)</span>
                 </div>
@@ -108,11 +108,11 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
             </div>
 
             {/* Time Slider */}
-            <div>
-              <label className="block text-sm font-medium text-black dark:text-white mb-2">
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-black dark:text-white">
                 Time: {formatTime(estimatedTime)}
               </label>
-              <div className="relative">
+              <div className="relative px-2">
                 <input
                   type="range"
                   min="5"
@@ -122,7 +122,7 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
                   onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
                   className="slider w-full"
                 />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2 px-1">
                   <span>5 min</span>
                   <span>3 hours</span>
                 </div>
@@ -130,7 +130,7 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
             </div>
           </div>
 
-          <div className="flex space-x-3 pt-4">
+          <div className="flex space-x-3 pt-6 border-t border-gray-100 dark:border-gray-800">
             <Button onClick={handleClose} variant="outline" className="flex-1">
               Cancel
             </Button>
