@@ -11,7 +11,13 @@ import { Save } from "lucide-react";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
 
-export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading }) {
+export default function TaskEditModal({
+  task,
+  isOpen,
+  onClose,
+  onSave,
+  isLoading,
+}) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
@@ -40,7 +46,7 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
         });
         handleClose();
       } catch (error) {
-        console.error('Save failed:', error);
+        console.error("Save failed:", error);
       } finally {
         setIsSaving(false);
       }
@@ -64,13 +70,15 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         className={`w-[90vw] max-w-md mx-auto max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-0 transition-all duration-300 ${
-          isKeyboardVisible ? 'translate-y-[-10vh]' : ''
+          isKeyboardVisible ? "translate-y-[-10vh]" : ""
         }`}
       >
         <DialogHeader className="px-6 pt-6 pb-2">
-          <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Edit Task</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Edit Task
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-6 px-6 pb-8">
           {/* Task Input */}
@@ -134,12 +142,18 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
             <Button onClick={handleClose} variant="outline" className="flex-1">
               Cancel
             </Button>
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               className="flex-1 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-200"
-              disabled={!title.trim() || priority < 1 || priority > 10 || estimatedTime <= 0 || isSaving}
+              disabled={
+                !title.trim() ||
+                priority < 1 ||
+                priority > 10 ||
+                estimatedTime <= 0 ||
+                isSaving
+              }
             >
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
