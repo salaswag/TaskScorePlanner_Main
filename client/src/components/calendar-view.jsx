@@ -9,29 +9,29 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 
 const DEEP_WORK_OPTIONS = [
-  { value: 'lots-deep-work', label: 'Lots of deep work', color: 'bg-green-600', lightColor: 'bg-green-100 dark:bg-green-900/30' },
-  { value: 'some-deep-work', label: 'Some deep work', color: 'bg-green-500', lightColor: 'bg-green-50 dark:bg-green-800/30' },
-  { value: 'little-deep-work', label: 'Very little deep work', color: 'bg-yellow-500', lightColor: 'bg-yellow-100 dark:bg-yellow-900/30' },
-  { value: 'no-deep-work', label: 'No deep work', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30' }
+  { value: 'lots-deep-work', label: 'Lots of deep work', color: 'bg-green-600', lightColor: 'bg-green-100 dark:bg-green-900/30', borderColor: 'border-green-600' },
+  { value: 'some-deep-work', label: 'Some deep work', color: 'bg-green-400', lightColor: 'bg-green-50 dark:bg-green-800/30', borderColor: 'border-green-400' },
+  { value: 'little-deep-work', label: 'Very little deep work', color: 'bg-yellow-500', lightColor: 'bg-yellow-100 dark:bg-yellow-900/30', borderColor: 'border-yellow-500' },
+  { value: 'no-deep-work', label: 'No deep work', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30', borderColor: 'border-red-500' }
 ];
 
 const SHALLOW_WORK_OPTIONS = [
-  { value: 'lots-shallow-needed', label: 'Lots of shallow work but needed', color: 'bg-green-600', lightColor: 'bg-green-100 dark:bg-green-900/30' },
-  { value: 'some-shallow-needed', label: 'Some shallow work but needed', color: 'bg-green-500', lightColor: 'bg-green-50 dark:bg-green-800/30' },
-  { value: 'some-shallow-not-needed', label: 'Some shallow work kinda not needed', color: 'bg-yellow-500', lightColor: 'bg-yellow-100 dark:bg-yellow-900/30' },
-  { value: 'lots-shallow-not-needed', label: 'A lot of shallow work not needed', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30' },
-  { value: 'no-shallow-work', label: 'No shallow work', color: 'bg-slate-500', lightColor: 'bg-slate-100 dark:bg-slate-900/30' }
+  { value: 'lots-shallow-needed', label: 'Lots of shallow work but needed', color: 'bg-green-600', lightColor: 'bg-green-100 dark:bg-green-900/30', borderColor: 'border-green-600' },
+  { value: 'some-shallow-needed', label: 'Some shallow work but needed', color: 'bg-green-400', lightColor: 'bg-green-50 dark:bg-green-800/30', borderColor: 'border-green-400' },
+  { value: 'some-shallow-not-needed', label: 'Some shallow work kinda not needed', color: 'bg-yellow-500', lightColor: 'bg-yellow-100 dark:bg-yellow-900/30', borderColor: 'border-yellow-500' },
+  { value: 'lots-shallow-not-needed', label: 'A lot of shallow work not needed', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30', borderColor: 'border-red-500' },
+  { value: 'no-shallow-work', label: 'No shallow work', color: 'bg-slate-500', lightColor: 'bg-slate-100 dark:bg-slate-900/30', borderColor: 'border-slate-500' }
 ];
 
 // Add "None" options at the bottom
 const DEEP_WORK_OPTIONS_WITH_NONE = [
   ...DEEP_WORK_OPTIONS,
-  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30' }
+  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30', borderColor: 'border-gray-400' }
 ];
 
 const SHALLOW_WORK_OPTIONS_WITH_NONE = [
   ...SHALLOW_WORK_OPTIONS,
-  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30' }
+  { value: 'none', label: 'None', color: 'bg-gray-400', lightColor: 'bg-gray-50 dark:bg-gray-800/30', borderColor: 'border-gray-400' }
 ];
 
 const getHoursColorClass = (timeInMinutes) => {
@@ -130,8 +130,24 @@ export function CalendarView() {
   const getWorkTypeColorClasses = (timeEntry) => {
     if (!timeEntry || !timeEntry.timeInMinutes || timeEntry.timeInMinutes === 0) return '';
     
-    // Use hours-based color coding instead of work type colors
-    return getHoursColorClass(timeEntry.timeInMinutes);
+    // Combine hours-based background with work type border colors
+    const hoursClass = getHoursColorClass(timeEntry.timeInMinutes);
+    
+    // Add work type border color if available
+    let borderClass = '';
+    if (timeEntry.deepWork && timeEntry.deepWork !== 'none') {
+      const deepWorkOption = DEEP_WORK_OPTIONS_WITH_NONE.find(opt => opt.value === timeEntry.deepWork);
+      if (deepWorkOption?.borderColor) {
+        borderClass = `border-l-4 ${deepWorkOption.borderColor}`;
+      }
+    } else if (timeEntry.shallowWork && timeEntry.shallowWork !== 'none') {
+      const shallowWorkOption = SHALLOW_WORK_OPTIONS_WITH_NONE.find(opt => opt.value === timeEntry.shallowWork);
+      if (shallowWorkOption?.borderColor) {
+        borderClass = `border-l-4 ${shallowWorkOption.borderColor}`;
+      }
+    }
+    
+    return `${hoursClass} ${borderClass}`.trim();
   };
 
   const handleTimeEdit = (date) => {
