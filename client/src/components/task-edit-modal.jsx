@@ -15,6 +15,7 @@ export default function TaskEditModal({ task, isOpen, onClose, onSave, isLoading
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
+  const [isSaving, setIsSaving] = useState(false);
 
   const { isKeyboardVisible } = useKeyboardAware();
   const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
