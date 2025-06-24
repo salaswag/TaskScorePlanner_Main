@@ -41,7 +41,7 @@ export function DashboardView({ tasks, onUpdateTask }) {
             <div className="space-y-2">
               <h4 className="font-medium text-gray-900 dark:text-gray-100">Adding Time</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Double-click on any day in the calendar to open the time entry modal. 
+                Click on any day in the calendar to open the time entry modal. 
                 Use the slider to select how many hours you worked that day.
               </p>
             </div>
