@@ -42,7 +42,7 @@ const DEEP_WORK_OPTIONS = [
   },
   {
     value: "little-deep-work",
-    label: "Very little deep work",
+    label: "Little deep work",
     color: "bg-yellow-500",
     lightColor: "bg-yellow-100 dark:bg-yellow-900/30",
     borderColor: "border-yellow-500",
@@ -556,7 +556,7 @@ export function CalendarView() {
                                   (opt) => opt.value === timeEntry.deepWork,
                                 )
                                   ?.label.split(" ")
-                                  .slice(0, 2)
+                                  .slice(0, 3)
                                   .join(" ")}
                               </Badge>
                             )}
@@ -576,7 +576,7 @@ export function CalendarView() {
                                   (opt) => opt.value === timeEntry.shallowWork,
                                 )
                                   ?.label.split(" ")
-                                  .slice(0, 2)
+                                  .slice(0, 3)
                                   .join(" ")}
                               </Badge>
                             )}
