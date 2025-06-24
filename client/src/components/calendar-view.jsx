@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Clock, Check, X, Lock } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isAfter } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 
 const DEEP_WORK_OPTIONS = [
@@ -348,12 +349,34 @@ export function CalendarView() {
 
                     {/* Time display for cells with time */}
                     {isCurrentMonth && !isFuture && timeSpent > 0 && (
-                      <div className="flex-1 flex items-center justify-center">
+                      <div className="flex-1 flex flex-col items-center justify-center space-y-2">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           <span className="text-lg font-semibold">
                             {formatTime(timeSpent)}
                           </span>
+                        </div>
+                        
+                        {/* Work Type Badges */}
+                        <div className="flex flex-col gap-1 w-full">
+                          {timeEntry?.deepWork && (
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs px-1 py-0.5 w-full justify-center ${DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry.deepWork)?.lightColor || 'bg-gray-100'}`}
+                              title={DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry.deepWork)?.label}
+                            >
+                              {DEEP_WORK_OPTIONS.find(opt => opt.value === timeEntry.deepWork)?.label.split(' ').slice(0, 2).join(' ')}
+                            </Badge>
+                          )}
+                          {timeEntry?.shallowWork && (
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs px-1 py-0.5 w-full justify-center ${SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry.shallowWork)?.lightColor || 'bg-gray-100'}`}
+                              title={SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry.shallowWork)?.label}
+                            >
+                              {SHALLOW_WORK_OPTIONS.find(opt => opt.value === timeEntry.shallowWork)?.label.split(' ').slice(0, 2).join(' ')}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     )}
@@ -389,30 +412,21 @@ export function CalendarView() {
 
       {/* Time Edit Modal */}
       <Dialog open={showTimeModal} onOpenChange={setShowTimeModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <Clock className="h-5 w-5" />
-              <span>Manual Time Entry</span>
+              <span>Time Entry - {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}</span>
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 p-4">
-            <div className="text-center">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Enter the total time you worked on this day
-              </p>
-            </div>
-
             {/* Time Slider */}
-            <div>
+            <div className="text-center">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Time worked: <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">{formatSliderTime(sliderTime)}</span>
+                Time worked: <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatSliderTime(sliderTime)}</span>
               </label>
-              <div className="relative">
+              <div className="relative max-w-md mx-auto">
                 <input
                   type="range"
                   min="0"
@@ -432,50 +446,64 @@ export function CalendarView() {
               </div>
             </div>
 
-            {/* Work Type Selectors */}
-            <div className="space-y-4">
+            {/* Work Type Selectors - Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Deep Work Selector */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Deep Work Level
                 </label>
                 <div className="grid grid-cols-1 gap-2">
                   {DEEP_WORK_OPTIONS.map((option) => (
-                    <label key={option.value} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg">
-                      <input
-                        type="radio"
-                        name="deepWork"
-                        value={option.value}
-                        checked={workType.deepWork === option.value}
-                        onChange={(e) => setWorkType(prev => ({ ...prev, deepWork: e.target.value }))}
-                        className="w-4 h-4 text-blue-600"
-                      />
-                      <div className={`w-4 h-4 rounded ${option.color}`}></div>
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{option.label}</span>
-                    </label>
+                    <div
+                      key={option.value}
+                      className={`cursor-pointer rounded-lg border-2 p-3 transition-all hover:shadow-md ${
+                        workType.deepWork === option.value
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                      onClick={() => setWorkType(prev => ({ ...prev, deepWork: option.value }))}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-4 h-4 rounded ${option.color}`}></div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {option.label}
+                        </span>
+                        {workType.deepWork === option.value && (
+                          <Check className="h-4 w-4 text-blue-600 ml-auto" />
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
 
               {/* Shallow Work Selector */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Shallow Work Level
                 </label>
                 <div className="grid grid-cols-1 gap-2">
                   {SHALLOW_WORK_OPTIONS.map((option) => (
-                    <label key={option.value} className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg">
-                      <input
-                        type="radio"
-                        name="shallowWork"
-                        value={option.value}
-                        checked={workType.shallowWork === option.value}
-                        onChange={(e) => setWorkType(prev => ({ ...prev, shallowWork: e.target.value }))}
-                        className="w-4 h-4 text-blue-600"
-                      />
-                      <div className={`w-4 h-4 rounded ${option.color}`}></div>
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{option.label}</span>
-                    </label>
+                    <div
+                      key={option.value}
+                      className={`cursor-pointer rounded-lg border-2 p-3 transition-all hover:shadow-md ${
+                        workType.shallowWork === option.value
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                      onClick={() => setWorkType(prev => ({ ...prev, shallowWork: option.value }))}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-4 h-4 rounded ${option.color}`}></div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {option.label}
+                        </span>
+                        {workType.shallowWork === option.value && (
+                          <Check className="h-4 w-4 text-blue-600 ml-auto" />
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
