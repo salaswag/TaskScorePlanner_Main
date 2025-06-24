@@ -480,30 +480,30 @@ export function CalendarView() {
             </div>
 
             {/* Work Type Selectors - Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4">
               {/* Deep Work Selector */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Deep Work Level
                 </label>
-                <div className="grid grid-cols-1 gap-2">
+                <div className="space-y-2">
                   {DEEP_WORK_OPTIONS_WITH_NONE.map((option) => (
                     <div
                       key={option.value}
-                      className={`cursor-pointer rounded-lg border-2 p-2.5 transition-all hover:shadow-md ${
+                      className={`cursor-pointer rounded-lg border-2 p-2 transition-all hover:shadow-sm ${
                         workType.deepWork === option.value
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                       onClick={() => setWorkType(prev => ({ ...prev, deepWork: option.value }))}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-3 h-3 rounded ${option.color}`}></div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded ${option.color} flex-shrink-0`}></div>
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-tight">
                           {option.label}
                         </span>
                         {workType.deepWork === option.value && (
-                          <Check className="h-4 w-4 text-blue-600 ml-auto" />
+                          <Check className="h-3 w-3 text-blue-600 ml-auto flex-shrink-0" />
                         )}
                       </div>
                     </div>
@@ -516,24 +516,24 @@ export function CalendarView() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Shallow Work Level
                 </label>
-                <div className="grid grid-cols-1 gap-2">
+                <div className="space-y-2">
                   {SHALLOW_WORK_OPTIONS_WITH_NONE.map((option) => (
                     <div
                       key={option.value}
-                      className={`cursor-pointer rounded-lg border-2 p-2.5 transition-all hover:shadow-md ${
+                      className={`cursor-pointer rounded-lg border-2 p-2 transition-all hover:shadow-sm ${
                         workType.shallowWork === option.value
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                       onClick={() => setWorkType(prev => ({ ...prev, shallowWork: option.value }))}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-3 h-3 rounded ${option.color}`}></div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded ${option.color} flex-shrink-0`}></div>
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-tight">
                           {option.label}
                         </span>
                         {workType.shallowWork === option.value && (
-                          <Check className="h-4 w-4 text-blue-600 ml-auto" />
+                          <Check className="h-3 w-3 text-blue-600 ml-auto flex-shrink-0" />
                         )}
                       </div>
                     </div>
