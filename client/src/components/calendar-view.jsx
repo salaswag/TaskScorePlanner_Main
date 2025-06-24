@@ -94,12 +94,12 @@ const SHALLOW_WORK_OPTIONS = [
   },
 ];
 
-// Add "None" options at the bottom
+// Add "Not selected" options at the bottom
 const DEEP_WORK_OPTIONS_WITH_NONE = [
   ...DEEP_WORK_OPTIONS,
   {
     value: "none",
-    label: "None",
+    label: "Not selected",
     color: "bg-gray-400",
     lightColor: "bg-gray-50 dark:bg-gray-800/30",
     borderColor: "border-gray-400",
@@ -110,7 +110,7 @@ const SHALLOW_WORK_OPTIONS_WITH_NONE = [
   ...SHALLOW_WORK_OPTIONS,
   {
     value: "none",
-    label: "None",
+    label: "Not selected",
     color: "bg-gray-400",
     lightColor: "bg-gray-50 dark:bg-gray-800/30",
     borderColor: "border-gray-400",
@@ -162,8 +162,8 @@ export function CalendarView() {
   const [timeData, setTimeData] = useState({}); // Store manual time entries
   const [isLoading, setIsLoading] = useState(false);
   const [workType, setWorkType] = useState({
-    deepWork: "some-deep-work",
-    shallowWork: "some-shallow-needed",
+    deepWork: "none",
+    shallowWork: "none",
   });
 
   const isAnonymous = !user || user.isAnonymous;
