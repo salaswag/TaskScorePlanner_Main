@@ -471,19 +471,19 @@ export function CalendarView() {
 
       {/* Time Edit Modal */}
       <Dialog open={showTimeModal} onOpenChange={setShowTimeModal}>
-        <DialogContent className="sm:max-w-4xl max-w-[95vw] max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="pb-2">
-            <DialogTitle className="flex items-center space-x-2 text-lg">
-              <Clock className="h-4 w-4" />
+        <DialogContent className="sm:max-w-7xl max-w-[95vw] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Clock className="h-5 w-5" />
               <span>Time Entry - {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}</span>
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 p-2">
+          <div className="space-y-6 p-4">
             {/* Time Slider */}
             <div className="text-center">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Time worked: <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{formatSliderTime(sliderTime)}</span>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Time worked: <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatSliderTime(sliderTime)}</span>
               </label>
               <div className="relative max-w-md mx-auto">
                 <input
@@ -495,7 +495,7 @@ export function CalendarView() {
                   onChange={(e) => setSliderTime(parseInt(e.target.value))}
                   className="slider w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
                 />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
                   <span>0m</span>
                   <span>3h</span>
                   <span>6h</span>
@@ -506,30 +506,30 @@ export function CalendarView() {
             </div>
 
             {/* Work Type Selectors - Side by Side */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {/* Deep Work Selector */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Deep Work Level
                 </label>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {DEEP_WORK_OPTIONS_WITH_NONE.map((option) => (
                     <div
                       key={option.value}
-                      className={`cursor-pointer rounded border p-1.5 transition-all hover:shadow-sm ${
+                      className={`cursor-pointer rounded-lg border-2 p-2 transition-all hover:shadow-sm ${
                         workType.deepWork === option.value
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                       onClick={() => setWorkType(prev => ({ ...prev, deepWork: option.value }))}
                     >
-                      <div className="flex items-center space-x-1.5">
-                        <div className={`w-2.5 h-2.5 rounded ${option.color} flex-shrink-0`}></div>
-                        <span className="text-xs text-gray-700 dark:text-gray-300 leading-tight flex-1">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded ${option.color} flex-shrink-0`}></div>
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-tight">
                           {option.label}
                         </span>
                         {workType.deepWork === option.value && (
-                          <Check className="h-3 w-3 text-blue-600 flex-shrink-0" />
+                          <Check className="h-3 w-3 text-blue-600 ml-auto flex-shrink-0" />
                         )}
                       </div>
                     </div>
@@ -538,28 +538,28 @@ export function CalendarView() {
               </div>
 
               {/* Shallow Work Selector */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Shallow Work Level
                 </label>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {SHALLOW_WORK_OPTIONS_WITH_NONE.map((option) => (
                     <div
                       key={option.value}
-                      className={`cursor-pointer rounded border p-1.5 transition-all hover:shadow-sm ${
+                      className={`cursor-pointer rounded-lg border-2 p-2 transition-all hover:shadow-sm ${
                         workType.shallowWork === option.value
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                       onClick={() => setWorkType(prev => ({ ...prev, shallowWork: option.value }))}
                     >
-                      <div className="flex items-center space-x-1.5">
-                        <div className={`w-2.5 h-2.5 rounded ${option.color} flex-shrink-0`}></div>
-                        <span className="text-xs text-gray-700 dark:text-gray-300 leading-tight flex-1">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded ${option.color} flex-shrink-0`}></div>
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-tight">
                           {option.label}
                         </span>
                         {workType.shallowWork === option.value && (
-                          <Check className="h-3 w-3 text-blue-600 flex-shrink-0" />
+                          <Check className="h-3 w-3 text-blue-600 ml-auto flex-shrink-0" />
                         )}
                       </div>
                     </div>
@@ -568,7 +568,7 @@ export function CalendarView() {
               </div>
             </div>
 
-            <div className="flex space-x-3 pt-2">
+            <div className="flex space-x-3 pt-4">
               <Button onClick={handleTimeCancel} variant="outline" className="flex-1">
                 Cancel
               </Button>
