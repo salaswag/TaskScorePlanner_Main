@@ -5,6 +5,7 @@ import TimerModal from "@/components/timer-modal";
 import LaterSection from "@/components/later-section";
 import FloatingAddButton from "@/components/floating-add-button";
 import TaskFormModal from "@/components/task-form-modal";
+import DataTransferDialog from "@/components/data-transfer-dialog";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
@@ -506,6 +507,9 @@ export default function TodoApp() {
           />
         ))}
       </div>
+
+      {/* Data Transfer Dialog */}
+      <DataTransferDialog />
     </div>
   );
 }

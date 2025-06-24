@@ -108,8 +108,17 @@ export function useAuth() {
     try {
       console.log('🔐 Attempting login for:', email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('✅ Login successful:', userCredential.user.email);
-      return userCredential.user;
+      console.log('✅ Login successful:', email);
+
+        // Check if there are anonymous tasks to transfer
+        const anonymousTasks = localStorage.getItem('anonymous_tasks');
+        if (anonymousTasks && JSON.parse(anonymousTasks).length > 0) {
+          // Dispatch event to trigger data transfer dialog
+          window.dispatchEvent(new CustomEvent('show-data-transfer-dialog'));
+        }
+
+        // No need to force refresh here, the auth state change will handle it
+        return userCredential.user;
     } catch (error: any) {
       console.error('❌ Login failed:', error.code, '-', error.message);
       const errorCode = error.code || 'unknown';
@@ -129,8 +138,17 @@ export function useAuth() {
     try {
       console.log('📝 Attempting signup for:', email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('✅ Signup successful:', userCredential.user.email);
-      return userCredential.user;
+      console.log('✅ Registration successful:', email);
+
+        // Check if there are anonymous tasks to transfer
+        const anonymousTasks = localStorage.getItem('anonymous_tasks');
+        if (anonymousTasks && JSON.parse(anonymousTasks).length > 0) {
+          // Dispatch event to trigger data transfer dialog
+          window.dispatchEvent(new CustomEvent('show-data-transfer-dialog'));
+        }
+
+        // No need to force refresh here, the auth state change will handle it
+        return userCredential.user;
     } catch (error: any) {
       console.error('❌ Signup failed:', error.code, '-', error.message);
       const errorCode = error.code || 'unknown';

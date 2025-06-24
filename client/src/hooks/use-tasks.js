@@ -2,6 +2,29 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useRef, useEffect } from "react";
 
+// Local storage helpers for anonymous users
+const getAnonymousTasks = () => {
+  try {
+    const tasks = localStorage.getItem('anonymous_tasks');
+    return tasks ? JSON.parse(tasks) : [];
+  } catch (error) {
+    console.error('Error reading anonymous tasks from localStorage:', error);
+    return [];
+  }
+};
+
+const saveAnonymousTasks = (tasks) => {
+  try {
+    localStorage.setItem('anonymous_tasks', JSON.stringify(tasks));
+  } catch (error) {
+    console.error('Error saving anonymous tasks to localStorage:', error);
+  }
+};
+
+const generateLocalId = () => {
+  return Date.now() + Math.random();
+};
+
 const apiRequest = async (url, options = {}) => {
   const headers = {
     "Content-Type": "application/json",
@@ -126,10 +149,21 @@ export function useTasks() {
     queryKey: ["/api/tasks", user?.uid || 'anonymous', user?.isAnonymous], // Include user ID and auth status in query key
     queryFn: async () => {
       const currentUserId = user?.uid || 'anonymous';
-      console.log('🔍 Fetching tasks for user:', currentUserId, 'anonymous:', user?.isAnonymous);
+      const isAnonymous = user?.isAnonymous || !user;
+      
+      console.log('🔍 Fetching tasks for user:', currentUserId, 'anonymous:', isAnonymous);
+      
+      // For anonymous users, use localStorage
+      if (isAnonymous) {
+        const localTasks = getAnonymousTasks();
+        console.log('📋 Fetched tasks from localStorage (anonymous):', localTasks.length, 'tasks');
+        return localTasks;
+      }
+      
+      // For authenticated users, use server API
       const response = await apiRequest("/api/tasks");
       const data = await response.json();
-      console.log('📋 Fetched tasks for user', currentUserId, ':', data.length, 'tasks');
+      console.log('📋 Fetched tasks from server (authenticated):', data.length, 'tasks');
       return data;
     },
     staleTime: 0, // Always consider data stale to ensure fresh fetch on user change
@@ -142,13 +176,37 @@ export function useTasks() {
   const createTask = useMutation({
     mutationFn: async (taskData) => {
       console.log('Creating task with data:', taskData);
+      const isAnonymous = user?.isAnonymous || !user;
+      
+      // For anonymous users, save to localStorage
+      if (isAnonymous) {
+        const currentTasks = getAnonymousTasks();
+        const newTask = {
+          id: generateLocalId(),
+          ...taskData,
+          createdAt: new Date().toISOString(),
+          completed: false,
+          isLater: Boolean(taskData.isLater),
+          isFocus: Boolean(taskData.isFocus),
+          actualTime: null,
+          distractionLevel: null,
+          completedAt: null,
+        };
+        
+        currentTasks.push(newTask);
+        saveAnonymousTasks(currentTasks);
+        console.log('Anonymous task created in localStorage:', newTask);
+        return newTask;
+      }
+      
+      // For authenticated users, use server API
       try {
         const response = await apiRequest("/api/tasks", {
           method: "POST",
           body: JSON.stringify(taskData)
         });
         const result = await response.json();
-        console.log('Task created successfully:', result);
+        console.log('Authenticated task created on server:', result);
         return result;
       } catch (error) {
         console.error('Task creation failed:', error);
@@ -166,6 +224,44 @@ export function useTasks() {
   const updateTask = useMutation({
     mutationFn: async (taskData) => {
       console.log('Updating task with data:', taskData);
+      const isAnonymous = user?.isAnonymous || !user;
+      
+      // For anonymous users, update in localStorage
+      if (isAnonymous) {
+        const currentTasks = getAnonymousTasks();
+        const taskIndex = currentTasks.findIndex(task => task.id === taskData.id);
+        
+        if (taskIndex === -1) {
+          throw new Error('Task not found in local storage');
+        }
+        
+        // Handle completion timestamp
+        const updateFields = { ...taskData };
+        if (updateFields.completed === true && !updateFields.completedAt) {
+          updateFields.completedAt = new Date().toISOString();
+        } else if (updateFields.completed === false) {
+          updateFields.completedAt = null;
+        }
+        
+        // Ensure boolean fields are properly handled
+        if (updateFields.isLater !== undefined) {
+          updateFields.isLater = Boolean(updateFields.isLater);
+        }
+        if (updateFields.isFocus !== undefined) {
+          updateFields.isFocus = Boolean(updateFields.isFocus);
+        }
+        if (updateFields.completed !== undefined) {
+          updateFields.completed = Boolean(updateFields.completed);
+        }
+        
+        const updatedTask = { ...currentTasks[taskIndex], ...updateFields };
+        currentTasks[taskIndex] = updatedTask;
+        saveAnonymousTasks(currentTasks);
+        console.log('Anonymous task updated in localStorage:', updatedTask);
+        return updatedTask;
+      }
+      
+      // For authenticated users, use server API
       const response = await apiRequest(`/api/tasks/${taskData.id}`, {
         method: "PATCH",
         headers: {
@@ -182,6 +278,18 @@ export function useTasks() {
 
   const deleteTask = useMutation({
     mutationFn: async (taskId) => {
+      const isAnonymous = user?.isAnonymous || !user;
+      
+      // For anonymous users, delete from localStorage
+      if (isAnonymous) {
+        const currentTasks = getAnonymousTasks();
+        const filteredTasks = currentTasks.filter(task => task.id !== taskId);
+        saveAnonymousTasks(filteredTasks);
+        console.log('Anonymous task deleted from localStorage:', taskId);
+        return taskId;
+      }
+      
+      // For authenticated users, use server API
       await apiRequest(`/api/tasks/${taskId}`, {
         method: "DELETE"
       });
@@ -194,10 +302,58 @@ export function useTasks() {
 
   const archiveTask = useMutation({
     mutationFn: async (taskId) => {
+      const isAnonymous = user?.isAnonymous || !user;
+      
+      // For anonymous users, just delete from localStorage (no archive support)
+      if (isAnonymous) {
+        const currentTasks = getAnonymousTasks();
+        const filteredTasks = currentTasks.filter(task => task.id !== taskId);
+        saveAnonymousTasks(filteredTasks);
+        console.log('Anonymous task "archived" (deleted) from localStorage:', taskId);
+        return { message: "Task archived successfully" };
+      }
+      
+      // For authenticated users, use server API
       const response = await apiRequest(`/api/tasks/${taskId}/archive`, {
         method: "POST",
       });
       return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  // Transfer anonymous tasks to authenticated account
+  const transferAnonymousData = useMutation({
+    mutationFn: async () => {
+      const anonymousTasks = getAnonymousTasks();
+      if (anonymousTasks.length === 0) {
+        return { transferred: 0 };
+      }
+
+      let transferred = 0;
+      for (const task of anonymousTasks) {
+        try {
+          // Remove the local ID and let server assign new one
+          const { id, ...taskData } = task;
+          await apiRequest("/api/tasks", {
+            method: "POST",
+            body: JSON.stringify(taskData)
+          });
+          transferred++;
+        } catch (error) {
+          console.error('Failed to transfer task:', task.title, error);
+        }
+      }
+
+      // Clear localStorage after successful transfer
+      if (transferred > 0) {
+        localStorage.removeItem('anonymous_tasks');
+        console.log(`Transferred ${transferred} tasks and cleared localStorage`);
+      }
+
+      return { transferred };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
@@ -216,6 +372,7 @@ export function useTasks() {
     updateTask,
     deleteTask,
     archiveTask,
+    transferAnonymousData,
     mainTasks,
     laterTasks,
     focusTasks,
