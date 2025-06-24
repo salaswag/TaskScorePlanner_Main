@@ -9,18 +9,18 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 
 const DEEP_WORK_OPTIONS = [
-  { value: 'lots-deep-work', label: 'Lots of deep work', color: 'bg-emerald-500', lightColor: 'bg-emerald-100 dark:bg-emerald-900/30' },
-  { value: 'some-deep-work', label: 'Some deep work', color: 'bg-green-500', lightColor: 'bg-green-100 dark:bg-green-900/30' },
+  { value: 'lots-deep-work', label: 'Lots of deep work', color: 'bg-green-600', lightColor: 'bg-green-100 dark:bg-green-900/30' },
+  { value: 'some-deep-work', label: 'Some deep work', color: 'bg-green-500', lightColor: 'bg-green-50 dark:bg-green-800/30' },
   { value: 'little-deep-work', label: 'Very little deep work', color: 'bg-yellow-500', lightColor: 'bg-yellow-100 dark:bg-yellow-900/30' },
-  { value: 'no-deep-work', label: 'No deep work', color: 'bg-gray-500', lightColor: 'bg-gray-100 dark:bg-gray-900/30' }
+  { value: 'no-deep-work', label: 'No deep work', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30' }
 ];
 
 const SHALLOW_WORK_OPTIONS = [
-  { value: 'lots-shallow-needed', label: 'Lots of shallow work but needed', color: 'bg-blue-500', lightColor: 'bg-blue-100 dark:bg-blue-900/30' },
-  { value: 'some-shallow-needed', label: 'Some shallow work but needed', color: 'bg-cyan-500', lightColor: 'bg-cyan-100 dark:bg-cyan-900/30' },
-  { value: 'no-shallow-work', label: 'No shallow work', color: 'bg-slate-500', lightColor: 'bg-slate-100 dark:bg-slate-900/30' },
-  { value: 'some-shallow-not-needed', label: 'Some shallow work kinda not needed', color: 'bg-orange-500', lightColor: 'bg-orange-100 dark:bg-orange-900/30' },
-  { value: 'lots-shallow-not-needed', label: 'A lot of shallow work not needed', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30' }
+  { value: 'lots-shallow-needed', label: 'Lots of shallow work but needed', color: 'bg-green-600', lightColor: 'bg-green-100 dark:bg-green-900/30' },
+  { value: 'some-shallow-needed', label: 'Some shallow work but needed', color: 'bg-green-500', lightColor: 'bg-green-50 dark:bg-green-800/30' },
+  { value: 'some-shallow-not-needed', label: 'Some shallow work kinda not needed', color: 'bg-yellow-500', lightColor: 'bg-yellow-100 dark:bg-yellow-900/30' },
+  { value: 'lots-shallow-not-needed', label: 'A lot of shallow work not needed', color: 'bg-red-500', lightColor: 'bg-red-100 dark:bg-red-900/30' },
+  { value: 'no-shallow-work', label: 'No shallow work', color: 'bg-slate-500', lightColor: 'bg-slate-100 dark:bg-slate-900/30' }
 ];
 
 // Add "None" options
@@ -36,8 +36,11 @@ const SHALLOW_WORK_OPTIONS_WITH_NONE = [
 
 const getHoursColorClass = (timeInMinutes) => {
   const hours = timeInMinutes / 60;
-  if (hours >= 8) return 'bg-green-100 dark:bg-green-900/30 border-l-4 border-green-500';
-  if (hours >= 6) return 'bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500';
+  if (hours >= 7.5) return 'bg-green-100 dark:bg-green-900/30 border-l-4 border-green-600';
+  if (hours >= 6.5) return 'bg-green-50 dark:bg-green-800/20 border-l-4 border-green-400';
+  if (hours >= 6) return 'bg-lime-50 dark:bg-lime-800/20 border-l-4 border-lime-400';
+  if (hours >= 4) return 'bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500';
+  if (hours >= 2) return 'bg-orange-100 dark:bg-orange-900/30 border-l-4 border-orange-500';
   if (hours > 0) return 'bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500';
   return '';
 };
@@ -461,13 +464,13 @@ export function CalendarView() {
             </div>
 
             {/* Work Type Selectors - Side by Side */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Deep Work Selector */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Deep Work Level
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {DEEP_WORK_OPTIONS_WITH_NONE.map((option) => (
                     <div
                       key={option.value}
@@ -497,7 +500,7 @@ export function CalendarView() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Shallow Work Level
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {SHALLOW_WORK_OPTIONS_WITH_NONE.map((option) => (
                     <div
                       key={option.value}
