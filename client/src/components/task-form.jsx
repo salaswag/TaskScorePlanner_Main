@@ -23,7 +23,15 @@ function TaskForm({ onSubmit, isLoading }) {
     let interval = null;
     if (isActive) {
       interval = setInterval(() => {
-        setTime((time) => time + 1);
+        setTime((prevTime) => {
+          const newTime = prevTime + 1;
+          // 16 hours = 16 * 3600 = 57600 seconds
+          if (newTime >= 57600) {
+            setIsActive(false);
+            return 0;
+          }
+          return newTime;
+        });
       }, 1000);
     } else {
       clearInterval(interval);
@@ -38,6 +46,10 @@ function TaskForm({ onSubmit, isLoading }) {
   const resetStopwatch = () => {
     setTime(0);
     setIsActive(false);
+  };
+
+  const adjustTime = (seconds) => {
+    setTime((prevTime) => Math.max(0, prevTime + seconds));
   };
 
   const formatStopwatchTime = (seconds) => {
@@ -163,7 +175,7 @@ function TaskForm({ onSubmit, isLoading }) {
         </form>
 
         {/* Stopwatch - Only on desktop right side */}
-        <div className="hidden lg:flex flex-1 items-center justify-between gap-3 bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 h-12">
+        <div className="hidden lg:flex flex-1 items-center justify-between gap-3 bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 h-12 self-start mt-0">
           <div className="flex items-center gap-2 px-2 border-r border-gray-200 dark:border-gray-800">
             <Clock className="h-5 w-5 text-gray-500" />
             <span className="font-mono font-bold text-xl min-w-[90px] text-black dark:text-white">
@@ -171,6 +183,27 @@ function TaskForm({ onSubmit, isLoading }) {
             </span>
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => adjustTime(-900)}
+              title="-15m"
+              className="h-8 px-2 text-xs text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+            >
+              -15m
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => adjustTime(-3600)}
+              title="-1h"
+              className="h-8 px-2 text-xs text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+            >
+              -1h
+            </Button>
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-800 mx-1" />
             <Button
               type="button"
               variant="ghost"
