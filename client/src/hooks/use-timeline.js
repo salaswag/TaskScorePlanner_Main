@@ -1,7 +1,6 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-const API_BASE = "/api/timeline";
+const API_BASE = import.meta.env.VITE_REACT_APP_BACKEND_URL || '/api/timeline';
 
 export function useTimeline() {
   const queryClient = useQueryClient();

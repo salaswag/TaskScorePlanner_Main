@@ -1,71 +1,46 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { auth } from './firebase-config.js';
 
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
-  }
-}
-
-export async function apiRequest(
-  url: string,
-  options?: {
-    method?: string;
-    body?: string;
-  }
-): Promise<Response> {
-  try {
-    const res = await fetch(url, {
-      method: options?.method || 'GET',
-      headers: options?.body ? { "Content-Type": "application/json" } : {},
-      body: options?.body,
-      credentials: "include",
-    });
-
-    // Don't throw for authentication endpoints, let them handle their own errors
-    if (url.includes('/api/auth/')) {
-      return res;
-    }
-
-    await throwIfResNotOk(res);
-    return res;
-  } catch (error) {
-    if (error instanceof TypeError) {
-      throw new Error('Network error: Please check your connection');
-    }
-    throw error;
-  }
-}
-
-type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
-  on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
-
-    await throwIfResNotOk(res);
-    return await res.json();
+export async function apiRequest(url: string, options: RequestInit = {}) {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...options.headers,
   };
+
+  // Add Firebase token if user is authenticated
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    try {
+      // Always try to get token, even for anonymous users in case they were upgraded
+      const idToken = await currentUser.getIdToken(false); // false = don't force refresh
+      headers['Authorization'] = `Bearer ${idToken}`;
+    } catch (error) {
+      // Silently handle token errors for anonymous users
+      if (!currentUser.isAnonymous) {
+        console.error('Failed to get ID token:', error);
+      }
+    }
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+  }
+
+  return response;
+}
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
-    },
-    mutations: {
-      retry: false,
+      queryFn: async ({ queryKey }) => {
+        const response = await apiRequest(queryKey[0] as string);
+        return response.json();
+      },
     },
   },
 });

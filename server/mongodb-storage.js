@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 
-const MONGODB_URI = "mongodb+srv://salaswag:Borderbiz8k@clusterfortask.riwouqe.mongodb.net/ClusterforTask";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://salaswag:Borderbiz8k@clusterfortask.riwouqe.mongodb.net/ClusterforTask";
 
 export class MongoStorage {
   constructor() {
@@ -12,6 +12,7 @@ export class MongoStorage {
 
   async connect(retries = 5) {
     try {
+      const uri = process.env.MONGODB_URI || "mongodb+srv://salaswag:Borderbiz8k@clusterfortask.riwouqe.mongodb.net/";
       this.client = new MongoClient(MONGODB_URI, {
         connectTimeoutMS: 10000,
         serverSelectionTimeoutMS: 10000,
@@ -24,6 +25,7 @@ export class MongoStorage {
       this.tasksCollection = this.db.collection('Tasks');
       this.archiveCollection = this.db.collection('Archive');
       this.laterTasksCollection = this.db.collection('Later Tasks');
+      this.timeEntriesCollection = this.db.collection('TimeEntries');
 
       // Test the connection with a ping
       await this.db.command({ ping: 1 });
@@ -33,6 +35,7 @@ export class MongoStorage {
       console.log('📦 Main Collection:', this.tasksCollection.collectionName);
       console.log('📦 Archive Collection:', this.archiveCollection.collectionName);
       console.log('📦 Later Tasks Collection:', this.laterTasksCollection.collectionName);
+      console.log('📦 Time Entries Collection:', this.timeEntriesCollection.collectionName);
       return true;
     } catch (error) {
       console.error(`❌ MongoDB connection failed (attempt ${6 - retries}/5):`, error.message);
@@ -48,21 +51,25 @@ export class MongoStorage {
       this.tasksCollection = null;
       this.archiveCollection = null;
       this.laterTasksCollection = null;
+      this.timeEntriesCollection = null;
       return false;
     }
   }
 
-  async getTasks() {
+  async getTasks(userId = null) {
     try {
+      // Always filter by userId - never return all tasks
+      const userFilter = userId ? { userId } : { userId: 'no-user-specified' };
+
+      console.log('Getting tasks for userId:', userId, 'Filter:', userFilter);
+
       // Fetch tasks from main Tasks collection
-      const mainTasks = await this.tasksCollection.find({}).sort({ createdAt: -1 }).toArray();
-      console.log('Raw main tasks from MongoDB:', JSON.stringify(mainTasks, null, 2));
-      console.log('Fetched main tasks from MongoDB:', mainTasks.length);
+      const mainTasks = await this.tasksCollection.find(userFilter).sort({ createdAt: -1 }).toArray();
+      console.log('Fetched main tasks from MongoDB for user', userId, ':', mainTasks.length);
 
       // Fetch tasks from Later Tasks collection
-      const laterTasks = await this.laterTasksCollection.find({}).sort({ createdAt: -1 }).toArray();
-      console.log('Raw later tasks from MongoDB:', JSON.stringify(laterTasks, null, 2));
-      console.log('Fetched later tasks from MongoDB:', laterTasks.length);
+      const laterTasks = await this.laterTasksCollection.find(userFilter).sort({ createdAt: -1 }).toArray();
+      console.log('Fetched later tasks from MongoDB for user', userId, ':', laterTasks.length);
 
       // Combine both collections
       const allTasks = [
@@ -117,17 +124,24 @@ export class MongoStorage {
 
   async createTask(taskData) {
     try {
-      console.log('Creating task with data:', taskData);
+      console.log('===== CREATING TASK =====');
+      console.log('Original task data:', JSON.stringify(taskData, null, 2));
 
       // Get the next numeric ID from both collections
       const lastMainTask = await this.tasksCollection.findOne({}, { sort: { id: -1 } });
       const lastLaterTask = await this.laterTasksCollection.findOne({}, { sort: { id: -1 } });
-      
+
       const lastMainId = lastMainTask ? (lastMainTask.id || 0) : 0;
       const lastLaterId = lastLaterTask ? (lastLaterTask.id || 0) : 0;
       const nextId = Math.max(lastMainId, lastLaterId) + 1;
 
       console.log('Next task ID:', nextId);
+      console.log('isLater from taskData:', taskData.isLater, 'Type:', typeof taskData.isLater);
+      console.log('Raw isLater value:', taskData.isLater);
+
+      // Ensure isLater is properly preserved - explicitly check for truthy values
+      const isLaterFlag = taskData.isLater === true || taskData.isLater === 'true' || taskData.isLater === 1;
+      console.log('Processed isLater flag:', isLaterFlag);
 
       const task = {
         ...taskData,
@@ -136,22 +150,25 @@ export class MongoStorage {
         completed: false,
         actualTime: null,
         distractionLevel: null,
-        isLater: taskData.isLater || false,
-        isFocus: taskData.isFocus || false,
-        archived: taskData.archived || false,
+        isLater: isLaterFlag,
+        isFocus: Boolean(taskData.isFocus),
+        archived: Boolean(taskData.archived),
+        userId: taskData.userId || 'anonymous',
         createdAt: new Date(),
         completedAt: null
       };
 
-      console.log('Task object to insert:', task);
-      
+      console.log('Final task object to insert:', JSON.stringify(task, null, 2));
+      console.log('Will insert into collection:', task.isLater ? 'Later Tasks' : 'Main Tasks');
+
       // Choose collection based on isLater flag
       const targetCollection = task.isLater ? this.laterTasksCollection : this.tasksCollection;
       const collectionName = task.isLater ? 'Later Tasks' : 'Main Tasks';
-      
+
       const result = await targetCollection.insertOne(task);
       console.log(`MongoDB insert result in ${collectionName}:`, result);
       console.log('Task created successfully with ID:', task.id);
+      console.log('===========================');
 
       return {
         ...task,
@@ -271,17 +288,17 @@ export class MongoStorage {
 
       if (currentIsLater !== newIsLater) {
         console.log(`Moving task from ${currentIsLater ? 'later' : 'main'} to ${newIsLater ? 'later' : 'main'} collection`);
-        
+
         // Create updated task
         const updatedTask = { ...currentTask, ...updateFields };
-        
+
         // Insert into target collection
         const targetCollection = newIsLater ? this.laterTasksCollection : this.tasksCollection;
         await targetCollection.insertOne(updatedTask);
-        
+
         // Remove from current collection
         await currentCollection.deleteOne({ _id: currentTask._id });
-        
+
         console.log('Task moved successfully between collections');
         return {
           ...updatedTask,
@@ -299,19 +316,19 @@ export class MongoStorage {
           { returnDocument: 'after' }
         );
 
-        if (!result || !result.value) {
+        if (!result) {
           console.error('Task update failed:', id);
           return undefined;
         }
 
-        console.log('Task updated successfully:', result.value);
+        console.log('Task updated successfully:', result);
         return {
-          ...result.value,
-          id: result.value.id || result.value._id.toString(),
-          actualTime: result.value.actualTime,
-          distractionLevel: result.value.distractionLevel,
-          isLater: Boolean(result.value.isLater),
-          isFocus: Boolean(result.value.isFocus)
+          ...result,
+          id: result.id || result._id.toString(),
+          actualTime: result.actualTime,
+          distractionLevel: result.distractionLevel,
+          isLater: Boolean(result.isLater),
+          isFocus: Boolean(result.isFocus)
         };
       }
     } catch (error) {
@@ -323,7 +340,7 @@ export class MongoStorage {
   async deleteTask(id) {
     try {
       console.log('Delete task with ID:', id);
-      
+
       let result = null;
 
       // Try to find by numeric id in main collection first
@@ -363,7 +380,7 @@ export class MongoStorage {
             // Try main collection first
             result = await this.tasksCollection.deleteOne({ _id: objectId });
             console.log('Delete result in main collection by ObjectId:', result.deletedCount);
-            
+
             // If not found in main, try later collection
             if (result.deletedCount === 0) {
               result = await this.laterTasksCollection.deleteOne({ _id: objectId });
@@ -391,7 +408,7 @@ export class MongoStorage {
   async archiveTask(id) {
     try {
       console.log('Archive task with ID:', id);
-      
+
       // First, find the task to archive from both collections
       let task = null;
       let sourceCollection = null;
@@ -468,7 +485,7 @@ export class MongoStorage {
         // Remove from source collection
         const deleteResult = await sourceCollection.deleteOne({ _id: task._id });
         console.log('Delete from source collection result:', deleteResult);
-        
+
         if (deleteResult && deleteResult.deletedCount > 0) {
           console.log('✅ Task successfully archived');
           return true;
@@ -487,6 +504,43 @@ export class MongoStorage {
     }
   }
 
+  async transferUserData(fromUserId, toUserId) {
+    try {
+      console.log(`Transferring data from ${fromUserId} to ${toUserId}`);
+
+      // Update all tasks in main collection
+      const mainResult = await this.tasksCollection.updateMany(
+        { userId: fromUserId },
+        { $set: { userId: toUserId } }
+      );
+
+      // Update all tasks in later collection
+      const laterResult = await this.laterTasksCollection.updateMany(
+        { userId: fromUserId },
+        { $set: { userId: toUserId } }
+      );
+
+      // Update all archived tasks
+      const archiveResult = await this.archiveCollection.updateMany(
+        { userId: fromUserId },
+        { $set: { userId: toUserId } }
+      );
+
+      // Update all time entries
+      const timeResult = await this.timeEntriesCollection.updateMany(
+        { userId: fromUserId },
+        { $set: { userId: toUserId } }
+      );
+
+      console.log(`Transfer completed: ${mainResult.modifiedCount} main tasks, ${laterResult.modifiedCount} later tasks, ${archiveResult.modifiedCount} archived tasks, ${timeResult.modifiedCount} time entries`);
+
+      return true;
+    } catch (error) {
+      console.error('Error transferring user data:', error);
+      return false;
+    }
+  }
+
   async getArchivedTasks() {
     try {
       const archivedTasks = await this.archiveCollection.find({}).sort({ archivedAt: -1 }).toArray();
@@ -501,6 +555,85 @@ export class MongoStorage {
     } catch (error) {
       console.error('Error fetching archived tasks:', error);
       return [];
+    }
+  }
+
+  async getTimeEntries(userId = null) {
+    try {
+      // Always filter by userId - never return all time entries
+      const userFilter = userId ? { userId } : { userId: 'no-user-specified' };
+
+      console.log('Getting time entries for userId:', userId, 'Filter:', userFilter);
+
+      const timeEntries = await this.timeEntriesCollection.find(userFilter).toArray();
+      console.log('Fetched time entries from MongoDB for user', userId, ':', timeEntries.length);
+      return timeEntries.map(entry => ({
+        ...entry,
+        id: entry.id || entry._id.toString()
+      }));
+    } catch (error) {
+      console.error('Error fetching time entries:', error);
+      return [];
+    }
+  }
+
+  async createTimeEntry(entryData) {
+    try {
+      console.log('Creating time entry:', entryData);
+
+      const entry = {
+        ...entryData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const result = await this.timeEntriesCollection.insertOne(entry);
+      console.log('Time entry created with ID:', result.insertedId);
+
+      return {
+        ...entry,
+        id: result.insertedId.toString()
+      };
+    } catch (error) {
+      console.error('Error creating time entry:', error);
+      throw error;
+    }
+  }
+
+  async updateTimeEntry(date, timeInMinutes, userId, deepWork = 'some-deep-work', shallowWork = 'some-shallow-needed') {
+    try {
+      const timeEntry = {
+        userId,
+        date,
+        timeInMinutes,
+        deepWork,
+        shallowWork,
+        updatedAt: new Date()
+      };
+
+      const result = await this.timeEntriesCollection.updateOne(
+        { userId, date },
+        { $set: timeEntry },
+        { upsert: true }
+      );
+
+      console.log(`Time entry updated for user ${userId} on ${date}: ${timeInMinutes} minutes, deep work: ${deepWork}, shallow work: ${shallowWork}`);
+      return timeEntry;
+    } catch (error) {
+      console.error('Error updating time entry:', error);
+      throw error;
+    }
+  }
+
+  async deleteTimeEntry(date, userId) {
+    try {
+      console.log('Deleting time entry for date:', date, 'for user:', userId);
+      const result = await this.timeEntriesCollection.deleteOne({ date, userId });
+      console.log('Time entry deletion result:', result.deletedCount);
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('Error deleting time entry:', error);
+      return false;
     }
   }
 

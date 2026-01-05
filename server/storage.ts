@@ -7,7 +7,7 @@ export interface IStorage {
   createTask(task: InsertTask, userId?: string): Promise<Task>;
   updateTask(task: UpdateTask): Promise<Task | undefined>;
   deleteTask(id: number | string): Promise<boolean>;
-  
+
   // User operations
   getUser(id: string): Promise<any>;
   getUserByUsername(username: string): Promise<any>;
@@ -20,63 +20,117 @@ export class MemStorage implements IStorage {
   private users: Map<string, any>;
   private currentTaskId: number;
   private currentUserId: number;
+  private sessionStorage: Map<string, Task[]>; // Store tasks by session ID
+  private sessionTimestamps: Map<string, number>; // Track session last activity
 
   constructor() {
     this.tasks = new Map();
     this.users = new Map();
     this.currentTaskId = 1;
     this.currentUserId = 1;
+    this.sessionStorage = new Map();
+    this.sessionTimestamps = new Map();
   }
 
   // Task operations
-  async getTasks(userId?: string): Promise<Task[]> {
-    return Array.from(this.tasks.values())
-      .filter(task => {
-        if (!userId) return !task.userId;
-        return task.userId === userId;
-      })
-      .sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+  async getTasks(userId?: string): Promise<any[]> {
+    if (userId && userId.startsWith('anonymous-')) {
+      // Update session activity
+      this.sessionTimestamps.set(userId, Date.now());
+      // Return tasks for this specific anonymous session
+      const sessionTasks = Array.from(this.tasks.values()).filter(task => task.userId === userId);
+      console.log(`In-memory storage: Retrieved ${sessionTasks.length} tasks for anonymous session ${userId}`);
+      return sessionTasks;
+    }
+
+    // For authenticated users, filter by their userId
+    if (userId && !userId.startsWith('anonymous-')) {
+      const userTasks = Array.from(this.tasks.values()).filter(task => task.userId === userId);
+      console.log(`In-memory storage: Retrieved ${userTasks.length} tasks for authenticated user ${userId}`);
+      return userTasks;
+    }
+
+    // Fallback: return all tasks (should rarely happen)
+    const allTasks = Array.from(this.tasks.values());
+    console.log(`In-memory storage: Retrieved ${allTasks.length} total tasks (fallback)`);
+    return allTasks;
   }
 
   async getTask(id: number): Promise<Task | undefined> {
     return this.tasks.get(id);
   }
 
-  async createTask(insertTask: InsertTask, userId?: string): Promise<Task> {
+  async createTask(taskData: any, userId?: string): Promise<any> {
+    const finalUserId = userId || taskData.userId || 'anonymous';
+    
+    // Update session activity for anonymous users
+    if (finalUserId.startsWith('anonymous-')) {
+      this.sessionTimestamps.set(finalUserId, Date.now());
+    }
+    
     const id = this.currentTaskId++;
-    const task: Task = {
-      ...insertTask,
+    const task = {
       id,
-      priority: insertTask.priority || 5,
-      completed: false,
-      actualTime: null,
+      ...taskData,
+      userId: finalUserId,
       createdAt: new Date(),
       completedAt: null,
-      userId: userId || null,
+      completed: taskData.completed || false,
+      isLater: Boolean(taskData.isLater),
+      isFocus: Boolean(taskData.isFocus),
+      actualTime: taskData.actualTime || null,
+      distractionLevel: taskData.distractionLevel || null,
     };
     this.tasks.set(id, task);
+    console.log('In-memory storage: Task created successfully', task);
     return task;
   }
 
-  async updateTask(updateTask: UpdateTask): Promise<Task | undefined> {
-    const existingTask = this.tasks.get(updateTask.id);
-    if (!existingTask) return undefined;
+  async updateTask(taskData: any): Promise<any> {
+    const task = this.tasks.get(taskData.id);
+    if (!task) {
+      return undefined;
+    }
 
-    const updatedTask: Task = {
-      ...existingTask,
-      actualTime: updateTask.actualTime ?? existingTask.actualTime,
-      completed: updateTask.completed ?? existingTask.completed,
-      completedAt: updateTask.completedAt ? (typeof updateTask.completedAt === 'string' ? new Date(updateTask.completedAt) : updateTask.completedAt) : existingTask.completedAt,
-    };
+    // Handle completion timestamp
+    const updateFields = { ...taskData };
+    if (updateFields.completed === true && !updateFields.completedAt) {
+      updateFields.completedAt = new Date();
+    } else if (updateFields.completed === false) {
+      updateFields.completedAt = null;
+    }
 
-    this.tasks.set(updateTask.id, updatedTask);
+    // Ensure boolean fields are properly handled
+    if (updateFields.isLater !== undefined) {
+      updateFields.isLater = Boolean(updateFields.isLater);
+    }
+    if (updateFields.isFocus !== undefined) {
+      updateFields.isFocus = Boolean(updateFields.isFocus);
+    }
+    if (updateFields.completed !== undefined) {
+      updateFields.completed = Boolean(updateFields.completed);
+    }
+
+    const updatedTask = { ...task, ...updateFields };
+    this.tasks.set(taskData.id, updatedTask);
+    console.log('In-memory storage: Task updated successfully', updatedTask);
     return updatedTask;
   }
 
   async deleteTask(id: number | string): Promise<boolean> {
     const numId = typeof id === 'string' ? parseInt(id) : id;
+
+    // First check session storage for anonymous users
+    for (const [sessionId, sessionTasks] of this.sessionStorage.entries()) {
+      const taskIndex = sessionTasks.findIndex(task => task.id === numId);
+      if (taskIndex !== -1) {
+        sessionTasks.splice(taskIndex, 1);
+        this.sessionStorage.set(sessionId, sessionTasks);
+        return true;
+      }
+    }
+
+    // Fall back to regular storage
     return this.tasks.delete(numId);
   }
 
@@ -102,6 +156,59 @@ export class MemStorage implements IStorage {
     const user = await this.getUserByUsername(username);
     if (!user || user.password !== password) return null;
     return { id: user.id, username: user.username };
+  }
+
+  // Transfer session data to authenticated user
+  async transferSessionData(sessionId: string, authenticatedUserId: string): Promise<boolean> {
+    const sessionTasks = this.sessionStorage.get(sessionId);
+    if (!sessionTasks || sessionTasks.length === 0) {
+      return true; // Nothing to transfer
+    }
+
+    // Move tasks from session to authenticated user storage
+    for (const task of sessionTasks) {
+      const updatedTask = { ...task, userId: authenticatedUserId };
+      this.tasks.set(task.id, updatedTask);
+    }
+
+    // Clear session storage
+    this.sessionStorage.delete(sessionId);
+    console.log(`📤 Transferred ${sessionTasks.length} tasks from session ${sessionId} to user ${authenticatedUserId}`);
+    return true;
+  }
+
+  // Clean up old sessions (call periodically)
+  cleanupSessions(): void {
+    const now = Date.now();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    let cleanedSessions = 0;
+    let cleanedTasks = 0;
+
+    // Clean up session storage
+    for (const [sessionId, timestamp] of this.sessionTimestamps.entries()) {
+      if (now - timestamp > maxAge) {
+        this.sessionStorage.delete(sessionId);
+        this.sessionTimestamps.delete(sessionId);
+        cleanedSessions++;
+      }
+    }
+
+    // Clean up tasks for expired sessions
+    for (const [taskId, task] of this.tasks.entries()) {
+      if (task.userId.startsWith('anonymous-')) {
+        const lastActivity = this.sessionTimestamps.get(task.userId);
+        if (!lastActivity || now - lastActivity > maxAge) {
+          this.tasks.delete(taskId);
+          cleanedTasks++;
+        }
+      }
+    }
+
+    if (cleanedSessions > 0 || cleanedTasks > 0) {
+      console.log(`🧹 Session cleanup: Removed ${cleanedSessions} expired sessions and ${cleanedTasks} orphaned tasks`);
+    }
+    
+    console.log(`🧹 Session cleanup complete: ${this.sessionStorage.size} active sessions, ${this.sessionTimestamps.size} tracked sessions`);
   }
 }
 

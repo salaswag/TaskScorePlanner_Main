@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -53,31 +52,23 @@ export default function TimerModal({ isOpen, task, onClose, onConfirm }) {
   if (!isOpen || !task) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="w-[90vw] max-w-md mx-auto max-h-[85vh] overflow-y-auto bg-white dark:bg-black border border-gray-200 dark:border-gray-800">
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span>Complete Task</span>
-          </DialogTitle>
+          <DialogTitle className="text-black dark:text-white">Complete Task</DialogTitle>
         </DialogHeader>
-
-        <div className="space-y-6 p-4">
-          <div className="text-center">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              {task.title}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Estimated: {formatTimeMinutes(task.estimatedTime)}
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-black dark:text-white font-medium mb-2">Task: {task?.title}</h3>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              Estimated: {task?.estimatedTime ? formatTimeMinutes(task.estimatedTime) : '-'}
             </p>
           </div>
-
-          {/* Actual Time Slider */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-              Actual time spent: {formatTimeMinutes(actualTime)}
-            </label>
-            <div className="relative">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-black dark:text-white mb-2">
+                Actual Time: {formatTimeMinutes(actualTime)}
+              </label>
               <input
                 type="range"
                 min="5"
@@ -87,42 +78,49 @@ export default function TimerModal({ isOpen, task, onClose, onConfirm }) {
                 onChange={(e) => setActualTime(parseInt(e.target.value))}
                 className="slider w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mt-1">
                 <span>5m</span>
                 <span>4h</span>
               </div>
             </div>
-          </div>
 
-          {/* Distraction Level Slider */}
-          <div>
-            <label className={`block text-sm font-medium mb-3 ${getDistractionColor(distractionLevel)}`}>
-              Distraction level: {distractionLevel} - {getDistractionLabel(distractionLevel)}
-            </label>
-            <div className="relative">
-              <input
-                type="range"
-                min="1"
-                max="5"
-                step="1"
-                value={distractionLevel}
-                onChange={(e) => setDistractionLevel(parseInt(e.target.value))}
-                className="slider w-full"
-              />
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span className="text-green-600">Focused</span>
-                <span className="text-red-500">Distracted</span>
+            <div>
+              <label className="block text-sm font-medium text-black dark:text-white mb-2">
+                Distraction Level: {distractionLevel}/5
+              </label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                {[1, 2, 3, 4, 5].map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setDistractionLevel(level)}
+                    className={`px-3 py-2 text-xs rounded-lg border transition-all ${
+                      distractionLevel === level
+                        ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
               </div>
+              <p className={`text-xs font-medium ${getDistractionColor(distractionLevel)}`}>
+                {getDistractionLabel(distractionLevel)}
+              </p>
             </div>
           </div>
 
-          <div className="flex space-x-3">
-            <Button onClick={handleClose} variant="outline" className="flex-1">
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
               Cancel
             </Button>
-            <Button 
-              onClick={handleConfirm} 
-              className="flex-1"
+            <Button
+              onClick={handleConfirm}
+              className="flex-1 bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200"
             >
               Complete Task
             </Button>

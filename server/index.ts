@@ -1,14 +1,87 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import { EventEmitter } from "events";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { MongoStorage } from "./mongodb-storage.js";
+
+// Simple in-memory session store that persists across requests
+class MemorySessionStore extends EventEmitter {
+  constructor() {
+    super();
+    this.sessions = new Map();
+  }
+
+  get(sessionId, callback) {
+    const session = this.sessions.get(sessionId);
+    callback(null, session);
+  }
+
+  set(sessionId, session, callback) {
+    this.sessions.set(sessionId, session);
+    callback();
+  }
+
+  destroy(sessionId, callback) {
+    this.sessions.delete(sessionId);
+    callback();
+  }
+
+  length(callback) {
+    callback(null, this.sessions.size);
+  }
+
+  clear(callback) {
+    this.sessions.clear();
+    callback();
+  }
+
+  // Clean up expired sessions periodically
+  cleanup() {
+    const now = Date.now();
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (session.cookie && session.cookie.expires && session.cookie.expires < now) {
+        this.sessions.delete(sessionId);
+      }
+    }
+  }
+}
+
+const sessionStore = new MemorySessionStore();
+
+// Clean up expired sessions every hour
+setInterval(() => {
+  sessionStore.cleanup();
+}, 60 * 60 * 1000);
+
+// Import storage for session cleanup
+import { storage } from "./storage";
+
+// Clean up expired anonymous sessions every 6 hours
+setInterval(() => {
+  storage.cleanupSessions();
+}, 6 * 60 * 60 * 1000);
 
 export const mongoStorage = new MongoStorage();
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add cache control headers to prevent browser caching issues
+app.use((req, res, next) => {
+  // For HTML files, prevent caching
+  if (req.path.endsWith('.html') || req.path === '/') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  // For static assets, allow short-term caching but enable revalidation
+  else if (req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+  }
+  next();
+});
 
 // Session configuration
 app.use(session({
@@ -17,13 +90,12 @@ app.use(session({
   saveUninitialized: false,
   rolling: true, // Reset expiry on activity
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production', // HTTPS in production
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true, // Prevent XSS
     sameSite: 'lax' // CSRF protection
   },
-  // Add session store error handling
-  store: undefined, // Using default memory store for development
+  store: sessionStore
 }));
 
 app.use((req, res, next) => {
@@ -82,10 +154,9 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Use PORT environment variable for production deployments (like Render)
+  // or fallback to 5000 for development
+  const port = process.env.PORT || 5000;
   server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
