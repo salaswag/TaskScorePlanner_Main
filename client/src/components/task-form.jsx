@@ -268,16 +268,6 @@ function TaskForm({ onSubmit, isLoading }) {
           >
             -15m
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => adjustTime(-3600)}
-            title="-1h"
-            className="h-8 px-2 text-xs text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-          >
-            -1h
-          </Button>
           <div className="w-px h-6 bg-gray-200 dark:bg-gray-800 mx-1" />
           <Button
             type="button"
