@@ -9,12 +9,17 @@ export function ThemeProvider({ children, defaultTheme = "light" }) {
   const [theme, setTheme] = React.useState(() => {
     // Check localStorage first, then fall back to default
     if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || defaultTheme;
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "light" || savedTheme === "dark") {
+        return savedTheme;
+      }
     }
     return defaultTheme;
   });
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    
     const root = window.document.documentElement;
 
     // Remove previous theme classes
@@ -27,10 +32,10 @@ export function ThemeProvider({ children, defaultTheme = "light" }) {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const value = {
+  const value = React.useMemo(() => ({
     theme,
     setTheme,
-  };
+  }), [theme]);
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
