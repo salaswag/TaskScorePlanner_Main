@@ -1,5 +1,6 @@
 
-import { useRef, useCallback } from 'react';
+import * as React from 'react';
+const { useRef, useCallback } = React;
 
 export function useInputFocus() {
   const activeInputRef = useRef(null);

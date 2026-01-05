@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
+const { useState, useEffect } = React;
 import TaskTable from "@/components/task-table";
 import TaskEditModal from "@/components/task-edit-modal";
 import TimerModal from "@/components/timer-modal";
