@@ -1,13 +1,12 @@
 import * as React from "react";
-const { createContext, useContext, useEffect, useState } = React;
 
-const ThemeContext = createContext({
+const ThemeContext = React.createContext({
   theme: "light",
   setTheme: () => null,
 });
 
 export function ThemeProvider({ children, defaultTheme = "light" }) {
-  const [theme, setTheme] = useState(() => {
+  const [theme, setTheme] = React.useState(() => {
     // Check localStorage first, then fall back to default
     if (typeof window !== "undefined") {
       return localStorage.getItem("theme") || defaultTheme;
@@ -15,7 +14,7 @@ export function ThemeProvider({ children, defaultTheme = "light" }) {
     return defaultTheme;
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     const root = window.document.documentElement;
 
     // Remove previous theme classes
@@ -39,7 +38,7 @@ export function ThemeProvider({ children, defaultTheme = "light" }) {
 }
 
 export const useTheme = () => {
-  const context = useContext(ThemeContext);
+  const context = React.useContext(ThemeContext);
 
   if (context === undefined) {
     throw new Error("useTheme must be used within a ThemeProvider");
