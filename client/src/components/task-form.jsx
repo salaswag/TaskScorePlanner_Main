@@ -175,12 +175,22 @@ function TaskForm({ onSubmit, isLoading }) {
         </form>
 
         {/* Stopwatch - Only on desktop right side */}
-        <div className="hidden lg:flex flex-1 items-center justify-between gap-3 bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 h-12 self-start mt-0">
+        <div className="hidden lg:flex flex-[0.4] min-w-[320px] items-center justify-between gap-3 bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 h-14 self-center">
           <div className="flex items-center gap-2 px-2 border-r border-gray-200 dark:border-gray-800">
             <Clock className="h-5 w-5 text-gray-500" />
             <span className="font-mono font-bold text-xl min-w-[90px] text-black dark:text-white">
               {formatStopwatchTime(time)}
             </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => adjustTime(900)}
+              title="+15m"
+              className="h-8 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors font-bold ml-1"
+            >
+              +15m
+            </Button>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -192,16 +202,6 @@ function TaskForm({ onSubmit, isLoading }) {
               className="h-8 px-2 text-xs text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
             >
               -15m
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => adjustTime(900)}
-              title="+15m"
-              className="h-8 px-2 text-xs text-gray-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors"
-            >
-              +15m
             </Button>
             <Button
               type="button"
@@ -219,12 +219,12 @@ function TaskForm({ onSubmit, isLoading }) {
               variant="ghost"
               size="sm"
               onClick={toggleStopwatch}
-              className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {isActive ? (
-                <Pause className="h-5 w-5 text-orange-500 fill-orange-500/20" />
+                <Pause className="h-6 w-6 text-orange-500 fill-orange-500/20" />
               ) : (
-                <Play className="h-5 w-5 text-green-600 fill-green-600/20" />
+                <Play className="h-6 w-6 text-green-600 fill-green-600/20" />
               )}
             </Button>
             <Button
@@ -232,9 +232,9 @@ function TaskForm({ onSubmit, isLoading }) {
               variant="ghost"
               size="sm"
               onClick={resetStopwatch}
-              className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <RotateCcw className="h-5 w-5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+              <RotateCcw className="h-6 w-6 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
             </Button>
           </div>
         </div>
