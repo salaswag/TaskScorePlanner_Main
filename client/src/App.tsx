@@ -54,16 +54,16 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light">
+    <ThemeProvider defaultTheme="light">
+      <QueryClientProvider client={queryClient}>
         <StopwatchProvider>
           <TooltipProvider>
             <Toaster />
             <Router />
           </TooltipProvider>
         </StopwatchProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
