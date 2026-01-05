@@ -587,31 +587,9 @@ export function CalendarView({ onStopwatchMount }) {
       {/* Calendar Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold min-w-[140px]">
-              {format(currentMonth, "MMMM yyyy")}
-            </h2>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateMonth("prev")}
-                disabled={isAnonymous}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateMonth("next")}
-                disabled={isAnonymous}
-                className="h-8 w-8 p-0"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <h2 className="text-lg font-semibold min-w-[140px]">
+            {format(currentMonth, "MMMM yyyy")}
+          </h2>
         </div>
         
         <div className="flex items-center gap-2">
@@ -624,6 +602,26 @@ export function CalendarView({ onStopwatchMount }) {
           >
             Today
           </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth("prev")}
+              disabled={isAnonymous}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth("next")}
+              disabled={isAnonymous}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
