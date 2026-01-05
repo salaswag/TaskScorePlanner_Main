@@ -280,10 +280,10 @@ export function CalendarView({ onStopwatchMount }) {
   }, [pipWindow, time, isActive]);
 
   const stopwatchUI = !user || user.isAnonymous ? null : (
-    <div className="flex items-center gap-3 bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 rounded-lg p-2 h-10">
+    <div className="flex items-center gap-3 bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 rounded-lg p-2 h-12">
       <div className="flex items-center gap-2 px-2 border-r border-gray-200 dark:border-gray-800">
         <Clock className="h-4 w-4 text-gray-500" />
-        <span className="font-mono font-bold text-base min-w-[70px] text-black dark:text-white">
+        <span className="font-mono font-bold text-lg min-w-[80px] text-black dark:text-white">
           {formatStopwatchTime(time)}
         </span>
       </div>
@@ -294,7 +294,7 @@ export function CalendarView({ onStopwatchMount }) {
           size="sm"
           onClick={() => adjustTime(900)}
           title="+15m"
-          className="h-7 px-1.5 text-[10px] text-green-600 font-bold"
+          className="h-8 px-2 text-xs text-green-600 font-bold"
         >
           +15m
         </Button>
@@ -304,7 +304,7 @@ export function CalendarView({ onStopwatchMount }) {
           size="sm"
           onClick={() => adjustTime(-900)}
           title="-15m"
-          className="h-7 px-1.5 text-[10px] text-gray-500 hover:text-red-500"
+          className="h-8 px-2 text-xs text-gray-500 hover:text-red-500"
         >
           -15m
         </Button>
@@ -313,12 +313,12 @@ export function CalendarView({ onStopwatchMount }) {
           variant="ghost"
           size="sm"
           onClick={toggleStopwatch}
-          className="h-7 w-7 p-0"
+          className="h-8 w-8 p-0"
         >
           {isActive ? (
-            <Pause className="h-3.5 w-3.5 text-orange-500" />
+            <Pause className="h-4 w-4 text-orange-500" />
           ) : (
-            <Play className="h-3.5 w-3.5 text-green-600" />
+            <Play className="h-4 w-4 text-green-600" />
           )}
         </Button>
         <Button
@@ -326,9 +326,9 @@ export function CalendarView({ onStopwatchMount }) {
           variant="ghost"
           size="sm"
           onClick={resetStopwatch}
-          className="h-7 w-7 p-0"
+          className="h-8 w-8 p-0"
         >
-          <RotateCcw className="h-3.5 w-3.5 text-gray-500" />
+          <RotateCcw className="h-4 w-4 text-gray-500" />
         </Button>
         <Button
           type="button"
@@ -336,9 +336,9 @@ export function CalendarView({ onStopwatchMount }) {
           size="sm"
           onClick={startPiP}
           title="Pop out"
-          className="h-7 w-7 p-0"
+          className="h-8 w-8 p-0"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><rect width="20" height="12" x="2" y="3" rx="2"/><path d="M22 15h-9v6h9v-6z"/><path d="M14 18h2"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><rect width="20" height="12" x="2" y="3" rx="2"/><path d="M22 15h-9v6h9v-6z"/><path d="M14 18h2"/></svg>
         </Button>
       </div>
     </div>
@@ -587,9 +587,34 @@ export function CalendarView({ onStopwatchMount }) {
       {/* Calendar Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold">
-            {format(currentMonth, "MMMM yyyy")}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold min-w-[140px]">
+              {format(currentMonth, "MMMM yyyy")}
+            </h2>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateMonth("prev")}
+                disabled={isAnonymous}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateMonth("next")}
+                disabled={isAnonymous}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -598,25 +623,6 @@ export function CalendarView({ onStopwatchMount }) {
             disabled={isAnonymous}
           >
             Today
-          </Button>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth("prev")}
-            disabled={isAnonymous}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth("next")}
-            disabled={isAnonymous}
-          >
-            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
