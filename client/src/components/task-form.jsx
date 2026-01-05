@@ -60,6 +60,36 @@ function TaskForm({ onSubmit, isLoading }) {
     return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Picture-in-Picture logic
+  const videoRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
+
+  const startPiP = async () => {
+    try {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      const draw = () => {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 40px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(formatStopwatchTime(time), canvas.width / 2, canvas.height / 2);
+        requestAnimationFrame(draw);
+      };
+      draw();
+
+      const stream = canvas.captureStream();
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+      await videoRef.current.requestPictureInPicture();
+    } catch (error) {
+      console.error('Failed to enter Picture-in-Picture:', error);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (title.trim() && priority >= 1 && priority <= 10 && estimatedTime > 0) {
@@ -184,18 +214,18 @@ function TaskForm({ onSubmit, isLoading }) {
           <span className="font-mono font-bold text-xl min-w-[90px] text-black dark:text-white">
             {formatStopwatchTime(time)}
           </span>
+        </div>
+        <div className="flex items-center gap-1">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => adjustTime(900)}
             title="+15m"
-            className="h-8 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors font-bold ml-1"
+            className="h-8 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors font-bold"
           >
             +15m
           </Button>
-        </div>
-        <div className="flex items-center gap-1">
           <Button
             type="button"
             variant="ghost"
@@ -221,6 +251,31 @@ function TaskForm({ onSubmit, isLoading }) {
             type="button"
             variant="ghost"
             size="sm"
+            onClick={startPiP}
+            title="Pin Stopwatch (Float)"
+            className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-5 w-5 text-blue-500"
+            >
+              <rect width="20" height="12" x="2" y="3" rx="2" />
+              <path d="M22 15h-9v6h9v-6z" />
+              <path d="M14 18h2" />
+            </svg>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={toggleStopwatch}
             className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
@@ -240,6 +295,9 @@ function TaskForm({ onSubmit, isLoading }) {
             <RotateCcw className="h-6 w-6 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
           </Button>
         </div>
+        {/* Hidden elements for PiP functionality */}
+        <canvas ref={canvasRef} width="250" height="100" className="hidden" />
+        <video ref={videoRef} className="hidden" muted playsInline />
       </div>
     </div>
   );
