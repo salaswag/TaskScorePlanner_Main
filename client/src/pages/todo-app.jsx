@@ -420,15 +420,13 @@ export default function TodoApp() {
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
                 {/* Task Form & Stopwatch - Desktop only */}
-                <div className="hidden lg:flex items-start gap-4">
-                  <div className="flex-1">
-                    <TaskFormModal
-                      isInline={true}
-                      onSubmit={handleCreateTask}
-                      isLoading={createTask.isPending}
-                    />
-                  </div>
-                  <div className="flex-shrink-0 mt-0.5">
+                <div className="hidden lg:flex items-center gap-4 w-full">
+                  <TaskFormModal
+                    isInline={true}
+                    onSubmit={handleCreateTask}
+                    isLoading={createTask.isPending}
+                  />
+                  <div className="flex-shrink-0">
                     <GlobalStopwatch />
                   </div>
                 </div>
