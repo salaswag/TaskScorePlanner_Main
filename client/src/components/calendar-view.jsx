@@ -154,14 +154,14 @@ const getTimeColorClasses = (timeInMinutes) => {
   }
 };
 
-export function CalendarView() {
+export function CalendarView({ onStopwatchMount }) {
   const { user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
   // Stopwatch state
   const [time, setTime] = useState(0);
   const [isActive, setIsActive] = useState(false);
-  const videoRef = React.useRef(null);
+  const [pipWindow, setPipWindow] = useState(null);
   const canvasRef = React.useRef(null);
   const requestRef = React.useRef(null);
 
@@ -212,21 +212,143 @@ export function CalendarView() {
 
   const startPiP = async () => {
     try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (pipWindow) {
+        pipWindow.close();
+        setPipWindow(null);
         return;
       }
-      drawPiP();
-      const stream = canvasRef.current.captureStream(30);
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-      await videoRef.current.requestPictureInPicture();
-      videoRef.current.addEventListener('leavepictureinpicture', () => {
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      }, { once: true });
+
+      if (!('documentPictureInPicture' in window)) {
+        alert("Document Picture-in-Picture is not supported in this browser.");
+        return;
+      }
+
+      const pip = await window.documentPictureInPicture.requestWindow({
+        width: 300,
+        height: 150,
+      });
+
+      // Copy styles
+      [...document.styleSheets].forEach((styleSheet) => {
+        try {
+          const cssRules = [...styleSheet.cssRules].map((rule) => rule.cssText).join('');
+          const style = document.createElement('style');
+          style.textContent = cssRules;
+          pip.document.head.appendChild(style);
+        } catch (e) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = styleSheet.href;
+          pip.document.head.appendChild(link);
+        }
+      });
+
+      const container = pip.document.createElement('div');
+      container.id = 'pip-root';
+      pip.document.body.appendChild(container);
+      
+      setPipWindow(pip);
+      pip.addEventListener('pagehide', () => setPipWindow(null));
     } catch (e) { console.error(e); }
   };
+
+  useEffect(() => {
+    if (pipWindow) {
+      const root = pipWindow.document.getElementById('pip-root');
+      if (root) {
+        root.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full bg-slate-900 text-white font-mono p-4">
+            <div class="text-4xl font-bold mb-4 tracking-wider">${formatStopwatchTime(time)}</div>
+            <div class="flex gap-2">
+              <button id="pip-toggle" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition-colors">
+                ${isActive ? 'Pause' : 'Start'}
+              </button>
+              <button id="pip-reset" class="px-4 py-2 bg-slate-700 rounded hover:bg-slate-600 transition-colors">
+                Reset
+              </button>
+            </div>
+          </div>
+        `;
+        
+        const toggleBtn = pipWindow.document.getElementById('pip-toggle');
+        const resetBtn = pipWindow.document.getElementById('pip-reset');
+        
+        if (toggleBtn) toggleBtn.onclick = toggleStopwatch;
+        if (resetBtn) resetBtn.onclick = resetStopwatch;
+      }
+    }
+  }, [pipWindow, time, isActive]);
+
+  const stopwatchUI = !user || user.isAnonymous ? null : (
+    <div className="flex items-center gap-3 bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 rounded-lg p-2 h-10">
+      <div className="flex items-center gap-2 px-2 border-r border-gray-200 dark:border-gray-800">
+        <Clock className="h-4 w-4 text-gray-500" />
+        <span className="font-mono font-bold text-base min-w-[70px] text-black dark:text-white">
+          {formatStopwatchTime(time)}
+        </span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => adjustTime(900)}
+          title="+15m"
+          className="h-7 px-1.5 text-[10px] text-green-600 font-bold"
+        >
+          +15m
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => adjustTime(-900)}
+          title="-15m"
+          className="h-7 px-1.5 text-[10px] text-gray-500 hover:text-red-500"
+        >
+          -15m
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={toggleStopwatch}
+          className="h-7 w-7 p-0"
+        >
+          {isActive ? (
+            <Pause className="h-3.5 w-3.5 text-orange-500" />
+          ) : (
+            <Play className="h-3.5 w-3.5 text-green-600" />
+          )}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={resetStopwatch}
+          className="h-7 w-7 p-0"
+        >
+          <RotateCcw className="h-3.5 w-3.5 text-gray-500" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={startPiP}
+          title="Pop out"
+          className="h-7 w-7 p-0"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><rect width="20" height="12" x="2" y="3" rx="2"/><path d="M22 15h-9v6h9v-6z"/><path d="M14 18h2"/></svg>
+        </Button>
+      </div>
+    </div>
+  );
+
+  useEffect(() => {
+    if (onStopwatchMount) {
+      onStopwatchMount(stopwatchUI);
+    }
+  }, [stopwatchUI, onStopwatchMount]);
 
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -479,74 +601,6 @@ export function CalendarView() {
           </Button>
         </div>
         
-        {/* Stopwatch integration */}
-        {!isAnonymous && (
-          <div className="flex items-center gap-3 bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 rounded-lg p-2 h-12">
-            <div className="flex items-center gap-2 px-2 border-r border-gray-200 dark:border-gray-800">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <span className="font-mono font-bold text-lg min-w-[80px] text-black dark:text-white">
-                {formatStopwatchTime(time)}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => adjustTime(900)}
-                title="+15m"
-                className="h-8 px-2 text-xs text-green-600 font-bold"
-              >
-                +15m
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => adjustTime(-900)}
-                title="-15m"
-                className="h-8 px-2 text-xs text-gray-500 hover:text-red-500"
-              >
-                -15m
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={toggleStopwatch}
-                className="h-8 w-8 p-0"
-              >
-                {isActive ? (
-                  <Pause className="h-4 w-4 text-orange-500" />
-                ) : (
-                  <Play className="h-4 w-4 text-green-600" />
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={resetStopwatch}
-                className="h-8 w-8 p-0"
-              >
-                <RotateCcw className="h-4 w-4 text-gray-500" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={startPiP}
-                title="Pin"
-                className="h-8 w-8 p-0"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><rect width="20" height="12" x="2" y="3" rx="2"/><path d="M22 15h-9v6h9v-6z"/><path d="M14 18h2"/></svg>
-              </Button>
-            </div>
-            <canvas ref={canvasRef} width="400" height="120" className="hidden" />
-            <video ref={videoRef} className="hidden" muted playsInline />
-          </div>
-        )}
-
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
