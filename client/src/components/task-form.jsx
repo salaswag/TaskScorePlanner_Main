@@ -1,9 +1,9 @@
 import * as React from "react";
-const { useState } = React;
+const { useState, useEffect } = React;
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import { Plus, Play, Pause, RotateCcw, Clock } from "lucide-react";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
 
@@ -12,8 +12,40 @@ function TaskForm({ onSubmit, isLoading }) {
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
   
+  // Stopwatch state
+  const [time, setTime] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  
   const { isKeyboardVisible, viewportHeight, keyboardHeight } = useKeyboardAware();
   const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
+
+  useEffect(() => {
+    let interval = null;
+    if (isActive) {
+      interval = setInterval(() => {
+        setTime((time) => time + 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  const toggleStopwatch = () => {
+    setIsActive(!isActive);
+  };
+
+  const resetStopwatch = () => {
+    setTime(0);
+    setIsActive(false);
+  };
+
+  const formatStopwatchTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,7 +72,7 @@ function TaskForm({ onSubmit, isLoading }) {
 
   return (
     <div 
-      className="w-full flex justify-start transition-all duration-300 ease-in-out"
+      className="w-full flex flex-col lg:flex-row items-start lg:items-center gap-4 transition-all duration-300 ease-in-out"
       style={{
         transform: isKeyboardVisible ? 'translateY(-10px)' : 'translateY(0)',
         marginBottom: isKeyboardVisible ? '10px' : '0',
@@ -129,6 +161,40 @@ function TaskForm({ onSubmit, isLoading }) {
             </Button>
           </div>
         </form>
+
+        {/* Stopwatch - Only on desktop right side */}
+        <div className="hidden lg:flex items-center gap-3 bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 h-12">
+          <div className="flex items-center gap-2 px-2 border-r border-gray-200 dark:border-gray-800">
+            <Clock className="h-4 w-4 text-gray-500" />
+            <span className="font-mono font-bold text-lg min-w-[80px]">
+              {formatStopwatchTime(time)}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={toggleStopwatch}
+              className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              {isActive ? (
+                <Pause className="h-4 w-4 text-orange-500" />
+              ) : (
+                <Play className="h-4 w-4 text-green-500" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetStopwatch}
+              className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <RotateCcw className="h-4 w-4 text-gray-500" />
+            </Button>
+          </div>
+        </div>
     </div>
   );
 }
