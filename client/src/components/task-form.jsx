@@ -197,6 +197,16 @@ function TaskForm({ onSubmit, isLoading }) {
               type="button"
               variant="ghost"
               size="sm"
+              onClick={() => adjustTime(900)}
+              title="+15m"
+              className="h-8 px-2 text-xs text-gray-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors"
+            >
+              +15m
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => adjustTime(-3600)}
               title="-1h"
               className="h-8 px-2 text-xs text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
