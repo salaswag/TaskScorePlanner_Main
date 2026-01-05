@@ -6,120 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Plus, Play, Pause, RotateCcw, Clock } from "lucide-react";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
+import { useGlobalStopwatch } from "@/hooks/use-global-stopwatch";
 
 function TaskForm({ onSubmit, isLoading }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
 
-  // Stopwatch state
-  const [time, setTime] = useState(0);
-  const [isActive, setIsActive] = useState(false);
+  // Global Stopwatch state
+  const { time, isActive, toggle: toggleStopwatch, reset: resetStopwatch, adjust: adjustTime } = useGlobalStopwatch();
 
   const { isKeyboardVisible, viewportHeight, keyboardHeight } =
     useKeyboardAware();
   const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
-
-  useEffect(() => {
-    let interval = null;
-    if (isActive) {
-      interval = setInterval(() => {
-        setTime((prevTime) => {
-          const newTime = prevTime + 1;
-          // 16 hours = 16 * 3600 = 57600 seconds
-          if (newTime >= 57600) {
-            setIsActive(false);
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [isActive]);
-
-  const toggleStopwatch = () => {
-    setIsActive(!isActive);
-  };
-
-  const resetStopwatch = () => {
-    setTime(0);
-    setIsActive(false);
-  };
-
-  const adjustTime = (seconds) => {
-    setTime((prevTime) => Math.max(0, prevTime + seconds));
-  };
 
   const formatStopwatchTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  // Picture-in-Picture logic
-  const videoRef = React.useRef(null);
-  const canvasRef = React.useRef(null);
-  const requestRef = React.useRef(null);
-
-  const drawPiP = () => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    // Use a higher scale for resolution but smaller canvas size
-    const scale = 2;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Background
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Text
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 60px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(formatStopwatchTime(time), canvas.width / 2, canvas.height / 2);
-    
-    requestRef.current = requestAnimationFrame(drawPiP);
-  };
-
-  useEffect(() => {
-    if (document.pictureInPictureElement) {
-      // If we are in PiP, we don't need to restart it, 
-      // but we need to make sure it keeps drawing if the time changes
-      // Actually, drawPiP is already using the current 'time' because it's in the closure
-    }
-  }, [time]);
-
-  const startPiP = async () => {
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
-        return;
-      }
-
-      const canvas = canvasRef.current;
-      // Start the animation loop
-      drawPiP();
-
-      const stream = canvas.captureStream(30); // 30 FPS
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-      await videoRef.current.requestPictureInPicture();
-      
-      videoRef.current.addEventListener('leavepictureinpicture', () => {
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      }, { once: true });
-
-    } catch (error) {
-      console.error('Failed to enter Picture-in-Picture:', error);
-    }
   };
 
   const handleSubmit = (e) => {
@@ -246,6 +151,30 @@ function TaskForm({ onSubmit, isLoading }) {
           <span className="font-mono font-bold text-xl min-w-[90px] text-black dark:text-white">
             {formatStopwatchTime(time)}
           </span>
+          <div className="flex items-center gap-1 ml-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={toggleStopwatch}
+              className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {isActive ? (
+                <Pause className="h-6 w-6 text-orange-500 fill-orange-500/20" />
+              ) : (
+                <Play className="h-6 w-6 text-green-600 fill-green-600/20" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetStopwatch}
+              className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <RotateCcw className="h-6 w-6 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+            </Button>
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <Button
@@ -268,58 +197,7 @@ function TaskForm({ onSubmit, isLoading }) {
           >
             -15m
           </Button>
-          <div className="w-px h-6 bg-gray-200 dark:bg-gray-800 mx-1" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={startPiP}
-            title="Pin Stopwatch (Float)"
-            className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-5 w-5 text-blue-500"
-            >
-              <rect width="20" height="12" x="2" y="3" rx="2" />
-              <path d="M22 15h-9v6h9v-6z" />
-              <path d="M14 18h2" />
-            </svg>
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={toggleStopwatch}
-            className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            {isActive ? (
-              <Pause className="h-6 w-6 text-orange-500 fill-orange-500/20" />
-            ) : (
-              <Play className="h-6 w-6 text-green-600 fill-green-600/20" />
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={resetStopwatch}
-            className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <RotateCcw className="h-6 w-6 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-          </Button>
         </div>
-        {/* Hidden elements for PiP functionality */}
-        <canvas ref={canvasRef} width="400" height="120" className="hidden" />
-        <video ref={videoRef} className="hidden" muted playsInline />
       </div>
     </div>
   );
