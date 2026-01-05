@@ -6,59 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Plus, Play, Pause, RotateCcw, Clock } from "lucide-react";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
+import { useStopwatch } from "@/hooks/use-stopwatch";
 
 function TaskForm({ onSubmit, isLoading }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
 
-  // Stopwatch state
-  const [time, setTime] = useState(0);
-  const [isActive, setIsActive] = useState(false);
+  const {
+    time,
+    isActive,
+    toggleStopwatch,
+    resetStopwatch,
+    adjustTime,
+    formatStopwatchTime
+  } = useStopwatch();
 
   const { isKeyboardVisible, viewportHeight, keyboardHeight } =
     useKeyboardAware();
   const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
-
-  useEffect(() => {
-    let interval = null;
-    if (isActive) {
-      interval = setInterval(() => {
-        setTime((prevTime) => {
-          const newTime = prevTime + 1;
-          // 16 hours = 16 * 3600 = 57600 seconds
-          if (newTime >= 57600) {
-            setIsActive(false);
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [isActive]);
-
-  const toggleStopwatch = () => {
-    setIsActive(!isActive);
-  };
-
-  const resetStopwatch = () => {
-    setTime(0);
-    setIsActive(false);
-  };
-
-  const adjustTime = (seconds) => {
-    setTime((prevTime) => Math.max(0, prevTime + seconds));
-  };
-
-  const formatStopwatchTime = (seconds) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
