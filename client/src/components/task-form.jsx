@@ -207,28 +207,30 @@ function TaskForm({ onSubmit, isLoading }) {
             -15m
           </Button>
           <div className="w-px h-6 bg-gray-200 dark:bg-gray-800 mx-1" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={toggleStopwatch}
-            className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            {isActive ? (
-              <Pause className="h-6 w-6 text-orange-500 fill-orange-500/20" />
-            ) : (
-              <Play className="h-6 w-6 text-green-600 fill-green-600/20" />
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={resetStopwatch}
-            className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <RotateCcw className="h-6 w-6 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={toggleStopwatch}
+              className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {isActive ? (
+                <Pause className="h-6 w-6 text-orange-500 fill-orange-500/20" />
+              ) : (
+                <Play className="h-6 w-6 text-green-600 fill-green-600/20" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={resetStopwatch}
+              className="h-10 w-10 p-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <RotateCcw className="h-6 w-6 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
