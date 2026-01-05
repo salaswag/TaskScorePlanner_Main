@@ -1,6 +1,5 @@
 
-import * as React from "react";
-const { useState, useEffect } = React;
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, RotateCcw } from "lucide-react";
 

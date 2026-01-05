@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import * as React from "react";
-const { useRef, useEffect } = React;
+import { useRef, useEffect } from "react";
 
 // Local storage helpers for anonymous users
 const getAnonymousTasks = () => {

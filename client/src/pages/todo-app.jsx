@@ -1,5 +1,4 @@
-import * as React from "react";
-const { useState, useEffect } = React;
+import React, { useState, useEffect } from "react";
 import TaskTable from "@/components/task-table";
 import TaskEditModal from "@/components/task-edit-modal";
 import TimerModal from "@/components/timer-modal";
@@ -10,7 +9,6 @@ import DataTransferDialog from "@/components/data-transfer-dialog";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
-import { PersistentStopwatch } from "@/components/persistent-stopwatch";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
@@ -419,18 +417,13 @@ export default function TodoApp() {
           >
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
-                {/* Task Form & Stopwatch - Desktop only */}
-                <div className="hidden lg:flex items-center gap-4">
-                  <div className="flex-1">
-                    <TaskFormModal
-                      isInline={true}
-                      onSubmit={handleCreateTask}
-                      isLoading={createTask.isPending}
-                    />
-                  </div>
-                  <div className="flex-[0.4]">
-                    <PersistentStopwatch />
-                  </div>
+                {/* Task Form - Desktop only */}
+                <div className="hidden lg:block">
+                  <TaskFormModal
+                    isInline={true}
+                    onSubmit={handleCreateTask}
+                    isLoading={createTask.isPending}
+                  />
                 </div>
 
                 {/* Tasks Section */}

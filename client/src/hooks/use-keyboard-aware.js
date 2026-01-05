@@ -1,6 +1,5 @@
 
-import * as React from 'react';
-const { useState, useEffect } = React;
+import { useState, useEffect } from 'react';
 
 export function useKeyboardAware() {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
