@@ -63,28 +63,60 @@ function TaskForm({ onSubmit, isLoading }) {
   // Picture-in-Picture logic
   const videoRef = React.useRef(null);
   const canvasRef = React.useRef(null);
+  const requestRef = React.useRef(null);
+
+  const drawPiP = () => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Use a higher scale for resolution but smaller canvas size
+    const scale = 2;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Background
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Text
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 60px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(formatStopwatchTime(time), canvas.width / 2, canvas.height / 2);
+    
+    requestRef.current = requestAnimationFrame(drawPiP);
+  };
+
+  useEffect(() => {
+    if (document.pictureInPictureElement) {
+      // If we are in PiP, we don't need to restart it, 
+      // but we need to make sure it keeps drawing if the time changes
+      // Actually, drawPiP is already using the current 'time' because it's in the closure
+    }
+  }, [time]);
 
   const startPiP = async () => {
     try {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      
-      const draw = () => {
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 40px monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(formatStopwatchTime(time), canvas.width / 2, canvas.height / 2);
-        requestAnimationFrame(draw);
-      };
-      draw();
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        return;
+      }
 
-      const stream = canvas.captureStream();
+      const canvas = canvasRef.current;
+      // Start the animation loop
+      drawPiP();
+
+      const stream = canvas.captureStream(30); // 30 FPS
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
       await videoRef.current.requestPictureInPicture();
+      
+      videoRef.current.addEventListener('leavepictureinpicture', () => {
+        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      }, { once: true });
+
     } catch (error) {
       console.error('Failed to enter Picture-in-Picture:', error);
     }
@@ -296,7 +328,7 @@ function TaskForm({ onSubmit, isLoading }) {
           </Button>
         </div>
         {/* Hidden elements for PiP functionality */}
-        <canvas ref={canvasRef} width="250" height="100" className="hidden" />
+        <canvas ref={canvasRef} width="400" height="120" className="hidden" />
         <video ref={videoRef} className="hidden" muted playsInline />
       </div>
     </div>
