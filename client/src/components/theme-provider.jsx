@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useMemo } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext({
   theme: "light",
@@ -9,17 +9,12 @@ export function ThemeProvider({ children, defaultTheme = "light" }) {
   const [theme, setTheme] = useState(() => {
     // Check localStorage first, then fall back to default
     if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme === "light" || savedTheme === "dark") {
-        return savedTheme;
-      }
+      return localStorage.getItem("theme") || defaultTheme;
     }
     return defaultTheme;
   });
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    
     const root = window.document.documentElement;
 
     // Remove previous theme classes
@@ -32,10 +27,10 @@ export function ThemeProvider({ children, defaultTheme = "light" }) {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const value = useMemo(() => ({
+  const value = {
     theme,
     setTheme,
-  }), [theme]);
+  };
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
