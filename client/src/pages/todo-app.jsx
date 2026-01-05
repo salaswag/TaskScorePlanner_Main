@@ -6,7 +6,6 @@ import TimerModal from "@/components/timer-modal";
 import LaterSection from "@/components/later-section";
 import FloatingAddButton from "@/components/floating-add-button";
 import TaskFormModal from "@/components/task-form-modal";
-import { GlobalStopwatch } from "@/components/global-stopwatch";
 import DataTransferDialog from "@/components/data-transfer-dialog";
 
 import NotificationToast from "@/components/notification-toast";
@@ -419,16 +418,13 @@ export default function TodoApp() {
           >
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
-                {/* Task Form & Stopwatch - Desktop only */}
-                <div className="hidden lg:flex items-center gap-4 w-full">
+                {/* Task Form - Desktop only */}
+                <div className="hidden lg:block">
                   <TaskFormModal
                     isInline={true}
                     onSubmit={handleCreateTask}
                     isLoading={createTask.isPending}
                   />
-                  <div className="flex-shrink-0">
-                    <GlobalStopwatch />
-                  </div>
                 </div>
 
                 {/* Tasks Section */}

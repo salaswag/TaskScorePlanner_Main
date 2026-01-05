@@ -40,7 +40,7 @@ function TaskForm({ onSubmit, isLoading }) {
 
   return (
     <div 
-      className="flex-grow transition-all duration-300 ease-in-out"
+      className="w-full flex justify-center transition-all duration-300 ease-in-out"
       style={{
         transform: isKeyboardVisible ? 'translateY(-10px)' : 'translateY(0)',
         marginBottom: isKeyboardVisible ? '10px' : '0',
@@ -49,7 +49,7 @@ function TaskForm({ onSubmit, isLoading }) {
     >
       <form 
         onSubmit={handleSubmit} 
-        className={`w-full bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 transition-all duration-300 ${
+        className={`w-full max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 transition-all duration-300 ${
           isKeyboardVisible ? 'shadow-xl border-blue-300 dark:border-blue-600' : ''
         }`}
       >
