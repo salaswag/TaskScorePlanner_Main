@@ -147,7 +147,7 @@ function TaskForm({ onSubmit, isLoading }) {
 
   return (
     <div
-      className="w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-4 transition-all duration-300 ease-in-out"
+      className="w-full flex flex-col lg:flex-row items-stretch gap-4 transition-all duration-300 ease-in-out"
       style={{
         transform: isKeyboardVisible ? "translateY(-10px)" : "translateY(0)",
         marginBottom: isKeyboardVisible ? "10px" : "0",
@@ -156,15 +156,13 @@ function TaskForm({ onSubmit, isLoading }) {
     >
       <form
         onSubmit={handleSubmit}
-        className={`w-full lg:w-[70%] max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 transition-all duration-300 ${
-          isKeyboardVisible
-            ? "shadow-xl border-blue-300 dark:border-blue-600"
-            : ""
+        className={`w-full lg:flex-[0.7] max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 transition-all duration-300 ${
+          isKeyboardVisible ? "shadow-xl border-blue-300 dark:border-blue-600" : ""
         }`}
       >
-        {/* Desktop: All Elements in One Line, Mobile: Stacked Layout */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4 w-full">
-          {/* Task Input - Full width on mobile, flexible on desktop */}
+        {/* Responsive Container */}
+        <div className="flex flex-col xl:flex-row xl:items-center gap-4 w-full">
+          {/* Task Input */}
           <Input
             type="text"
             placeholder="Add new task..."
@@ -180,13 +178,13 @@ function TaskForm({ onSubmit, isLoading }) {
                 focusNextInput();
               }
             }}
-            className="w-full lg:flex-1 px-4 py-4 h-12 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md"
+            className="w-full xl:flex-1 px-4 py-4 h-12 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md"
           />
 
-          {/* Mobile: Priority and Time in same row, Desktop: Separate */}
-          <div className="flex flex-col sm:flex-row lg:flex-row gap-4 lg:gap-4 w-full lg:w-auto">
+          {/* Controls Group */}
+          <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
             {/* Priority Slider */}
-            <div className="flex items-center gap-2 lg:min-w-[180px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+            <div className="flex items-center gap-2 sm:min-w-[180px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
               <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
                 Priority: {priority}
               </label>
@@ -204,12 +202,12 @@ function TaskForm({ onSubmit, isLoading }) {
                     focusNextInput();
                   }
                 }}
-                className="slider flex-1 lg:w-20"
+                className="slider flex-1"
               />
             </div>
 
             {/* Time Slider */}
-            <div className="flex items-center gap-2 lg:min-w-[250px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+            <div className="flex items-center gap-2 sm:min-w-[200px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
               <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
                 Time: {formatTime(estimatedTime)}
               </label>
@@ -222,16 +220,16 @@ function TaskForm({ onSubmit, isLoading }) {
                 onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
-                className="slider flex-1 lg:w-32"
+                className="slider flex-1"
               />
             </div>
           </div>
 
-          {/* Add Button - Full width on mobile, auto width on desktop */}
+          {/* Add Button */}
           <Button
             type="submit"
             disabled={!title.trim() || isLoading}
-            className="w-full lg:w-auto bg-black dark:bg-white text-white dark:text-black px-4 py-3 h-12 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 whitespace-nowrap transform hover:scale-105"
+            className="w-full xl:w-auto bg-black dark:bg-white text-white dark:text-black px-4 py-3 h-12 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 whitespace-nowrap transform hover:scale-105"
           >
             <Plus className="h-4 w-4" />
             <span>{isLoading ? "Adding..." : "Add"}</span>
@@ -239,15 +237,15 @@ function TaskForm({ onSubmit, isLoading }) {
         </div>
       </form>
 
-      {/* Stopwatch - Only on desktop right side */}
-      <div className="hidden lg:flex flex-[0.4] min-w-[320px] items-center justify-between gap-3 bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 h-14 self-center font-medium">
+      {/* Stopwatch Container */}
+      <div className="flex lg:flex-[0.3] w-full min-w-[320px] items-center justify-between gap-3 bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 h-14 self-center font-medium">
         <div className="flex items-center gap-2 px-2 border-r border-gray-200 dark:border-gray-800">
           <Clock className="h-5 w-5 text-gray-500" />
           <span className="font-mono font-bold text-xl min-w-[90px] text-black dark:text-white">
             {formatStopwatchTime(time)}
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-1 justify-end">
           <Button
             type="button"
             variant="ghost"
@@ -278,7 +276,7 @@ function TaskForm({ onSubmit, isLoading }) {
           >
             -1h
           </Button>
-          <div className="w-px h-6 bg-gray-200 dark:bg-gray-800 mx-1" />
+          <div className="w-px h-6 bg-gray-200 dark:bg-gray-800 mx-1 hidden sm:block" />
           <Button
             type="button"
             variant="ghost"
