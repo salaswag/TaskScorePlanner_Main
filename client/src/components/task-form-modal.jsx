@@ -33,18 +33,12 @@ export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, is
 
   if (isInline) {
     return (
-      <div className="w-full">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">Add New Task</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create a new task with priority and time estimate</p>
-        </div>
-        <TaskForm 
-          onSubmit={handleSubmit} 
-          isLoading={isLoading}
-          formData={formData}
-          setFormData={setFormData}
-        />
-      </div>
+      <TaskForm 
+        onSubmit={handleSubmit} 
+        isLoading={isLoading}
+        formData={formData}
+        setFormData={setFormData}
+      />
     );
   }
 

@@ -6,7 +6,6 @@ import TimerModal from "@/components/timer-modal";
 import LaterSection from "@/components/later-section";
 import FloatingAddButton from "@/components/floating-add-button";
 import TaskFormModal from "@/components/task-form-modal";
-import { TaskStopwatch } from "@/components/task-stopwatch";
 import DataTransferDialog from "@/components/data-transfer-dialog";
 
 import NotificationToast from "@/components/notification-toast";
@@ -419,21 +418,13 @@ export default function TodoApp() {
           >
             <TabsContent value="tasks" className="mt-0">
               <div className="space-y-4">
-                {/* Task Form & Stopwatch - Desktop only */}
-                <div className="hidden lg:flex items-start justify-between gap-6 bg-white dark:bg-gray-900/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm mb-6">
-                  <div className="flex-1">
-                    <TaskFormModal
-                      isInline={true}
-                      onSubmit={handleCreateTask}
-                      isLoading={createTask.isPending}
-                    />
-                  </div>
-                  <div className="flex-shrink-0 pt-1">
-                    <div className="flex flex-col items-end gap-2">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Session Timer</span>
-                      <TaskStopwatch />
-                    </div>
-                  </div>
+                {/* Task Form - Desktop only */}
+                <div className="hidden lg:block">
+                  <TaskFormModal
+                    isInline={true}
+                    onSubmit={handleCreateTask}
+                    isLoading={createTask.isPending}
+                  />
                 </div>
 
                 {/* Tasks Section */}
