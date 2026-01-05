@@ -63,7 +63,9 @@ function TaskForm({ onSubmit, isLoading }) {
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               onKeyDown={(e) => {
-                if (e.key === 'Tab' || e.key === 'Enter') {
+                if (e.key === 'Enter' && title.trim()) {
+                  handleSubmit(e);
+                } else if (e.key === 'Tab') {
                   e.preventDefault();
                   focusNextInput();
                 }
