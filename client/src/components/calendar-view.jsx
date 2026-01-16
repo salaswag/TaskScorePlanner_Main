@@ -120,10 +120,6 @@ const SHALLOW_WORK_OPTIONS_WITH_NONE = [
 const getTimeColorClasses = (timeInMinutes) => {
   if (timeInMinutes === undefined || timeInMinutes === null) return "";
 
-  if (timeInMinutes === 0) {
-    return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300";
-  }
-
   const hours = timeInMinutes / 60;
 
   if (hours >= 8) {
