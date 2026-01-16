@@ -22,9 +22,6 @@ export function DashboardView({ tasks, onUpdateTask }) {
             <Calendar className="h-5 w-5" />
             Time Tracking Calendar
           </CardTitle>
-          <CardDescription>
-            Manually track your daily work hours. Double-click any day to enter time.
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <CalendarView />
