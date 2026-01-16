@@ -391,20 +391,26 @@ export function CalendarView() {
       )}
 
       {/* Calendar Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold">
-            {format(currentMonth, "MMMM yyyy")}
-          </h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={goToToday}
-            className="text-xs"
-            disabled={isAnonymous}
-          >
-            Today
-          </Button>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+              {format(currentMonth, "MMMM yyyy")}
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToToday}
+              className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 h-8"
+              disabled={isAnonymous}
+            >
+              Today
+            </Button>
+          </div>
+          
+          <p className="hidden lg:block text-sm text-gray-500 dark:text-gray-400 border-l border-gray-200 dark:border-gray-800 pl-4 max-w-md">
+            Double click any day in the calendar to manually enter your work hours.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
