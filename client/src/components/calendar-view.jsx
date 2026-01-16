@@ -118,7 +118,11 @@ const SHALLOW_WORK_OPTIONS_WITH_NONE = [
 ];
 
 const getTimeColorClasses = (timeInMinutes) => {
-  if (!timeInMinutes || timeInMinutes === 0) return "";
+  if (timeInMinutes === undefined || timeInMinutes === null) return "";
+
+  if (timeInMinutes === 0) {
+    return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300";
+  }
 
   const hours = timeInMinutes / 60;
 
@@ -474,8 +478,8 @@ export function CalendarView() {
                   ${!isCurrentMonth ? "bg-gray-50 dark:bg-gray-800/30 text-gray-400" : ""}
                   ${isToday ? "bg-blue-50 dark:bg-blue-900/20" : ""}
                   ${isFuture ? "opacity-50" : ""}
-                  ${isCurrentMonth && !isFuture && timeSpent > 0 ? getWorkTypeColorClasses(timeEntry) : ""}
-                  ${isCurrentMonth && !isFuture && timeSpent === 0 ? "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" : ""}
+                  ${isCurrentMonth && !isFuture && timeEntry ? getTimeColorClasses(timeSpent) : ""}
+                  ${isCurrentMonth && !isFuture && !timeEntry ? "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800" : ""}
                 `}
                   onClick={() =>
                     !isFuture &&
@@ -506,7 +510,7 @@ export function CalendarView() {
                     </div>
 
                     {/* Time Display and Edit */}
-                    {isCurrentMonth && !isFuture && timeSpent === 0 && (
+                    {isCurrentMonth && !isFuture && !timeEntry && (
                       <div className="flex-1 flex flex-col items-center justify-center">
                         <div
                           className={`rounded-lg p-2 transition-colors w-full text-center ${isAnonymous ? "cursor-not-allowed" : "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"}`}
@@ -532,7 +536,7 @@ export function CalendarView() {
                     )}
 
                     {/* Time display for cells with time */}
-                    {isCurrentMonth && !isFuture && timeSpent > 0 && (
+                    {isCurrentMonth && !isFuture && timeEntry && (
                       <div className="flex-1 flex flex-col items-center justify-center space-y-2">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
