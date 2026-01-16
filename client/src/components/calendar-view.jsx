@@ -525,13 +525,9 @@ export function CalendarView() {
                                 <Clock className="w-3 h-3" />
                               )}
                               <span className="text-xs">
-                                {timeSpent > 0 ? formatTime(timeSpent) : (isAnonymous ? "Login" : "Add")}
+                                {timeEntry ? formatTime(timeSpent) : (isAnonymous ? "Login" : "Add")}
                               </span>
                             </div>
-                            
-                            {timeSpent === 0 && !isAnonymous && timeEntry && (
-                              <span className="text-[10px] font-bold text-gray-400">0h logged</span>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -539,14 +535,7 @@ export function CalendarView() {
 
                     {/* Time display for cells with time */}
                     {isCurrentMonth && !isFuture && timeSpent > 0 && (
-                      <div className="flex-1 flex flex-col items-center justify-center space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          <span className="text-lg font-semibold">
-                            {formatTime(timeSpent)}
-                          </span>
-                        </div>
-
+                      <div className="flex flex-col items-center justify-center space-y-2 w-full mt-1">
                         {/* Work Type Badges */}
                         <div className="flex flex-col gap-1 w-full">
                           {timeEntry?.deepWork &&
