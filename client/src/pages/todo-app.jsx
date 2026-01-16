@@ -28,7 +28,7 @@ import UserMenu from "../components/user-menu";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
 
-export default function TodoApp({ initialTab }) {
+export default function TodoApp() {
   const [location, setLocation] = useLocation();
   const { user, login, register, logout, isLoading: authLoading } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);

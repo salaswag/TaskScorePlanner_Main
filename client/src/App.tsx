@@ -12,9 +12,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={TodoApp} />
-      <Route path="/time-tracker">
-        {() => <TodoApp initialTab="dashboard" />}
-      </Route>
+      <Route path="/time-tracker" component={TodoApp} />
       <Route component={NotFound} />
     </Switch>
   );
