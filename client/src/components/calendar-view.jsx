@@ -393,6 +393,8 @@ export function CalendarView() {
       {/* Calendar Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
+          <h2 className="text-lg font-bold"> </h2>
+          <h1 className="text-lg font-bold">Time Tracking Calendar</h1>
           <h2 className="text-lg font-semibold">
             {format(currentMonth, "MMMM yyyy")}
           </h2>
