@@ -292,7 +292,6 @@ export function CalendarView() {
     }
 
     setIsLoading(true);
-    // Validation: Allow 0 if it's explicitly being saved as a record
     if (selectedDate) {
       const dateKey = format(selectedDate, "yyyy-MM-dd");
 
@@ -392,8 +391,9 @@ export function CalendarView() {
       )}
 
       {/* Calendar Header */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-bold"> </h2>
           <h1 className="text-lg font-bold">Time Tracking Calendar</h1>
           <h2 className="text-lg font-semibold">
             {format(currentMonth, "MMMM yyyy")}
@@ -506,7 +506,7 @@ export function CalendarView() {
                     </div>
 
                     {/* Time Display and Edit */}
-                    {isCurrentMonth && !isFuture && (
+                    {isCurrentMonth && !isFuture && timeSpent === 0 && (
                       <div className="flex-1 flex flex-col items-center justify-center">
                         <div
                           className={`rounded-lg p-2 transition-colors w-full text-center ${isAnonymous ? "cursor-not-allowed" : "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"}`}
@@ -514,20 +514,18 @@ export function CalendarView() {
                           title={
                             isAnonymous
                               ? "Login required to track time"
-                              : "Click to edit time"
+                              : "Click to add time"
                           }
                         >
-                          <div className="flex flex-col items-center justify-center gap-1">
-                            <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
-                              {isAnonymous ? (
-                                <Lock className="w-3 h-3" />
-                              ) : (
-                                <Clock className="w-3 h-3" />
-                              )}
-                              <span className="text-xs">
-                                {timeEntry ? formatTime(timeSpent) : (isAnonymous ? "Login" : "Add")}
-                              </span>
-                            </div>
+                          <div className="flex items-center justify-center gap-1 text-gray-400 dark:text-gray-500">
+                            {isAnonymous ? (
+                              <Lock className="w-3 h-3" />
+                            ) : (
+                              <Clock className="w-3 h-3" />
+                            )}
+                            <span className="text-xs">
+                              {isAnonymous ? "Login" : "Add"}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -535,7 +533,14 @@ export function CalendarView() {
 
                     {/* Time display for cells with time */}
                     {isCurrentMonth && !isFuture && timeSpent > 0 && (
-                      <div className="flex flex-col items-center justify-center space-y-2 w-full mt-1">
+                      <div className="flex-1 flex flex-col items-center justify-center space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-lg font-semibold">
+                            {formatTime(timeSpent)}
+                          </span>
+                        </div>
+
                         {/* Work Type Badges */}
                         <div className="flex flex-col gap-1 w-full">
                           {timeEntry?.deepWork &&
