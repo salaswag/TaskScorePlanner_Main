@@ -44,7 +44,7 @@ export default function TodoApp() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [activeTab, setActiveTab] = useState(initialTab || (location === "/time-tracker" ? "dashboard" : "tasks"));
+  const [activeTab, setActiveTab] = useState(location === "/time-tracker" ? "dashboard" : "tasks");
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
   // Sync tab with URL
