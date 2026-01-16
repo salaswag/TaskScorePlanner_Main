@@ -13,6 +13,7 @@ import { DashboardView } from "@/components/dashboard-view";
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
 import {
   Moon,
   Sun,
@@ -27,7 +28,8 @@ import UserMenu from "../components/user-menu";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
 
-export default function TodoApp() {
+export default function TodoApp({ initialTab }) {
+  const [location, setLocation] = useLocation();
   const { user, login, register, logout, isLoading: authLoading } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState("");
@@ -42,8 +44,26 @@ export default function TodoApp() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [activeTab, setActiveTab] = useState("tasks");
+  const [activeTab, setActiveTab] = useState(initialTab || (location === "/time-tracker" ? "dashboard" : "tasks"));
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+
+  // Sync tab with URL
+  useEffect(() => {
+    if (location === "/time-tracker" && activeTab !== "dashboard") {
+      setActiveTab("dashboard");
+    } else if (location === "/" && activeTab !== "tasks") {
+      setActiveTab("tasks");
+    }
+  }, [location]);
+
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+    if (value === "dashboard") {
+      setLocation("/time-tracker");
+    } else {
+      setLocation("/");
+    }
+  };
 
   const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } =
     useTasks();
@@ -354,7 +374,7 @@ export default function TodoApp() {
 
             {/* Navigation Tabs - Center */}
             <div className="flex-1 flex justify-center">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="grid grid-cols-2">
                   <TabsTrigger
                     value="tasks"
@@ -412,7 +432,7 @@ export default function TodoApp() {
         <main className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-6">
           <Tabs
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={handleTabChange}
             className="w-full"
           >
             <TabsContent value="tasks" className="mt-0">
