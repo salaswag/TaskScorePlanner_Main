@@ -292,6 +292,7 @@ export function CalendarView() {
     }
 
     setIsLoading(true);
+    // Validation: Allow 0 if it's explicitly being saved as a record
     if (selectedDate) {
       const dateKey = format(selectedDate, "yyyy-MM-dd");
 
@@ -391,9 +392,8 @@ export function CalendarView() {
       )}
 
       {/* Calendar Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-lg font-bold"> </h2>
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-2">
           <h1 className="text-lg font-bold">Time Tracking Calendar</h1>
           <h2 className="text-lg font-semibold">
             {format(currentMonth, "MMMM yyyy")}
@@ -506,7 +506,7 @@ export function CalendarView() {
                     </div>
 
                     {/* Time Display and Edit */}
-                    {isCurrentMonth && !isFuture && timeSpent === 0 && (
+                    {isCurrentMonth && !isFuture && (
                       <div className="flex-1 flex flex-col items-center justify-center">
                         <div
                           className={`rounded-lg p-2 transition-colors w-full text-center ${isAnonymous ? "cursor-not-allowed" : "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"}`}
@@ -514,18 +514,24 @@ export function CalendarView() {
                           title={
                             isAnonymous
                               ? "Login required to track time"
-                              : "Click to add time"
+                              : "Click to edit time"
                           }
                         >
-                          <div className="flex items-center justify-center gap-1 text-gray-400 dark:text-gray-500">
-                            {isAnonymous ? (
-                              <Lock className="w-3 h-3" />
-                            ) : (
-                              <Clock className="w-3 h-3" />
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+                              {isAnonymous ? (
+                                <Lock className="w-3 h-3" />
+                              ) : (
+                                <Clock className="w-3 h-3" />
+                              )}
+                              <span className="text-xs">
+                                {timeSpent > 0 ? formatTime(timeSpent) : (isAnonymous ? "Login" : "Add")}
+                              </span>
+                            </div>
+                            
+                            {timeSpent === 0 && !isAnonymous && timeEntry && (
+                              <span className="text-[10px] font-bold text-gray-400">0h logged</span>
                             )}
-                            <span className="text-xs">
-                              {isAnonymous ? "Login" : "Add"}
-                            </span>
                           </div>
                         </div>
                       </div>
