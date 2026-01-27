@@ -277,7 +277,7 @@ function DraggableNode({
                 if (e.key === 'Enter') handleSaveEdit();
                 if (e.key === 'Escape') setIsEditing(false);
               }}
-              className={`${isGoal ? 'text-lg' : 'text-sm'} font-medium bg-transparent border-b border-current outline-none w-32`}
+              className={`${isGoal ? 'text-base' : 'text-sm'} font-medium bg-transparent border-b border-current outline-none min-w-[120px]`}
               autoFocus
               onClick={(e) => e.stopPropagation()}
             />
@@ -290,7 +290,7 @@ function DraggableNode({
           </div>
         ) : (
           <span 
-            className={`${isGoal ? 'text-lg py-1' : 'text-sm'} font-medium truncate max-w-[150px] ${
+            className={`${isGoal ? 'text-base py-1' : 'text-sm'} font-medium break-words max-w-[250px] ${
               node.completed && !isGoal ? 'line-through text-gray-500' : ''
             } ${isGoal ? 'text-white font-bold tracking-tight' : ''}`}
             onDoubleClick={(e) => {
@@ -452,9 +452,32 @@ export function MindMapView() {
 
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   const handleZoom = (delta) => {
     setZoom(prev => Math.max(0.2, Math.min(3, prev + delta)));
+  };
+
+  const handleCanvasMouseDown = (e) => {
+    // Only pan if clicking the background/svg, not a node
+    if (e.target.tagName === 'svg' || e.target.closest('.canvas-background')) {
+      setIsPanning(true);
+      setPanStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+    }
+  };
+
+  const handleCanvasMouseMove = useCallback((e) => {
+    if (isPanning) {
+      setOffset({
+        x: e.clientX - panStart.x,
+        y: e.clientY - panStart.y
+      });
+    }
+  }, [isPanning, panStart]);
+
+  const handleCanvasMouseUp = () => {
+    setIsPanning(false);
   };
 
   const handleAddSubtask = (parentId, angle) => {
@@ -602,16 +625,24 @@ export function MindMapView() {
           </Button>
         </div>
 
-        <CardContent ref={canvasRef} className="h-[650px] relative p-0 overflow-hidden pt-4">
+        <CardContent 
+          ref={canvasRef} 
+          className="h-[650px] relative p-0 overflow-hidden pt-4 cursor-grab active:cursor-grabbing"
+          onMouseDown={handleCanvasMouseDown}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={handleCanvasMouseUp}
+          onMouseLeave={handleCanvasMouseUp}
+        >
+          <div className="absolute inset-0 canvas-background" />
           <div 
-            className="h-[650px] relative p-0 overflow-hidden pt-4"
+            className="h-[650px] relative p-0 pt-4"
             style={{ 
               transform: `scale(${zoom}) translate(${offset.x}px, ${offset.y}px)`,
-              transformOrigin: 'center center',
-              transition: 'transform 0.2s ease-out'
+              transformOrigin: '0 0',
+              transition: isPanning ? 'none' : 'transform 0.1s ease-out'
             }}
           >
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ overflow: 'visible' }}>
             <defs>
               <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8" />
