@@ -87,7 +87,10 @@ export default function TodoApp() {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+    const themeOrder = ["system", "light", "dark"];
+    const currentIndex = themeOrder.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % themeOrder.length;
+    setTheme(themeOrder[nextIndex]);
   };
 
   const showNotification = (
