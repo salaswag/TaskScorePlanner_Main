@@ -9,6 +9,7 @@ import DataTransferDialog from "@/components/data-transfer-dialog";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
+import { MindMapView } from "@/components/mind-map-view";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
@@ -58,6 +59,8 @@ export default function TodoApp() {
   useEffect(() => {
     if (location === "/time-tracker" && activeTab !== "dashboard") {
       setActiveTab("dashboard");
+    } else if (location === "/mind-map" && activeTab !== "mindmap") {
+      setActiveTab("mindmap");
     } else if (location === "/" && activeTab !== "tasks") {
       setActiveTab("tasks");
     }
@@ -67,6 +70,8 @@ export default function TodoApp() {
     setActiveTab(value);
     if (value === "dashboard") {
       setLocation("/time-tracker");
+    } else if (value === "mindmap") {
+      setLocation("/mind-map");
     } else {
       setLocation("/");
     }
@@ -382,7 +387,7 @@ export default function TodoApp() {
             {/* Navigation Tabs - Center */}
             <div className="flex-1 flex justify-center">
               <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsList className="grid grid-cols-2">
+                <TabsList className="grid grid-cols-3">
                   <TabsTrigger
                     value="tasks"
                     className="text-xs sm:text-sm px-2 sm:px-3"
@@ -396,6 +401,13 @@ export default function TodoApp() {
                   >
                     <span className="hidden sm:inline">Time Tracking</span>
                     <span className="sm:hidden">Time</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="mindmap"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    <span className="hidden sm:inline">Mind Map</span>
+                    <span className="sm:hidden">Map</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -513,6 +525,10 @@ export default function TodoApp() {
 
             <TabsContent value="dashboard" className="mt-0">
               <DashboardView />
+            </TabsContent>
+
+            <TabsContent value="mindmap" className="mt-0">
+              <MindMapView />
             </TabsContent>
           </Tabs>
         </main>

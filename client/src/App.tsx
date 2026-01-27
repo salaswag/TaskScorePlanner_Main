@@ -13,6 +13,7 @@ function Router() {
     <Switch>
       <Route path="/" component={TodoApp} />
       <Route path="/time-tracker" component={TodoApp} />
+      <Route path="/mind-map" component={TodoApp} />
       <Route component={NotFound} />
     </Switch>
   );
