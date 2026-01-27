@@ -180,8 +180,18 @@ function DraggableNode({
         cursor: isEditing ? 'text' : (isDragging ? 'grabbing' : 'grab'),
       }}
       onMouseEnter={() => setShowPlusButtons(true)}
-      onMouseLeave={() => !isDragging && setShowPlusButtons(false)}
+      onMouseLeave={() => {
+        if (!isDragging) {
+          // Add a small delay to allow moving mouse to the buttons
+          setTimeout(() => {
+            if (nodeRef.current && !nodeRef.current.matches(':hover')) {
+              setShowPlusButtons(false);
+            }
+          }, 300);
+        }
+      }}
     >
+      <div className="absolute inset-[-40px] pointer-events-none group-hover:pointer-events-auto" />
       {showPlusButtons && !isEditing && plusButtonPositions.map(({ angle, label }, index) => {
         const radius = isGoal ? 75 : 60;
         const rad = (angle * Math.PI) / 180;
@@ -262,22 +272,22 @@ function DraggableNode({
                 if (e.key === 'Enter') handleSaveEdit();
                 if (e.key === 'Escape') setIsEditing(false);
               }}
-              className="text-sm font-medium bg-transparent border-b border-current outline-none w-24"
+              className={`${isGoal ? 'text-lg' : 'text-sm'} font-medium bg-transparent border-b border-current outline-none w-32`}
               autoFocus
               onClick={(e) => e.stopPropagation()}
             />
             <button onClick={(e) => { e.stopPropagation(); handleSaveEdit(); }} className="p-0.5">
-              <Check className="h-3 w-3" />
+              <Check className="h-4 w-4" />
             </button>
             <button onClick={(e) => { e.stopPropagation(); setIsEditing(false); }} className="p-0.5">
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         ) : (
           <span 
-            className={`text-sm font-medium truncate max-w-[100px] ${
+            className={`${isGoal ? 'text-lg py-1' : 'text-sm'} font-medium truncate max-w-[150px] ${
               node.completed && !isGoal ? 'line-through text-gray-500' : ''
-            } ${isGoal ? 'text-white font-semibold' : ''}`}
+            } ${isGoal ? 'text-white font-bold tracking-tight' : ''}`}
             onDoubleClick={(e) => {
               e.stopPropagation();
               setEditText(node.text);
