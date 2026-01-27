@@ -1,21 +1,33 @@
 import * as React from "react";
-const { useState } = React;
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, CheckCircle2, Circle } from "lucide-react";
 import TaskFormModal from "./task-form-modal";
 
-export function MindMapView() {
-  const [nodes, setNodes] = useState([
-    { id: 1, text: "Main Goal", x: 400, y: 300, completed: false, children: [2, 3] },
-    { id: 2, text: "Sub Task 1", x: 200, y: 200, completed: false, children: [] },
-    { id: 3, text: "Sub Task 2", x: 600, y: 200, completed: false, children: [] },
-  ]);
+export function MindMapView({ tasks, onUpdateTask, onCreateTask }) {
+  // Use tasks from props for persistent data
+  const handleToggleComplete = (task) => {
+    onUpdateTask({ ...task, completed: !task.completed });
+  };
 
-  const toggleComplete = (id) => {
-    setNodes(nodes.map(node => 
-      node.id === id ? { ...node, completed: !node.completed } : node
-    ));
+  const handleDragStart = (e, task) => {
+    e.dataTransfer.setData("application/json", JSON.stringify(task));
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    try {
+      const task = JSON.parse(e.dataTransfer.getData("application/json"));
+      if (!task.isMindMapOnly) {
+        onUpdateTask({ ...task, isMindMapOnly: true });
+      }
+    } catch (err) {
+      console.error("Drop failed", err);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
 
   return (
@@ -23,47 +35,60 @@ export function MindMapView() {
       <div className="hidden lg:block">
         <TaskFormModal
           isInline={true}
-          onSubmit={(data) => console.log("New node task:", data)}
+          onSubmit={onCreateTask}
           isLoading={false}
         />
       </div>
 
-      <Card className="min-h-[600px] relative overflow-hidden bg-gray-50 dark:bg-gray-950 border-dashed border-2">
+      <Card 
+        className="min-h-[600px] relative overflow-hidden bg-gray-50 dark:bg-gray-950 border-dashed border-2"
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+      >
         <CardHeader>
           <CardTitle>Task Mind Map</CardTitle>
+          <p className="text-sm text-muted-foreground">Drag tasks here from "To Do" or add new ones below.</p>
         </CardHeader>
-        <CardContent className="h-full">
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
-             Mind Map Canvas (Coming Soon: Drag & Drop, Hierarchy)
-          </div>
-          
-          {nodes.map((node) => (
-            <div
-              key={node.id}
-              className="absolute group transition-all"
-              style={{ left: node.x, top: node.y }}
-            >
-              <div 
-                className={`flex items-center gap-3 p-4 rounded-full shadow-lg border-2 bg-white dark:bg-gray-900 
-                ${node.completed ? "border-green-500 opacity-75" : "border-blue-500"} 
-                hover:scale-110 transition-transform cursor-pointer`}
-              >
-                <button onClick={() => toggleComplete(node.id)}>
-                  {node.completed ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-blue-500" />
-                  )}
-                </button>
-                <span className={`font-medium ${node.completed ? "line-through text-gray-500" : ""}`}>
-                  {node.text}
-                </span>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+        <CardContent className="h-full relative">
+          {tasks.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
+               No tasks in Mind Map yet.
             </div>
-          ))}
+          )}
+          
+          <div className="flex flex-wrap gap-6 p-8">
+            {tasks.map((task, index) => {
+               // Simple automatic positioning logic for "bubble" feel
+               const angle = (index / tasks.length) * 2 * Math.PI;
+               const radius = 150 + (index * 20);
+               const x = index === 0 ? 0 : Math.cos(angle) * radius;
+               const y = index === 0 ? 0 : Math.sin(angle) * radius;
+
+               return (
+                <div
+                  key={task.id}
+                  className="transition-all"
+                >
+                  <div 
+                    className={`flex items-center gap-3 p-4 rounded-full shadow-lg border-2 bg-white dark:bg-gray-900 
+                    ${task.completed ? "border-green-500 opacity-75" : "border-blue-500"} 
+                    hover:scale-110 transition-transform cursor-pointer min-w-[150px]`}
+                  >
+                    <button onClick={() => handleToggleComplete(task)}>
+                      {task.completed ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <Circle className="h-5 w-5 text-blue-500" />
+                      )}
+                    </button>
+                    <span className={`font-medium ${task.completed ? "line-through text-gray-500" : ""}`}>
+                      {task.title}
+                    </span>
+                  </div>
+                </div>
+               );
+            })}
+          </div>
         </CardContent>
       </Card>
     </div>

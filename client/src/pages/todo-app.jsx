@@ -112,11 +112,15 @@ export default function TodoApp() {
   // Filter tasks into main and later sections
   const mainTasks =
     tasks && Array.isArray(tasks)
-      ? tasks.filter((task) => !task.archived && !task.isLater)
+      ? tasks.filter((task) => !task.archived && !task.isLater && !task.isMindMapOnly)
       : [];
   const laterTasks =
     tasks && Array.isArray(tasks)
-      ? tasks.filter((task) => !task.archived && Boolean(task.isLater))
+      ? tasks.filter((task) => !task.archived && Boolean(task.isLater) && !task.isMindMapOnly)
+      : [];
+  const mindMapTasks =
+    tasks && Array.isArray(tasks)
+      ? tasks.filter((task) => !task.archived && task.isMindMapOnly)
       : [];
 
   // Calculate statistics
@@ -392,7 +396,7 @@ export default function TodoApp() {
                     value="tasks"
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    <span className="hidden sm:inline">Task Management</span>
+                    <span className="hidden sm:inline">To Do</span>
                     <span className="sm:hidden">Tasks</span>
                   </TabsTrigger>
                   <TabsTrigger
@@ -528,7 +532,7 @@ export default function TodoApp() {
             </TabsContent>
 
             <TabsContent value="mindmap" className="mt-0">
-              <MindMapView />
+              <MindMapView tasks={mindMapTasks} onUpdateTask={handleUpdateTask} onCreateTask={(data) => handleCreateTask({...data, isMindMapOnly: true})} />
             </TabsContent>
           </Tabs>
         </main>

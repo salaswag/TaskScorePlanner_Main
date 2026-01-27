@@ -13,6 +13,8 @@ export const tasks = pgTable("tasks", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
   userId: text("user_id"), // null for anonymous users
+  isMindMapOnly: boolean("is_mind_map_only").default(false),
+  isLater: boolean("is_later").default(false),
 });
 
 export const insertTaskSchema = createInsertSchema(tasks).pick({
@@ -31,6 +33,7 @@ export const updateTaskSchema = z.object({
   completed: z.boolean().optional(),
   completedAt: z.union([z.string(), z.date()]).nullable().optional(),
   isLater: z.boolean().optional(),
+  isMindMapOnly: z.boolean().optional(),
 });
 
 export type InsertTask = z.infer<typeof insertTaskSchema>;
@@ -68,6 +71,8 @@ export const timelineEvents = pgTable("timeline_events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
   userId: text("user_id"), // null for anonymous users
+  isMindMapOnly: boolean("is_mind_map_only").default(false),
+  isLater: boolean("is_later").default(false),
 });
 
 export const insertTimelineSchema = createInsertSchema(timelineEvents).pick({

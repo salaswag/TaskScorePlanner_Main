@@ -211,7 +211,12 @@ export default function TaskTable({
             return (
               <div 
                 key={task.id}
-                className={`px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group ${
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("application/json", JSON.stringify(task));
+                  e.dataTransfer.effectAllowed = "move";
+                }}
+                className={`px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group cursor-grab active:cursor-grabbing ${
                   task.completed 
                     ? `${getDistractionBackgroundColor(task.distractionLevel) || 'bg-gray-50 dark:bg-gray-800'}` 
                     : ''
