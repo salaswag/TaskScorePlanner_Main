@@ -396,7 +396,7 @@ export default function TodoApp() {
                     value="tasks"
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    <span className="hidden sm:inline">To Do</span>
+                    <span className="hidden sm:inline">To Do List</span>
                     <span className="sm:hidden">Tasks</span>
                   </TabsTrigger>
                   <TabsTrigger
@@ -410,7 +410,7 @@ export default function TodoApp() {
                     value="mindmap"
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    <span className="hidden sm:inline">Mind Map</span>
+                    <span className="hidden sm:inline">Task Mind Map</span>
                     <span className="sm:hidden">Map</span>
                   </TabsTrigger>
                 </TabsList>

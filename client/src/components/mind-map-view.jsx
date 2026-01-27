@@ -1,10 +1,26 @@
 import * as React from "react";
+const { useState } = React;
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, CheckCircle2, Circle } from "lucide-react";
-import TaskFormModal from "./task-form-modal";
+import { Input } from "@/components/ui/input";
 
 export function MindMapView({ tasks, onUpdateTask, onCreateTask }) {
+  const [newTitle, setNewTitle] = useState("");
+
+  const handleQuickAdd = (e) => {
+    e.preventDefault();
+    if (newTitle.trim()) {
+      onCreateTask({
+        title: newTitle.trim(),
+        priority: 5,
+        estimatedTime: 30,
+        isMindMapOnly: true
+      });
+      setNewTitle("");
+    }
+  };
+  
   // Use tasks from props for persistent data
   const handleToggleComplete = (task) => {
     onUpdateTask({ ...task, completed: !task.completed });
@@ -32,12 +48,19 @@ export function MindMapView({ tasks, onUpdateTask, onCreateTask }) {
 
   return (
     <div className="w-full space-y-6">
-      <div className="hidden lg:block">
-        <TaskFormModal
-          isInline={true}
-          onSubmit={onCreateTask}
-          isLoading={false}
-        />
+      <div className="flex justify-center">
+        <form onSubmit={handleQuickAdd} className="flex gap-2 w-full max-w-md">
+          <Input 
+            placeholder="Add quick task to mind map..." 
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            className="flex-1"
+          />
+          <Button type="submit">
+            <Plus className="h-4 w-4 mr-2" />
+            Add
+          </Button>
+        </form>
       </div>
 
       <Card 
@@ -47,7 +70,7 @@ export function MindMapView({ tasks, onUpdateTask, onCreateTask }) {
       >
         <CardHeader>
           <CardTitle>Task Mind Map</CardTitle>
-          <p className="text-sm text-muted-foreground">Drag tasks here from "To Do" or add new ones below.</p>
+          <p className="text-sm text-muted-foreground">Drag tasks here from "To Do List" or add new ones above.</p>
         </CardHeader>
         <CardContent className="h-full relative">
           {tasks.length === 0 && (
