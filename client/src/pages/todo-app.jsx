@@ -410,7 +410,7 @@ export default function TodoApp() {
                     value="mindmap"
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    <span className="hidden sm:inline">Task Mind Map</span>
+                    <span className="hidden sm:inline">Goal Mind Map</span>
                     <span className="sm:hidden">Map</span>
                   </TabsTrigger>
                 </TabsList>

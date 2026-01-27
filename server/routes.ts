@@ -350,15 +350,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Mind Map Routes
   app.get("/api/mind-map/nodes", async (req, res) => {
-    const userId = req.user?.uid || 'anonymous';
-    const nodes = await mongoStorage.getMindMapNodes(userId);
-    res.json(nodes);
+    try {
+      const userId = req.user?.uid || 'anonymous';
+      console.log("📊 Getting mind map nodes for user:", userId);
+      const nodes = await mongoStorage.getMindMapNodes(userId);
+      console.log("📊 Found", nodes.length, "mind map nodes");
+      res.json(nodes);
+    } catch (error) {
+      console.error("Error getting mind map nodes:", error);
+      res.status(500).json({ message: "Failed to get mind map nodes" });
+    }
   });
 
   app.post("/api/mind-map/nodes", async (req, res) => {
-    const userId = req.user?.uid || 'anonymous';
-    const node = await mongoStorage.createMindMapNode({ ...req.body, userId });
-    res.status(201).json(node);
+    try {
+      const userId = req.user?.uid || 'anonymous';
+      console.log("📊 Creating mind map node for user:", userId, "Data:", req.body);
+      const node = await mongoStorage.createMindMapNode({ ...req.body, userId });
+      console.log("📊 Created mind map node:", node);
+      res.status(201).json(node);
+    } catch (error) {
+      console.error("Error creating mind map node:", error);
+      res.status(500).json({ message: "Failed to create mind map node" });
+    }
   });
 
   app.patch("/api/mind-map/nodes/:id", async (req, res) => {

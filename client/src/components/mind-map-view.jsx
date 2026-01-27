@@ -1,8 +1,8 @@
 import * as React from "react";
 const { useState, useEffect, useRef, useCallback } = React;
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckCircle2, Circle, Target, Sparkles, Trash2, Edit2, X, Check } from "lucide-react";
+import { Plus, CheckCircle2, Circle, Target, Trash2, Edit2, X, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -368,7 +368,10 @@ export function MindMapView() {
 
   const createMutation = useMutation({
     mutationFn: async (newNode) => {
-      const res = await apiRequest("POST", "/api/mind-map/nodes", newNode);
+      const res = await apiRequest("/api/mind-map/nodes", {
+        method: "POST",
+        body: JSON.stringify(newNode)
+      });
       return res.json();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/mind-map/nodes"] }),
@@ -376,7 +379,10 @@ export function MindMapView() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...data }) => {
-      const res = await apiRequest("PATCH", `/api/mind-map/nodes/${id}`, data);
+      const res = await apiRequest(`/api/mind-map/nodes/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data)
+      });
       return res.json();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/mind-map/nodes"] }),
@@ -384,7 +390,9 @@ export function MindMapView() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      await apiRequest("DELETE", `/api/mind-map/nodes/${id}`);
+      await apiRequest(`/api/mind-map/nodes/${id}`, {
+        method: "DELETE"
+      });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/mind-map/nodes"] }),
   });
@@ -499,17 +507,7 @@ export function MindMapView() {
           <FloatingParticle key={i} delay={i * 1.5} {...config} />
         ))}
 
-        <CardHeader className="pb-2 relative z-10">
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-purple-500 animate-pulse" />
-            Goal Mind Map
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Drag nodes to rearrange with jelly physics. Hover to see plus buttons. Double-click to edit text.
-          </p>
-        </CardHeader>
-        
-        <CardContent ref={canvasRef} className="h-[600px] relative p-0 overflow-hidden">
+        <CardContent ref={canvasRef} className="h-[650px] relative p-0 overflow-hidden pt-4">
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
             <defs>
               <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -565,12 +563,9 @@ export function MindMapView() {
           {nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center text-gray-400 z-10">
               <div className="text-center animate-float">
-                <div className="relative">
-                  <Target className="h-20 w-20 mx-auto mb-4 text-purple-300 animate-pulse" />
-                  <Sparkles className="h-6 w-6 absolute -top-1 -right-1 text-pink-400 animate-bounce" />
-                </div>
-                <p className="text-xl font-semibold text-gray-500 dark:text-gray-400">No goals yet</p>
-                <p className="text-sm mt-1 text-gray-400">Add your first goal above to start your mind map!</p>
+                <Target className="h-16 w-16 mx-auto mb-4 text-purple-300 animate-pulse" />
+                <p className="text-lg font-semibold text-gray-500 dark:text-gray-400">No goals yet</p>
+                <p className="text-sm mt-1 text-gray-400">Add your first goal above to get started!</p>
               </div>
             </div>
           )}
@@ -603,6 +598,12 @@ export function MindMapView() {
             />
           ))}
         </CardContent>
+        
+        <div className="absolute bottom-2 left-0 right-0 text-center z-10">
+          <p className="text-xs text-muted-foreground/60">
+            Drag to move nodes. Hover for add buttons. Double-click to edit.
+          </p>
+        </div>
       </Card>
 
       <style>{`
