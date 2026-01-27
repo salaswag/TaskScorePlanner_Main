@@ -22,6 +22,7 @@ function DraggableNode({
   onToggleComplete, 
   onDelete,
   onEditText,
+  onAutoRearrange,
   isGoal 
 }) {
   const nodeRef = useRef(null);
@@ -324,6 +325,17 @@ function DraggableNode({
           >
             <Trash2 className={`h-3 w-3 ${isGoal ? 'text-white' : 'text-red-500'}`} />
           </button>
+          <button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              onAutoRearrange(node.id);
+            }}
+            className={`p-1 rounded-full transition-colors flex-shrink-0
+              ${isGoal ? 'hover:bg-white/20' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+            title="Rearrange Branch"
+          >
+            <Plus className={`h-3 w-3 ${isGoal ? 'text-white' : 'text-blue-500'} rotate-45`} />
+          </button>
         </div>
       </div>
     </div>
@@ -543,8 +555,35 @@ export function MindMapView() {
           <FloatingParticle key={i} delay={i * 1.5} {...config} />
         ))}
 
+        <div className="absolute top-4 right-4 flex flex-col gap-2 z-50">
+          <Button 
+            variant="secondary" 
+            size="icon" 
+            onClick={() => handleZoom(0.1)}
+            className="rounded-full shadow-md bg-white/80 backdrop-blur-sm"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="secondary" 
+            size="icon" 
+            onClick={() => handleZoom(-0.1)}
+            className="rounded-full shadow-md bg-white/80 backdrop-blur-sm"
+          >
+            <X className="h-4 w-4 rotate-45" />
+          </Button>
+        </div>
+
         <CardContent ref={canvasRef} className="h-[650px] relative p-0 overflow-hidden pt-4">
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+          <div 
+            className="h-[650px] relative p-0 overflow-hidden pt-4"
+            style={{ 
+              transform: `scale(${zoom}) translate(${offset.x}px, ${offset.y}px)`,
+              transformOrigin: 'center center',
+              transition: 'transform 0.2s ease-out'
+            }}
+          >
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
             <defs>
               <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8" />
@@ -616,6 +655,7 @@ export function MindMapView() {
               onToggleComplete={toggleComplete}
               onDelete={handleDelete}
               onEditText={handleEditText}
+              onAutoRearrange={handleAutoRearrange}
               isGoal={true}
             />
           ))}
@@ -630,9 +670,11 @@ export function MindMapView() {
               onToggleComplete={toggleComplete}
               onDelete={handleDelete}
               onEditText={handleEditText}
+              onAutoRearrange={handleAutoRearrange}
               isGoal={false}
             />
           ))}
+          </div>
         </CardContent>
         
         <div className="absolute bottom-2 left-0 right-0 text-center z-10">
