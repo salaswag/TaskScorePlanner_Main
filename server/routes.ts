@@ -348,6 +348,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mind Map Routes
+  app.get("/api/mind-map/nodes", async (req, res) => {
+    const userId = req.user?.uid || 'anonymous';
+    const nodes = await mongoStorage.getMindMapNodes(userId);
+    res.json(nodes);
+  });
+
+  app.post("/api/mind-map/nodes", async (req, res) => {
+    const userId = req.user?.uid || 'anonymous';
+    const node = await mongoStorage.createMindMapNode({ ...req.body, userId });
+    res.status(201).json(node);
+  });
+
+  app.patch("/api/mind-map/nodes/:id", async (req, res) => {
+    const node = await mongoStorage.updateMindMapNode(req.params.id, req.body);
+    res.json(node);
+  });
+
+  app.delete("/api/mind-map/nodes/:id", async (req, res) => {
+    await mongoStorage.deleteMindMapNode(req.params.id);
+    res.status(204).send();
+  });
+
   // Archive a task
   app.post("/api/tasks/:id/archive", async (req, res) => {
     try {

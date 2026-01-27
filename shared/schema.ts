@@ -61,6 +61,26 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoginUser = z.infer<typeof loginSchema>;
 export type User = typeof users.$inferSelect;
 
+export const mindMapNodes = pgTable("mind_map_nodes", {
+  id: serial("id").primaryKey(),
+  text: text("text").notNull(),
+  x: integer("x").notNull().default(400),
+  y: integer("y").notNull().default(300),
+  parentId: integer("parent_id"), // null for root
+  completed: boolean("completed").notNull().default(false),
+  userId: text("user_id"),
+});
+
+export const insertMindMapNodeSchema = createInsertSchema(mindMapNodes).pick({
+  text: true,
+  parentId: true,
+  x: true,
+  y: true,
+});
+
+export type MindMapNode = typeof mindMapNodes.$inferSelect;
+export type InsertMindMapNode = z.infer<typeof insertMindMapNodeSchema>;
+
 export const timelineEvents = pgTable("timeline_events", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
