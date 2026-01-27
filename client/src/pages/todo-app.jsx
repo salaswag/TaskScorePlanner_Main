@@ -396,31 +396,31 @@ export default function TodoApp() {
             {/* Navigation Tabs - Center */}
             <div className="flex-1 flex justify-center">
               <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsList className="grid grid-cols-3">
+                <TabsList className="grid grid-cols-4">
                   <TabsTrigger
                     value="tasks"
-                    className="text-xs sm:text-sm px-2 sm:px-3"
+                    className="text-xs sm:text-sm px-1 sm:px-2"
                   >
                     <span className="hidden sm:inline">To Do List</span>
                     <span className="sm:hidden">Tasks</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="dashboard"
-                    className="text-xs sm:text-sm px-2 sm:px-3"
+                    className="text-xs sm:text-sm px-1 sm:px-2"
                   >
                     <span className="hidden sm:inline">Time Tracking</span>
                     <span className="sm:hidden">Time</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="mindmap"
-                    className="text-xs sm:text-sm px-2 sm:px-3"
+                    className="text-xs sm:text-sm px-1 sm:px-2"
                   >
                     <span className="hidden sm:inline">Goal Mind Map</span>
                     <span className="sm:hidden">Map</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="coggle"
-                    className="text-xs sm:text-sm px-2 sm:px-3"
+                    className="text-xs sm:text-sm px-1 sm:px-2"
                   >
                     <span className="hidden sm:inline">Coggle Map</span>
                     <span className="sm:hidden">Coggle</span>

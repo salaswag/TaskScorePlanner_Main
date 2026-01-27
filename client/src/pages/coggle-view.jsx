@@ -1,19 +1,47 @@
 import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Info, ChevronLeft } from "lucide-react";
+import { ExternalLink, Info, ChevronLeft, Maximize2, Minimize2 } from "lucide-react";
 import { Link } from "wouter";
 
 export function CoggleView() {
+  const [aspectRatio, setAspectRatio] = React.useState(16/9);
+
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <div className="flex items-center gap-4 mb-2">
+      <div className="flex items-center justify-between mb-2">
         <Link href="/">
           <Button variant="ghost" size="sm" className="gap-2">
             <ChevronLeft className="h-4 w-4" />
             Back to Dashboard
           </Button>
         </Link>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setAspectRatio(16/9)}
+            className={aspectRatio === 16/9 ? "bg-blue-50 border-blue-200" : ""}
+          >
+            16:9
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setAspectRatio(4/3)}
+            className={aspectRatio === 4/3 ? "bg-blue-50 border-blue-200" : ""}
+          >
+            4:3
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setAspectRatio(1)}
+            className={aspectRatio === 1 ? "bg-blue-50 border-blue-200" : ""}
+          >
+            Square
+          </Button>
+        </div>
       </div>
       <div className="flex flex-col items-center gap-4 text-center">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
@@ -27,15 +55,16 @@ export function CoggleView() {
       </div>
 
       <Card className="w-full border-2 border-blue-100 dark:border-blue-900/50 overflow-hidden shadow-2xl">
-        <CardContent className="p-0 h-[700px] relative bg-slate-50 dark:bg-gray-950">
+        <CardContent 
+          className="p-0 h-0 relative bg-slate-50 dark:bg-gray-950 transition-all duration-300"
+          style={{ paddingBottom: `${(1 / aspectRatio) * 100}%` }}
+        >
           <iframe 
-            width="100%" 
-            height="100%" 
-            src="https://coggle.it" 
+            src="https://embed.coggle.it/diagram/YVjUEgDOVWev5Dk-/tZDf9srGCAhC7uxSKxdFS-n_6sbuH1rE0HHUKYaqo4s" 
             title="Coggle Mind Map"
             frameBorder="0" 
             allowFullScreen
-            className="w-full h-full"
+            className="absolute top-0 left-0 w-full h-full"
           />
         </CardContent>
       </Card>
