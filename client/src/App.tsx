@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import TodoApp from "@/pages/todo-app";
+import EmbeddedMindMap from "@/pages/embedded-mind-map";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
@@ -14,6 +15,7 @@ function Router() {
       <Route path="/" component={TodoApp} />
       <Route path="/time-tracker" component={TodoApp} />
       <Route path="/mind-map" component={TodoApp} />
+      <Route path="/embedded-mind-map" component={EmbeddedMindMap} />
       <Route component={NotFound} />
     </Switch>
   );
