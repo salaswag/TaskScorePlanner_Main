@@ -48,6 +48,15 @@ Preferred communication style: Simple, everyday language.
 - **PWA Support**: Service worker for offline capability and app installation
 - **Responsive Design**: Mobile-first approach with keyboard-aware input handling
 
+### Mind Map Feature
+- **Goal Mind Map**: Interactive visual mind map for organizing goals and sub-tasks
+- **Jelly Physics**: Spring-based physics for smooth, bouncy node dragging
+- **Plus Buttons**: Hover over any node to reveal 4 directional plus buttons for adding sub-tasks
+- **Curved Connections**: Gradient-colored bezier curves connecting parent-child nodes with glow effects
+- **Inline Editing**: Double-click any node text to edit it directly
+- **Floating Particles**: Animated background particles for visual appeal
+- **Data Storage**: Mind map nodes stored in MongoDB via `/api/mind-map/nodes` endpoints
+
 ## External Dependencies
 
 ### Database
