@@ -10,6 +10,7 @@ import DataTransferDialog from "@/components/data-transfer-dialog";
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
 import { MindMapView } from "@/components/mind-map-view";
+import { CoggleView } from "@/pages/coggle-view";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
@@ -61,6 +62,8 @@ export default function TodoApp() {
       setActiveTab("dashboard");
     } else if (location === "/mind-map" && activeTab !== "mindmap") {
       setActiveTab("mindmap");
+    } else if (location === "/coggle" && activeTab !== "coggle") {
+      setActiveTab("coggle");
     } else if (location === "/" && activeTab !== "tasks") {
       setActiveTab("tasks");
     }
@@ -72,6 +75,8 @@ export default function TodoApp() {
       setLocation("/time-tracker");
     } else if (value === "mindmap") {
       setLocation("/mind-map");
+    } else if (value === "coggle") {
+      setLocation("/coggle");
     } else {
       setLocation("/");
     }
@@ -413,6 +418,13 @@ export default function TodoApp() {
                     <span className="hidden sm:inline">Goal Mind Map</span>
                     <span className="sm:hidden">Map</span>
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="coggle"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    <span className="hidden sm:inline">Coggle Map</span>
+                    <span className="sm:hidden">Coggle</span>
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -533,6 +545,10 @@ export default function TodoApp() {
 
             <TabsContent value="mindmap" className="mt-0">
               <MindMapView tasks={mindMapTasks} onUpdateTask={handleUpdateTask} onCreateTask={(data) => handleCreateTask({...data, isMindMapOnly: true})} />
+            </TabsContent>
+
+            <TabsContent value="coggle" className="mt-0">
+              <CoggleView />
             </TabsContent>
           </Tabs>
         </main>

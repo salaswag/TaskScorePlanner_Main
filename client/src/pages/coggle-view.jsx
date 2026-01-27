@@ -1,11 +1,20 @@
 import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Info } from "lucide-react";
+import { ExternalLink, Info, ChevronLeft } from "lucide-react";
+import { Link } from "wouter";
 
 export function CoggleView() {
   return (
     <div className="container mx-auto py-8 space-y-6">
+      <div className="flex items-center gap-4 mb-2">
+        <Link href="/">
+          <Button variant="ghost" size="sm" className="gap-2">
+            <ChevronLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </Link>
+      </div>
       <div className="flex flex-col items-center gap-4 text-center">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
           Coggle Mind Map Integration
