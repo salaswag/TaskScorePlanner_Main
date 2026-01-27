@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import TodoApp from "@/pages/todo-app";
-import { CoggleView } from "@/pages/coggle-view";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
@@ -15,7 +14,6 @@ function Router() {
       <Route path="/" component={TodoApp} />
       <Route path="/time-tracker" component={TodoApp} />
       <Route path="/mind-map" component={TodoApp} />
-      <Route path="/coggle" component={TodoApp} />
       <Route component={NotFound} />
     </Switch>
   );
