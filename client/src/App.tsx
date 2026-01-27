@@ -15,7 +15,7 @@ function Router() {
       <Route path="/" component={TodoApp} />
       <Route path="/time-tracker" component={TodoApp} />
       <Route path="/mind-map" component={TodoApp} />
-      <Route path="/coggle" component={CoggleView} />
+      <Route path="/coggle" component={TodoApp} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -385,51 +385,51 @@ export default function TodoApp() {
         }`}
       >
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center space-x-3 shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
               <CheckSquare className="h-6 w-6 sm:h-8 sm:w-8 text-black dark:text-white" />
-              <h1 className="hidden md:block text-base sm:text-xl font-semibold text-black dark:text-white">
+              <h1 className="text-base sm:text-xl font-semibold text-black dark:text-white">
                 Task Master Pro
               </h1>
             </div>
 
             {/* Navigation Tabs - Center */}
-            <div className="flex-1 max-w-2xl">
+            <div className="flex-1 flex justify-center">
               <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsList className="grid grid-cols-4 w-full">
+                <TabsList className="grid grid-cols-4">
                   <TabsTrigger
                     value="tasks"
-                    className="text-[10px] sm:text-xs md:text-sm px-1"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    <span className="hidden xs:inline">To Do</span>
-                    <span className="xs:hidden">Tasks</span>
+                    <span className="hidden sm:inline">To Do List</span>
+                    <span className="sm:hidden">Tasks</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="dashboard"
-                    className="text-[10px] sm:text-xs md:text-sm px-1"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    <span className="hidden xs:inline">Tracking</span>
-                    <span className="xs:hidden">Time</span>
+                    <span className="hidden sm:inline">Time Tracking</span>
+                    <span className="sm:hidden">Time</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="mindmap"
-                    className="text-[10px] sm:text-xs md:text-sm px-1"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    <span className="hidden xs:inline">Mind Map</span>
-                    <span className="xs:hidden">Map</span>
+                    <span className="hidden sm:inline">Goal Mind Map</span>
+                    <span className="sm:hidden">Map</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="coggle"
-                    className="text-[10px] sm:text-xs md:text-sm px-1"
+                    className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    <span className="hidden xs:inline">Coggle Map</span>
-                    <span className="xs:hidden">Coggle</span>
+                    <span className="hidden sm:inline">Coggle Map</span>
+                    <span className="sm:hidden">Coggle</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
-            <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               {user && !user.isAnonymous && (
                 <Button
                   variant="ghost"
