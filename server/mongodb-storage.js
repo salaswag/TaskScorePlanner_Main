@@ -26,6 +26,7 @@ export class MongoStorage {
       this.archiveCollection = this.db.collection('Archive');
       this.laterTasksCollection = this.db.collection('Later Tasks');
       this.timeEntriesCollection = this.db.collection('TimeEntries');
+      this.mindMapNodesCollection = this.db.collection('MindMapNodes');
 
       // Test the connection with a ping
       await this.db.command({ ping: 1 });
@@ -637,7 +638,56 @@ export class MongoStorage {
     }
   }
 
+  // Mind Map Node Methods
+  async getMindMapNodes(userId) {
+    try {
+      if (!this.mindMapNodesCollection) return [];
+      const nodes = await this.mindMapNodesCollection.find({ userId }).toArray();
+      return nodes.map(node => ({
+        ...node,
+        id: node.id || node._id.toString()
+      }));
+    } catch (error) {
+      console.error('Error fetching mind map nodes:', error);
+      return [];
+    }
+  }
 
+  async createMindMapNode(nodeData) {
+    try {
+      const lastNode = await this.mindMapNodesCollection.findOne({}, { sort: { id: -1 } });
+      const nextId = lastNode ? (lastNode.id || 0) + 1 : 1;
+      const node = { ...nodeData, id: nextId, completed: false, createdAt: new Date() };
+      await this.mindMapNodesCollection.insertOne(node);
+      return { ...node, id: node.id };
+    } catch (error) {
+      console.error('Error creating mind map node:', error);
+      throw error;
+    }
+  }
+
+  async updateMindMapNode(id, updateData) {
+    try {
+      const { id: _, _id, ...fields } = updateData;
+      const query = !isNaN(Number(id)) ? { id: Number(id) } : { _id: id };
+      const result = await this.mindMapNodesCollection.findOneAndUpdate(query, { $set: fields }, { returnDocument: 'after' });
+      return { ...result, id: result.id || result._id.toString() };
+    } catch (error) {
+      console.error('Error updating mind map node:', error);
+      throw error;
+    }
+  }
+
+  async deleteMindMapNode(id) {
+    try {
+      const query = !isNaN(Number(id)) ? { id: Number(id) } : { _id: id };
+      await this.mindMapNodesCollection.deleteOne(query);
+      return true;
+    } catch (error) {
+      console.error('Error deleting mind map node:', error);
+      throw error;
+    }
+  }
 }
 
 export const mongoStorage = new MongoStorage();

@@ -118,10 +118,7 @@ export default function TodoApp() {
     tasks && Array.isArray(tasks)
       ? tasks.filter((task) => !task.archived && Boolean(task.isLater) && !task.isMindMapOnly)
       : [];
-  const mindMapTasks =
-    tasks && Array.isArray(tasks)
-      ? tasks.filter((task) => !task.archived && task.isMindMapOnly)
-      : [];
+  const mindMapTasks = []; // Explicitly empty to prevent cross-contamination
 
   // Calculate statistics
   const completedTasks = mainTasks.filter((task) => task.completed) || [];
