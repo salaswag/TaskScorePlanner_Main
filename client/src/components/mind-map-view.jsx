@@ -90,6 +90,10 @@ function DraggableNode({
     setJellyOffset({ x: dx * 0.4, y: dy * 0.4 });
     setVelocity({ x: dx * 0.15, y: dy * 0.15 });
     
+    // Optimistic local update for performance
+    node.x = boundedX;
+    node.y = boundedY;
+    
     onDrag(node.id, boundedX, boundedY);
   }, [isDragging, dragOffset, node, onDrag]);
 
@@ -194,8 +198,8 @@ function DraggableNode({
     >
       <div className="absolute inset-[-40px] pointer-events-none group-hover:pointer-events-auto" />
       {showPlusButtons && !isEditing && plusButtonPositions.map(({ angle, label }, index) => {
-        const radiusX = isGoal ? 85 : 70;
-        const radiusY = isGoal ? 45 : 35;
+        const radiusX = isGoal ? 80 : 65;
+        const radiusY = isGoal ? 40 : 30;
         const rad = (angle * Math.PI) / 180;
         const btnX = Math.cos(rad) * radiusX;
         const btnY = Math.sin(rad) * radiusY;
@@ -207,9 +211,9 @@ function DraggableNode({
               e.stopPropagation();
               onAddSubtask(node.id, angle);
             }}
-            className="absolute w-6 h-6 rounded-full bg-white/80 hover:bg-white
-              text-blue-500 shadow-sm flex items-center justify-center transition-all duration-300 hover:scale-125 z-20
-              opacity-0 group-hover:opacity-100 border border-blue-200"
+            className="absolute w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600
+              text-white shadow-md flex items-center justify-center transition-all duration-300 hover:scale-125 z-20
+              opacity-0 group-hover:opacity-100 border border-white"
             style={{
               left: `calc(50% + ${btnX}px)`,
               top: `calc(50% + ${btnY}px)`,
@@ -500,7 +504,28 @@ export function MindMapView() {
   };
 
   const handleDrag = (id, x, y) => {
-    updateMutation.mutate({ id, x, y });
+    // Collision detection
+    const MIN_DISTANCE = 160;
+    const nodeToDrag = nodes.find(n => n.id === id);
+    if (!nodeToDrag) return;
+
+    let adjustedX = x;
+    let adjustedY = y;
+
+    nodes.forEach(otherNode => {
+      if (otherNode.id === id) return;
+      const dx = adjustedX - otherNode.x;
+      const dy = adjustedY - otherNode.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < MIN_DISTANCE) {
+        const angle = Math.atan2(dy, dx);
+        adjustedX = otherNode.x + Math.cos(angle) * MIN_DISTANCE;
+        adjustedY = otherNode.y + Math.sin(angle) * MIN_DISTANCE;
+      }
+    });
+
+    updateMutation.mutate({ id, x: adjustedX, y: adjustedY });
   };
 
   const toggleComplete = (node) => {
@@ -526,7 +551,10 @@ export function MindMapView() {
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-rose-600 bg-clip-text text-transparent">
+          Goal Mind Map
+        </h2>
         <form onSubmit={handleAddGoal} className="flex gap-3 w-full max-w-xl">
           <div className="relative flex-1">
             <Target className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-500" />
