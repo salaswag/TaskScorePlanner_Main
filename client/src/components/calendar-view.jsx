@@ -532,11 +532,11 @@ export function CalendarView() {
             {/* Deep vs Shallow Work Proportion */}
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Work Proportion
+                Work Type Proportion
               </label>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-orange-500 min-w-[70px] text-right">
-                  {100 - deepWorkPercent}% Shallow
+                <span className="text-sm font-medium text-blue-500 min-w-[55px] text-right">
+                  {deepWorkPercent}% Deep
                 </span>
                 <div className="flex-1 relative">
                   <input
@@ -544,22 +544,21 @@ export function CalendarView() {
                     min="0"
                     max="100"
                     step="5"
-                    value={deepWorkPercent}
-                    onChange={(e) => setDeepWorkPercent(parseInt(e.target.value))}
+                    value={100 - deepWorkPercent}
+                    onChange={(e) => setDeepWorkPercent(100 - parseInt(e.target.value))}
                     className="slider w-full h-2 rounded-lg appearance-none cursor-pointer"
                     style={{
-                      background: `linear-gradient(to right, #f97316 0%, #f97316 ${100 - deepWorkPercent}%, #3b82f6 ${100 - deepWorkPercent}%, #3b82f6 100%)`
+                      background: "linear-gradient(to right, #3b82f6, #f97316)"
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium text-blue-500 min-w-[55px]">
-                  {deepWorkPercent}% Deep
+                <span className="text-sm font-medium text-orange-500 min-w-[70px]">
+                  {100 - deepWorkPercent}% Shallow
                 </span>
               </div>
               <div className="flex justify-between text-xs text-gray-400">
-                <span>All Shallow</span>
-                <span>Balanced</span>
-                <span>All Deep</span>
+                <span>Deep Work</span>
+                <span>Shallow Work</span>
               </div>
             </div>
 
