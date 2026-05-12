@@ -181,13 +181,28 @@ export function CalendarView() {
       return;
     }
 
-    setIsLoading(true);
     if (selectedDate) {
       const dateKey = format(selectedDate, "yyyy-MM-dd");
 
+      // Optimistic update so the cell reflects the change immediately
+      setTimeData((prev) => ({
+        ...prev,
+        [dateKey]: {
+          timeInMinutes: sliderTime,
+          deepWorkPercent,
+          notes,
+        },
+      }));
+
+      // Close modal immediately for snappy UX
+      setShowTimeModal(false);
+      setSelectedDate(null);
+      setSliderTime(0);
+      setDeepWorkPercent(50);
+      setNotes('');
+
       try {
-        // Save to MongoDB via API
-        const response = await apiRequest("/api/time-entries", {
+        await apiRequest("/api/time-entries", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -199,30 +214,17 @@ export function CalendarView() {
             notes,
           }),
         });
-
-        if (response.ok) {
-          setTimeData((prev) => ({
-            ...prev,
-            [dateKey]: {
-              timeInMinutes: sliderTime,
-              deepWorkPercent,
-              notes,
-            },
-          }));
-
-          console.log("Time entry saved successfully to MongoDB");
-        } else {
-          console.error("Failed to save time entry to MongoDB");
-        }
+        // Re-sync from server to catch any backend-side conversions
+        fetchTimeEntries();
       } catch (error) {
         console.error("Error saving time entry:", error);
       }
+      return;
     }
 
     setShowTimeModal(false);
     setSelectedDate(null);
     setSliderTime(0);
-    setIsLoading(false);
   };
 
   const handleTimeCancel = () => {
@@ -382,15 +384,20 @@ export function CalendarView() {
                   }
                 >
                   <div className="flex flex-col h-full relative z-10">
-                    {/* Date Number */}
+                    {/* Date Number + mobile hours indicator */}
                     <div
                       className={`
-                    text-xs sm:text-sm font-medium mb-1 sm:mb-2
+                    text-xs sm:text-sm font-medium mb-1 sm:mb-2 flex items-center justify-between
                     ${isToday ? "text-blue-600 dark:text-blue-400 font-bold" : ""}
                     ${!isCurrentMonth ? "text-gray-400" : "text-gray-900 dark:text-gray-100"}
                   `}
                     >
-                      {format(day, "d")}
+                      <span>{format(day, "d")}</span>
+                      {isCurrentMonth && !isFuture && timeSpent > 0 && (
+                        <span className="sm:hidden text-[10px] font-normal text-gray-600 dark:text-gray-300">
+                          {timeSpent >= 60 ? `${Math.round(timeSpent / 60)}h` : "·"}
+                        </span>
+                      )}
                     </div>
 
                     {/* Mobile: minimal indicator dot if notes exist */}
