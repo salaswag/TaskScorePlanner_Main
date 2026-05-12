@@ -13,7 +13,6 @@ export const tasks = pgTable("tasks", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
   userId: text("user_id"), // null for anonymous users
-  isMindMapOnly: boolean("is_mind_map_only").default(false),
   isLater: boolean("is_later").default(false),
 });
 
@@ -33,7 +32,6 @@ export const updateTaskSchema = z.object({
   completed: z.boolean().optional(),
   completedAt: z.union([z.string(), z.date()]).nullable().optional(),
   isLater: z.boolean().optional(),
-  isMindMapOnly: z.boolean().optional(),
 });
 
 export type InsertTask = z.infer<typeof insertTaskSchema>;
@@ -61,26 +59,6 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoginUser = z.infer<typeof loginSchema>;
 export type User = typeof users.$inferSelect;
 
-export const mindMapNodes = pgTable("mind_map_nodes", {
-  id: serial("id").primaryKey(),
-  text: text("text").notNull(),
-  x: integer("x").notNull().default(400),
-  y: integer("y").notNull().default(300),
-  parentId: integer("parent_id"), // null for root
-  completed: boolean("completed").notNull().default(false),
-  userId: text("user_id"),
-});
-
-export const insertMindMapNodeSchema = createInsertSchema(mindMapNodes).pick({
-  text: true,
-  parentId: true,
-  x: true,
-  y: true,
-});
-
-export type MindMapNode = typeof mindMapNodes.$inferSelect;
-export type InsertMindMapNode = z.infer<typeof insertMindMapNodeSchema>;
-
 export const timelineEvents = pgTable("timeline_events", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -91,7 +69,6 @@ export const timelineEvents = pgTable("timeline_events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
   userId: text("user_id"), // null for anonymous users
-  isMindMapOnly: boolean("is_mind_map_only").default(false),
   isLater: boolean("is_later").default(false),
 });
 

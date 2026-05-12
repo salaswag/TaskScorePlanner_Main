@@ -8,6 +8,30 @@ import { authenticateUser } from "./middleware/auth-middleware.js";
 import { Logger } from "./logger.js";
 import "./types"; // Import session type declarations
 
+function convertLegacyToPercent(entry: any): number {
+  if (entry.deepWorkPercent !== undefined) return entry.deepWorkPercent;
+  const deepMap: Record<string, number> = {
+    'lots-deep-work': 90,
+    'some-deep-work': 70,
+    'little-deep-work': 40,
+    'no-deep-work': 15,
+  };
+  if (entry.deepWork && entry.deepWork !== 'none' && deepMap[entry.deepWork] !== undefined) {
+    return deepMap[entry.deepWork];
+  }
+  const shallowMap: Record<string, number> = {
+    'lots-shallow-needed': 20,
+    'some-shallow-needed': 40,
+    'some-shallow-not-needed': 60,
+    'lots-shallow-not-needed': 80,
+    'no-shallow-work': 95,
+  };
+  if (entry.shallowWork && entry.shallowWork !== 'none' && shallowMap[entry.shallowWork] !== undefined) {
+    return shallowMap[entry.shallowWork];
+  }
+  return 50;
+}
+
 // Simple rate limiting middleware
 const rateLimitMap = new Map();
 const rateLimit = (maxRequests = 100, windowMs = 60000) => {
@@ -348,43 +372,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mind Map Routes
-  app.get("/api/mind-map/nodes", async (req, res) => {
-    try {
-      const userId = req.user?.uid || 'anonymous';
-      console.log("📊 Getting mind map nodes for user:", userId);
-      const nodes = await mongoStorage.getMindMapNodes(userId);
-      console.log("📊 Found", nodes.length, "mind map nodes");
-      res.json(nodes);
-    } catch (error) {
-      console.error("Error getting mind map nodes:", error);
-      res.status(500).json({ message: "Failed to get mind map nodes" });
-    }
-  });
-
-  app.post("/api/mind-map/nodes", async (req, res) => {
-    try {
-      const userId = req.user?.uid || 'anonymous';
-      console.log("📊 Creating mind map node for user:", userId, "Data:", req.body);
-      const node = await mongoStorage.createMindMapNode({ ...req.body, userId });
-      console.log("📊 Created mind map node:", node);
-      res.status(201).json(node);
-    } catch (error) {
-      console.error("Error creating mind map node:", error);
-      res.status(500).json({ message: "Failed to create mind map node" });
-    }
-  });
-
-  app.patch("/api/mind-map/nodes/:id", async (req, res) => {
-    const node = await mongoStorage.updateMindMapNode(req.params.id, req.body);
-    res.json(node);
-  });
-
-  app.delete("/api/mind-map/nodes/:id", async (req, res) => {
-    await mongoStorage.deleteMindMapNode(req.params.id);
-    res.status(204).send();
-  });
-
   // Archive a task
   app.post("/api/tasks/:id/archive", async (req, res) => {
     try {
@@ -518,8 +505,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timeEntries.forEach(entry => {
         timeData[entry.date] = {
           timeInMinutes: entry.timeInMinutes,
-          deepWork: entry.deepWork || 'some-deep-work',
-          shallowWork: entry.shallowWork || 'some-shallow-needed'
+          deepWorkPercent: convertLegacyToPercent(entry),
+          notes: entry.notes || '',
         };
       });
       
@@ -534,7 +521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update/create time entry
   app.post("/api/time-entries", async (req, res) => {
     try {
-      const { date, timeInMinutes, deepWork, shallowWork } = req.body;
+      const { date, timeInMinutes, deepWorkPercent, notes } = req.body;
       const userId = req.user?.uid || 'anonymous';
       const isAnonymous = !req.user || req.user.isAnonymous;
       
@@ -556,11 +543,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const timeEntry = await mongoStorage.updateTimeEntry(
-        date, 
-        timeInMinutes, 
-        userId, 
-        deepWork || 'some-deep-work', 
-        shallowWork || 'some-shallow-needed'
+        date,
+        timeInMinutes,
+        userId,
+        deepWorkPercent ?? 50,
+        notes || ''
       );
       res.json(timeEntry);
     } catch (error) {
