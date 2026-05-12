@@ -336,9 +336,10 @@ export function CalendarView() {
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
               <div
                 key={day}
-                className="p-3 text-center text-sm font-medium text-gray-600 dark:text-gray-300"
+                className="p-1.5 sm:p-3 text-center text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300"
               >
-                {day}
+                <span className="sm:hidden">{day.charAt(0)}</span>
+                <span className="hidden sm:inline">{day}</span>
               </div>
             ))}
           </div>
@@ -357,7 +358,7 @@ export function CalendarView() {
                 <div
                   key={index}
                   className={`
-                  min-h-[120px] p-2 border-b border-r border-gray-200 dark:border-gray-600 relative cursor-pointer
+                  min-h-[60px] sm:min-h-[120px] p-1 sm:p-2 border-b border-r border-gray-200 dark:border-gray-600 relative cursor-pointer
                   ${!isCurrentMonth ? "bg-gray-50 dark:bg-gray-800/30 text-gray-400" : ""}
                   ${isToday ? "bg-blue-50 dark:bg-blue-900/20" : ""}
                   ${isFuture ? "opacity-50" : ""}
@@ -384,7 +385,7 @@ export function CalendarView() {
                     {/* Date Number */}
                     <div
                       className={`
-                    text-sm font-medium mb-2
+                    text-xs sm:text-sm font-medium mb-1 sm:mb-2
                     ${isToday ? "text-blue-600 dark:text-blue-400 font-bold" : ""}
                     ${!isCurrentMonth ? "text-gray-400" : "text-gray-900 dark:text-gray-100"}
                   `}
@@ -392,9 +393,16 @@ export function CalendarView() {
                       {format(day, "d")}
                     </div>
 
-                    {/* Time Display and Edit */}
+                    {/* Mobile: minimal indicator dot if notes exist */}
+                    {isCurrentMonth && !isFuture && timeEntry?.notes && (
+                      <div className="sm:hidden absolute bottom-1 right-1">
+                        <FileText className="w-2.5 h-2.5 text-gray-500 dark:text-gray-400" />
+                      </div>
+                    )}
+
+                    {/* Desktop: empty-state "Add" button */}
                     {isCurrentMonth && !isFuture && !timeEntry && (
-                      <div className="flex-1 flex flex-col items-center justify-center">
+                      <div className="hidden sm:flex flex-1 flex-col items-center justify-center">
                         <div
                           className={`rounded-lg p-2 transition-colors w-full text-center ${isAnonymous ? "cursor-not-allowed" : "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"}`}
                           onClick={() => !isAnonymous && handleTimeEdit(day)}
@@ -418,9 +426,9 @@ export function CalendarView() {
                       </div>
                     )}
 
-                    {/* Time display for cells with time */}
+                    {/* Desktop: rich time + proportion display */}
                     {isCurrentMonth && !isFuture && timeEntry && (
-                      <div className="flex-1 flex flex-col items-center justify-center space-y-1">
+                      <div className="hidden sm:flex flex-1 flex-col items-center justify-center space-y-1">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           <span className="text-lg font-semibold">
@@ -454,7 +462,7 @@ export function CalendarView() {
                     )}
 
                     {isFuture && isCurrentMonth && (
-                      <div className="flex-1 flex items-center justify-center">
+                      <div className="hidden sm:flex flex-1 items-center justify-center">
                         <span className="text-xs text-gray-400">
                           Future date
                         </span>
@@ -489,7 +497,7 @@ export function CalendarView() {
 
       {/* Time Edit Modal */}
       <Dialog open={showTimeModal} onOpenChange={setShowTimeModal}>
-        <DialogContent className="w-full max-w mx-auto max-h-[95vh] overflow-y-auto bg-white dark:bg-black border border-gray-200 dark:border-gray-800">
+        <DialogContent className="w-[95vw] max-w-md sm:max-w-lg mx-auto max-h-[95vh] overflow-y-auto bg-white dark:bg-black border border-gray-200 dark:border-gray-800">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <Clock className="h-5 w-5" />
@@ -534,8 +542,15 @@ export function CalendarView() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Work Type Proportion
               </label>
+
+              {/* Mobile: percentages stacked above slider */}
+              <div className="flex sm:hidden justify-between text-sm font-medium">
+                <span className="text-blue-500">{deepWorkPercent}% Deep</span>
+                <span className="text-orange-500">{100 - deepWorkPercent}% Shallow</span>
+              </div>
+
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-blue-500 min-w-[55px] text-right">
+                <span className="hidden sm:inline text-sm font-medium text-blue-500 min-w-[55px] text-right">
                   {deepWorkPercent}% Deep
                 </span>
                 <div className="flex-1 relative">
@@ -552,7 +567,7 @@ export function CalendarView() {
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium text-orange-500 min-w-[70px]">
+                <span className="hidden sm:inline text-sm font-medium text-orange-500 min-w-[70px]">
                   {100 - deepWorkPercent}% Shallow
                 </span>
               </div>
