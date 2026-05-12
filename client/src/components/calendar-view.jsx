@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Clock, Check, X, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Lock, FileText } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import {
   format,
@@ -22,100 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
-
-const DEEP_WORK_OPTIONS = [
-  {
-    value: "lots-deep-work",
-    label: "Lots of deep work",
-    color: "bg-green-600",
-    lightColor: "bg-green-100 dark:bg-green-900/30",
-    borderColor: "border-green-600",
-  },
-  {
-    value: "some-deep-work",
-    label: "Some deep work",
-    color: "bg-green-400",
-    lightColor: "bg-green-50 dark:bg-green-800/30",
-    borderColor: "border-green-400",
-  },
-  {
-    value: "little-deep-work",
-    label: "Little deep work",
-    color: "bg-yellow-500",
-    lightColor: "bg-yellow-100 dark:bg-yellow-900/30",
-    borderColor: "border-yellow-500",
-  },
-  {
-    value: "no-deep-work",
-    label: "No deep work",
-    color: "bg-red-500",
-    lightColor: "bg-red-100 dark:bg-red-900/30",
-    borderColor: "border-red-500",
-  },
-];
-
-const SHALLOW_WORK_OPTIONS = [
-  {
-    value: "lots-shallow-needed",
-    label: "Lots of shallow work but needed",
-    color: "bg-green-600",
-    lightColor: "bg-green-100 dark:bg-green-900/30",
-    borderColor: "border-green-600",
-  },
-  {
-    value: "some-shallow-needed",
-    label: "Some shallow work but needed",
-    color: "bg-green-400",
-    lightColor: "bg-green-50 dark:bg-green-800/30",
-    borderColor: "border-green-400",
-  },
-  {
-    value: "some-shallow-not-needed",
-    label: "Some shallow work kinda not needed",
-    color: "bg-yellow-500",
-    lightColor: "bg-yellow-100 dark:bg-yellow-900/30",
-    borderColor: "border-yellow-500",
-  },
-  {
-    value: "lots-shallow-not-needed",
-    label: "A lot of shallow work not needed",
-    color: "bg-red-500",
-    lightColor: "bg-red-100 dark:bg-red-900/30",
-    borderColor: "border-red-500",
-  },
-  {
-    value: "no-shallow-work",
-    label: "No shallow work",
-    color: "bg-slate-500",
-    lightColor: "bg-slate-100 dark:bg-slate-900/30",
-    borderColor: "border-slate-500",
-  },
-];
-
-// Add "Not selected" options at the bottom
-const DEEP_WORK_OPTIONS_WITH_NONE = [
-  ...DEEP_WORK_OPTIONS,
-  {
-    value: "none",
-    label: "Not selected",
-    color: "bg-gray-400",
-    lightColor: "bg-gray-50 dark:bg-gray-800/30",
-    borderColor: "border-gray-400",
-  },
-];
-
-const SHALLOW_WORK_OPTIONS_WITH_NONE = [
-  ...SHALLOW_WORK_OPTIONS,
-  {
-    value: "none",
-    label: "Not selected",
-    color: "bg-gray-400",
-    lightColor: "bg-gray-50 dark:bg-gray-800/30",
-    borderColor: "border-gray-400",
-  },
-];
 
 const getTimeColorClasses = (timeInMinutes) => {
   if (timeInMinutes === undefined || timeInMinutes === null) return "";
@@ -161,10 +68,8 @@ export function CalendarView() {
   const [sliderTime, setSliderTime] = useState(0);
   const [timeData, setTimeData] = useState({}); // Store manual time entries
   const [isLoading, setIsLoading] = useState(false);
-  const [workType, setWorkType] = useState({
-    deepWork: "none",
-    shallowWork: "none",
-  });
+  const [deepWorkPercent, setDeepWorkPercent] = useState(50);
+  const [notes, setNotes] = useState('');
 
   const isAnonymous = !user || user.isAnonymous;
 
@@ -185,19 +90,20 @@ export function CalendarView() {
       const response = await apiRequest("/api/time-entries");
       if (response.ok) {
         const data = await response.json();
-        // Convert old format to new format if needed
         const formattedData = {};
         Object.keys(data).forEach((date) => {
           if (typeof data[date] === "number") {
-            // Old format - just time
             formattedData[date] = {
               timeInMinutes: data[date],
-              deepWork: "none",
-              shallowWork: "none",
+              deepWorkPercent: 50,
+              notes: '',
             };
           } else {
-            // New format - already has work types
-            formattedData[date] = data[date];
+            formattedData[date] = {
+              timeInMinutes: data[date].timeInMinutes,
+              deepWorkPercent: data[date].deepWorkPercent ?? 50,
+              notes: data[date].notes || '',
+            };
           }
         });
         setTimeData(formattedData);
@@ -239,26 +145,12 @@ export function CalendarView() {
     if (!timeEntry || !timeEntry.timeInMinutes || timeEntry.timeInMinutes === 0)
       return "";
 
-    // Combine hours-based background with work type border colors
     const hoursClass = getTimeColorClasses(timeEntry.timeInMinutes);
-
-    // Add work type border color if available
+    const pct = timeEntry.deepWorkPercent ?? 50;
     let borderClass = "";
-    if (timeEntry.deepWork && timeEntry.deepWork !== "none") {
-      const deepWorkOption = DEEP_WORK_OPTIONS_WITH_NONE.find(
-        (opt) => opt.value === timeEntry.deepWork,
-      );
-      if (deepWorkOption?.borderColor) {
-        borderClass = `border-l-4 ${deepWorkOption.borderColor}`;
-      }
-    } else if (timeEntry.shallowWork && timeEntry.shallowWork !== "none") {
-      const shallowWorkOption = SHALLOW_WORK_OPTIONS_WITH_NONE.find(
-        (opt) => opt.value === timeEntry.shallowWork,
-      );
-      if (shallowWorkOption?.borderColor) {
-        borderClass = `border-l-4 ${shallowWorkOption.borderColor}`;
-      }
-    }
+    if (pct >= 70) borderClass = "border-l-4 border-blue-500";
+    else if (pct >= 40) borderClass = "border-l-4 border-yellow-500";
+    else borderClass = "border-l-4 border-orange-500";
 
     return `${hoursClass} ${borderClass}`.trim();
   };
@@ -278,10 +170,8 @@ export function CalendarView() {
     const existingEntry = timeData[dateKey];
     setSelectedDate(date);
     setSliderTime(existingEntry?.timeInMinutes || 0);
-    setWorkType({
-      deepWork: existingEntry?.deepWork || "none",
-      shallowWork: existingEntry?.shallowWork || "none",
-    });
+    setDeepWorkPercent(existingEntry?.deepWorkPercent ?? 50);
+    setNotes(existingEntry?.notes || '');
     setShowTimeModal(true);
   };
 
@@ -305,19 +195,18 @@ export function CalendarView() {
           body: JSON.stringify({
             date: dateKey,
             timeInMinutes: sliderTime,
-            deepWork: workType.deepWork,
-            shallowWork: workType.shallowWork,
+            deepWorkPercent,
+            notes,
           }),
         });
 
         if (response.ok) {
-          // Update local state
           setTimeData((prev) => ({
             ...prev,
             [dateKey]: {
               timeInMinutes: sliderTime,
-              deepWork: workType.deepWork,
-              shallowWork: workType.shallowWork,
+              deepWorkPercent,
+              notes,
             },
           }));
 
@@ -340,10 +229,8 @@ export function CalendarView() {
     setShowTimeModal(false);
     setSelectedDate(null);
     setSliderTime(0);
-    setWorkType({
-      deepWork: "none",
-      shallowWork: "none",
-    });
+    setDeepWorkPercent(50);
+    setNotes('');
   };
 
   // Generate calendar days
@@ -488,7 +375,7 @@ export function CalendarView() {
                       ? "Login required to track time"
                       : !isFuture && isCurrentMonth
                         ? timeSpent > 0
-                          ? `${formatTime(timeSpent)} worked\nDeep work: ${DEEP_WORK_OPTIONS.find((opt) => opt.value === timeEntry?.deepWork)?.label || "Some deep work"}\nShallow work: ${SHALLOW_WORK_OPTIONS.find((opt) => opt.value === timeEntry?.shallowWork)?.label || "Some shallow work but needed"}\nClick to edit`
+                          ? `${formatTime(timeSpent)} worked\nDeep work: ${timeEntry?.deepWorkPercent ?? 50}%\nShallow work: ${100 - (timeEntry?.deepWorkPercent ?? 50)}%${timeEntry?.notes ? `\n${timeEntry.notes}` : ''}\nClick to edit`
                           : "Click to add time"
                         : ""
                   }
@@ -533,7 +420,7 @@ export function CalendarView() {
 
                     {/* Time display for cells with time */}
                     {isCurrentMonth && !isFuture && timeEntry && (
-                      <div className="flex-1 flex flex-col items-center justify-center space-y-2">
+                      <div className="flex-1 flex flex-col items-center justify-center space-y-1">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           <span className="text-lg font-semibold">
@@ -541,48 +428,28 @@ export function CalendarView() {
                           </span>
                         </div>
 
-                        {/* Work Type Badges */}
-                        <div className="flex flex-col gap-1 w-full">
-                          {timeEntry?.deepWork &&
-                            timeEntry.deepWork !== "none" && (
-                              <Badge
-                                variant="secondary"
-                                className={`text-xs px-1 py-0.5 w-full justify-center ${DEEP_WORK_OPTIONS_WITH_NONE.find((opt) => opt.value === timeEntry.deepWork)?.lightColor || "bg-gray-100"}`}
-                                title={
-                                  DEEP_WORK_OPTIONS_WITH_NONE.find(
-                                    (opt) => opt.value === timeEntry.deepWork,
-                                  )?.label
-                                }
-                              >
-                                {DEEP_WORK_OPTIONS_WITH_NONE.find(
-                                  (opt) => opt.value === timeEntry.deepWork,
-                                )
-                                  ?.label.split(" ")
-                                  .slice(0, 3)
-                                  .join(" ")}
-                              </Badge>
-                            )}
-                          {timeEntry?.shallowWork &&
-                            timeEntry.shallowWork !== "none" && (
-                              <Badge
-                                variant="secondary"
-                                className={`text-xs px-1 py-0.5 w-full justify-center ${SHALLOW_WORK_OPTIONS_WITH_NONE.find((opt) => opt.value === timeEntry.shallowWork)?.lightColor || "bg-gray-100"}`}
-                                title={
-                                  SHALLOW_WORK_OPTIONS_WITH_NONE.find(
-                                    (opt) =>
-                                      opt.value === timeEntry.shallowWork,
-                                  )?.label
-                                }
-                              >
-                                {SHALLOW_WORK_OPTIONS_WITH_NONE.find(
-                                  (opt) => opt.value === timeEntry.shallowWork,
-                                )
-                                  ?.label.split(" ")
-                                  .slice(0, 3)
-                                  .join(" ")}
-                              </Badge>
-                            )}
+                        {/* Work Proportion Bar */}
+                        <div className="w-full">
+                          <div className="flex items-center gap-1">
+                            <div className="flex-1 h-1.5 rounded-full bg-orange-200 dark:bg-orange-900/40 overflow-hidden">
+                              <div
+                                className="h-full bg-blue-500 rounded-full"
+                                style={{ width: `${timeEntry.deepWorkPercent ?? 50}%` }}
+                              />
+                            </div>
+                          </div>
+                          <div className="text-[10px] text-center text-gray-500 dark:text-gray-400">
+                            {timeEntry.deepWorkPercent ?? 50}% deep
+                          </div>
                         </div>
+
+                        {/* Notes indicator */}
+                        {timeEntry?.notes && (
+                          <div className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 w-full justify-center" title={timeEntry.notes}>
+                            <FileText className="w-2.5 h-2.5" />
+                            <span className="truncate max-w-[80px]">{timeEntry.notes}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -662,81 +529,52 @@ export function CalendarView() {
               </div>
             </div>
 
-            {/* Work Type Selectors - Side by Side */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Deep Work Selector */}
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Deep Work Level
-                </label>
-                <div className="space-y-2">
-                  {DEEP_WORK_OPTIONS_WITH_NONE.map((option) => (
-                    <div
-                      key={option.value}
-                      className={`cursor-pointer rounded-lg border-2 p-2 transition-all hover:shadow-sm ${
-                        workType.deepWork === option.value
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                      }`}
-                      onClick={() =>
-                        setWorkType((prev) => ({
-                          ...prev,
-                          deepWork: option.value,
-                        }))
-                      }
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className={`w-3 h-3 rounded ${option.color} flex-shrink-0`}
-                        ></div>
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-tight">
-                          {option.label}
-                        </span>
-                        {workType.deepWork === option.value && (
-                          <Check className="h-3 w-3 text-blue-600 ml-auto flex-shrink-0" />
-                        )}
-                      </div>
-                    </div>
-                  ))}
+            {/* Deep vs Shallow Work Proportion */}
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Work Proportion
+              </label>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-orange-500 min-w-[70px] text-right">
+                  {100 - deepWorkPercent}% Shallow
+                </span>
+                <div className="flex-1 relative">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={deepWorkPercent}
+                    onChange={(e) => setDeepWorkPercent(parseInt(e.target.value))}
+                    className="slider w-full h-2 rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #f97316 0%, #f97316 ${100 - deepWorkPercent}%, #3b82f6 ${100 - deepWorkPercent}%, #3b82f6 100%)`
+                    }}
+                  />
                 </div>
+                <span className="text-sm font-medium text-blue-500 min-w-[55px]">
+                  {deepWorkPercent}% Deep
+                </span>
               </div>
+              <div className="flex justify-between text-xs text-gray-400">
+                <span>All Shallow</span>
+                <span>Balanced</span>
+                <span>All Deep</span>
+              </div>
+            </div>
 
-              {/* Shallow Work Selector */}
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Shallow Work Level
-                </label>
-                <div className="space-y-2">
-                  {SHALLOW_WORK_OPTIONS_WITH_NONE.map((option) => (
-                    <div
-                      key={option.value}
-                      className={`cursor-pointer rounded-lg border-2 p-2 transition-all hover:shadow-sm ${
-                        workType.shallowWork === option.value
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                      }`}
-                      onClick={() =>
-                        setWorkType((prev) => ({
-                          ...prev,
-                          shallowWork: option.value,
-                        }))
-                      }
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className={`w-3 h-3 rounded ${option.color} flex-shrink-0`}
-                        ></div>
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 leading-tight">
-                          {option.label}
-                        </span>
-                        {workType.shallowWork === option.value && (
-                          <Check className="h-3 w-3 text-blue-600 ml-auto flex-shrink-0" />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* Notes */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                What did you do today?
+              </label>
+              <textarea
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Notes about your work today..."
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
 
             <div className="flex space-x-3 pt-4">
