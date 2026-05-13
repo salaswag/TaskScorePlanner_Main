@@ -8,8 +8,11 @@ import { authenticateUser } from "./middleware/auth-middleware.js";
 import { Logger } from "./logger.js";
 import "./types"; // Import session type declarations
 
-function convertLegacyToPercent(entry: any): number {
-  if (entry.deepWorkPercent !== undefined) return entry.deepWorkPercent;
+function convertLegacyToPercent(entry: any): number | null {
+  if (entry.deepWorkPercent !== undefined && entry.deepWorkPercent !== null) {
+    // Treat 50 as "not set" — 50/50 is the default slider position, not an intentional entry
+    return entry.deepWorkPercent === 50 ? null : entry.deepWorkPercent;
+  }
   const deepMap: Record<string, number> = {
     'lots-deep-work': 90,
     'some-deep-work': 70,
@@ -29,7 +32,7 @@ function convertLegacyToPercent(entry: any): number {
   if (entry.shallowWork && entry.shallowWork !== 'none' && shallowMap[entry.shallowWork] !== undefined) {
     return shallowMap[entry.shallowWork];
   }
-  return 50;
+  return null;
 }
 
 // Simple rate limiting middleware
@@ -542,11 +545,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: "Time entries require MongoDB" });
       }
       
+      // Treat 50 as "not set" — the default slider position isn't an intentional entry
+      const effectivePct = (deepWorkPercent != null && deepWorkPercent !== 50) ? deepWorkPercent : null;
       const timeEntry = await mongoStorage.updateTimeEntry(
         date,
         timeInMinutes,
         userId,
-        deepWorkPercent ?? 50,
+        effectivePct,
         notes || ''
       );
       res.json(timeEntry);

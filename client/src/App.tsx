@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,11 +8,19 @@ import TodoApp from "@/pages/todo-app";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
+function RedirectToTimeTracker() {
+  const [, setLocation] = useLocation();
+  useEffect(() => { setLocation("/time-tracker"); }, []);
+  return null;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={TodoApp} />
       <Route path="/time-tracker" component={TodoApp} />
+      <Route path="/to-do-list" component={TodoApp} />
+      <Route path="/stats" component={TodoApp} />
+      <Route path="/" component={RedirectToTimeTracker} />
       <Route component={NotFound} />
     </Switch>
   );

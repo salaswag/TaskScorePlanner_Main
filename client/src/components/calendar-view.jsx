@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Clock, Lock, FileText } from "lucide-react";
+import InlineTimer from "@/components/inline-timer";
 import { apiRequest } from "@/lib/queryClient";
 import {
   format,
@@ -77,6 +78,12 @@ export function CalendarView() {
     fetchTimeEntries();
   }, [user, isAnonymous]);
 
+  useEffect(() => {
+    const handler = () => fetchTimeEntries();
+    window.addEventListener("time-entries-updated", handler);
+    return () => window.removeEventListener("time-entries-updated", handler);
+  }, [isAnonymous]);
+
   const fetchTimeEntries = async () => {
     // Don't fetch time entries for anonymous users
     if (isAnonymous) {
@@ -95,13 +102,15 @@ export function CalendarView() {
           if (typeof data[date] === "number") {
             formattedData[date] = {
               timeInMinutes: data[date],
-              deepWorkPercent: 50,
+              deepWorkPercent: null,
               notes: '',
             };
           } else {
+            // Treat 50/50 as "not set" — the default slider position means no intentional entry
+            const rawPct = data[date].deepWorkPercent ?? null;
             formattedData[date] = {
               timeInMinutes: data[date].timeInMinutes,
-              deepWorkPercent: data[date].deepWorkPercent ?? 50,
+              deepWorkPercent: rawPct === 50 ? null : rawPct,
               notes: data[date].notes || '',
             };
           }
@@ -146,11 +155,12 @@ export function CalendarView() {
       return "";
 
     const hoursClass = getTimeColorClasses(timeEntry.timeInMinutes);
-    const pct = timeEntry.deepWorkPercent ?? 50;
+    if (timeEntry.deepWorkPercent == null) return hoursClass;
+    const pct = timeEntry.deepWorkPercent;
     let borderClass = "";
     if (pct >= 70) borderClass = "border-l-4 border-blue-500";
-    else if (pct >= 40) borderClass = "border-l-4 border-yellow-500";
-    else borderClass = "border-l-4 border-orange-500";
+    else if (pct >= 40) borderClass = "border-l-4 border-blue-500/60";
+    else borderClass = "border-l-4 border-yellow-500";
 
     return `${hoursClass} ${borderClass}`.trim();
   };
@@ -170,7 +180,7 @@ export function CalendarView() {
     const existingEntry = timeData[dateKey];
     setSelectedDate(date);
     setSliderTime(existingEntry?.timeInMinutes || 0);
-    setDeepWorkPercent(existingEntry?.deepWorkPercent ?? 50);
+    setDeepWorkPercent(existingEntry?.deepWorkPercent ?? null);
     setNotes(existingEntry?.notes || '');
     setShowTimeModal(true);
   };
@@ -184,12 +194,24 @@ export function CalendarView() {
     if (selectedDate) {
       const dateKey = format(selectedDate, "yyyy-MM-dd");
 
+      // Treat 50/50 as "not set" — the default slider position isn't an intentional entry
+      const effectiveDeepWork = (deepWorkPercent != null && deepWorkPercent !== 50) ? deepWorkPercent : null;
+
+      const payload = {
+        date: dateKey,
+        timeInMinutes: sliderTime,
+        notes,
+      };
+      if (effectiveDeepWork != null) {
+        payload.deepWorkPercent = effectiveDeepWork;
+      }
+
       // Optimistic update so the cell reflects the change immediately
       setTimeData((prev) => ({
         ...prev,
         [dateKey]: {
           timeInMinutes: sliderTime,
-          deepWorkPercent,
+          deepWorkPercent: effectiveDeepWork,
           notes,
         },
       }));
@@ -198,7 +220,7 @@ export function CalendarView() {
       setShowTimeModal(false);
       setSelectedDate(null);
       setSliderTime(0);
-      setDeepWorkPercent(50);
+      setDeepWorkPercent(null);
       setNotes('');
 
       try {
@@ -207,12 +229,7 @@ export function CalendarView() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            date: dateKey,
-            timeInMinutes: sliderTime,
-            deepWorkPercent,
-            notes,
-          }),
+          body: JSON.stringify(payload),
         });
         // Re-sync from server to catch any backend-side conversions
         fetchTimeEntries();
@@ -231,7 +248,7 @@ export function CalendarView() {
     setShowTimeModal(false);
     setSelectedDate(null);
     setSliderTime(0);
-    setDeepWorkPercent(50);
+    setDeepWorkPercent(null);
     setNotes('');
   };
 
@@ -280,9 +297,8 @@ export function CalendarView() {
       )}
 
       {/* Calendar Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h2 className="text-lg font-bold"> </h2>
+      <div className="flex items-center justify-between py-3">
+        <div className="flex items-center gap-5">
           <h1 className="text-lg font-bold">Time Tracking Calendar</h1>
           <h2 className="text-lg font-semibold">
             {format(currentMonth, "MMMM yyyy")}
@@ -297,23 +313,26 @@ export function CalendarView() {
             Today
           </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth("prev")}
-            disabled={isAnonymous}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateMonth("next")}
-            disabled={isAnonymous}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-4">
+          <InlineTimer />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth("prev")}
+              disabled={isAnonymous}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateMonth("next")}
+              disabled={isAnonymous}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -378,7 +397,7 @@ export function CalendarView() {
                       ? "Login required to track time"
                       : !isFuture && isCurrentMonth
                         ? timeSpent > 0
-                          ? `${formatTime(timeSpent)} worked\nDeep work: ${timeEntry?.deepWorkPercent ?? 50}%\nShallow work: ${100 - (timeEntry?.deepWorkPercent ?? 50)}%${timeEntry?.notes ? `\n${timeEntry.notes}` : ''}\nClick to edit`
+                          ? `${formatTime(timeSpent)} worked${timeEntry?.deepWorkPercent != null ? `\nDeep work: ${timeEntry.deepWorkPercent}%\nShallow work: ${100 - timeEntry.deepWorkPercent}%` : ''}${timeEntry?.notes ? `\n${timeEntry.notes}` : ''}\nClick to edit`
                           : "Click to add time"
                         : ""
                   }
@@ -444,19 +463,20 @@ export function CalendarView() {
                         </div>
 
                         {/* Work Proportion Bar */}
-                        <div className="w-full">
-                          <div className="flex items-center gap-1">
-                            <div className="flex-1 h-1.5 rounded-full bg-orange-200 dark:bg-orange-900/40 overflow-hidden">
+                        {timeEntry.deepWorkPercent != null && (
+                          <div className="w-full">
+                            <div className="flex h-1.5 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-blue-500 rounded-full"
-                                style={{ width: `${timeEntry.deepWorkPercent ?? 50}%` }}
+                                className="h-full bg-blue-500"
+                                style={{ width: `${timeEntry.deepWorkPercent}%` }}
                               />
+                              <div className="h-full bg-yellow-400 flex-1" />
+                            </div>
+                            <div className="text-[10px] text-center text-gray-500 dark:text-gray-400">
+                              {timeEntry.deepWorkPercent}% deep
                             </div>
                           </div>
-                          <div className="text-[10px] text-center text-gray-500 dark:text-gray-400">
-                            {timeEntry.deepWorkPercent ?? 50}% deep
-                          </div>
-                        </div>
+                        )}
 
                         {/* Notes indicator */}
                         {timeEntry?.notes && (
@@ -547,18 +567,18 @@ export function CalendarView() {
             {/* Deep vs Shallow Work Proportion */}
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Work Type Proportion
+                Work Type Proportion {deepWorkPercent == null && <span className="text-xs text-gray-400 font-normal">(move slider to set)</span>}
               </label>
 
               {/* Mobile: percentages stacked above slider */}
-              <div className="flex sm:hidden justify-between text-sm font-medium">
-                <span className="text-blue-500">{deepWorkPercent}% Deep</span>
-                <span className="text-orange-500">{100 - deepWorkPercent}% Shallow</span>
+              <div className={`flex sm:hidden justify-between text-sm font-medium ${deepWorkPercent == null ? 'opacity-40' : ''}`}>
+                <span className="text-yellow-500">{100 - (deepWorkPercent ?? 50)}% Shallow</span>
+                <span className="text-blue-500">{deepWorkPercent ?? 50}% Deep</span>
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className="hidden sm:inline text-sm font-medium text-blue-500 min-w-[55px] text-right">
-                  {deepWorkPercent}% Deep
+              <div className={`flex items-center gap-3 ${deepWorkPercent == null ? 'opacity-40' : ''}`}>
+                <span className="hidden sm:inline text-sm font-medium text-yellow-500 min-w-[70px] text-right">
+                  {100 - (deepWorkPercent ?? 50)}% Shallow
                 </span>
                 <div className="flex-1 relative">
                   <input
@@ -566,21 +586,21 @@ export function CalendarView() {
                     min="0"
                     max="100"
                     step="5"
-                    value={100 - deepWorkPercent}
-                    onChange={(e) => setDeepWorkPercent(100 - parseInt(e.target.value))}
+                    value={deepWorkPercent ?? 50}
+                    onChange={(e) => setDeepWorkPercent(parseInt(e.target.value))}
                     className="slider w-full h-2 rounded-lg appearance-none cursor-pointer"
                     style={{
-                      background: "linear-gradient(to right, #3b82f6, #f97316)"
+                      background: `linear-gradient(to right, #eab308 ${deepWorkPercent ?? 50}%, #3b82f6 ${deepWorkPercent ?? 50}%)`
                     }}
                   />
                 </div>
-                <span className="hidden sm:inline text-sm font-medium text-orange-500 min-w-[70px]">
-                  {100 - deepWorkPercent}% Shallow
+                <span className="hidden sm:inline text-sm font-medium text-blue-500 min-w-[55px]">
+                  {deepWorkPercent ?? 50}% Deep
                 </span>
               </div>
               <div className="flex justify-between text-xs text-gray-400">
-                <span>Deep Work</span>
                 <span>Shallow Work</span>
+                <span>Deep Work</span>
               </div>
             </div>
 
@@ -590,11 +610,22 @@ export function CalendarView() {
                 What did you do today?
               </label>
               <textarea
-                rows={3}
+                rows={6}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Notes about your work today..."
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyDown={(e) => {
+                  if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const { selectionStart, selectionEnd } = e.target;
+                    const newValue = notes.substring(0, selectionStart) + '    ' + notes.substring(selectionEnd);
+                    setNotes(newValue);
+                    requestAnimationFrame(() => {
+                      e.target.selectionStart = e.target.selectionEnd = selectionStart + 4;
+                    });
+                  }
+                }}
+                placeholder={"- Use dash for bullets\n    Tab to indent (4 spaces)\n    - Nested items\nNotes about your work today..."}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-3 text-sm resize-y min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
