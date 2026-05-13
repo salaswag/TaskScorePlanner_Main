@@ -197,3 +197,270 @@
   opacity: 0.5;
   pointer-events: none;
 }
+
+/* ============================================
+   AURORA THEME (Theme 2) — Light Mode
+   ============================================ */
+.aurora {
+  --background: hsl(250, 30%, 97%);
+  --foreground: hsl(250, 40%, 15%);
+  --card: hsl(250, 28%, 94%);
+  --card-foreground: hsl(250, 40%, 15%);
+  --popover: hsl(250, 30%, 97%);
+  --popover-foreground: hsl(250, 40%, 15%);
+  --primary: hsl(262, 83%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(250, 20%, 90%);
+  --secondary-foreground: hsl(250, 40%, 20%);
+  --muted: hsl(250, 20%, 90%);
+  --muted-foreground: hsl(250, 15%, 50%);
+  --accent: hsl(262, 50%, 90%);
+  --accent-foreground: hsl(262, 80%, 40%);
+  --destructive: hsl(0, 72%, 55%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(262, 25%, 85%);
+  --input: hsl(262, 25%, 85%);
+  --ring: hsl(262, 83%, 58%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   AURORA THEME (Theme 2) — Dark Mode
+   ============================================ */
+.aurora.dark {
+  --background: hsl(240, 40%, 6%);
+  --foreground: hsl(220, 25%, 93%);
+  --card: hsl(240, 35%, 10%);
+  --card-foreground: hsl(220, 25%, 93%);
+  --popover: hsl(240, 35%, 10%);
+  --popover-foreground: hsl(220, 25%, 93%);
+  --primary: hsl(262, 90%, 68%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(240, 30%, 15%);
+  --secondary-foreground: hsl(220, 20%, 85%);
+  --muted: hsl(240, 28%, 14%);
+  --muted-foreground: hsl(220, 15%, 60%);
+  --accent: hsl(262, 50%, 20%);
+  --accent-foreground: hsl(262, 90%, 80%);
+  --destructive: hsl(0, 62%, 35%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 30%, 20%);
+  --input: hsl(240, 30%, 20%);
+  --ring: hsl(262, 90%, 68%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   AURORA — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.aurora header {
+  background: linear-gradient(135deg, hsl(262, 30%, 93%) 0%, hsl(250, 28%, 96%) 100%) !important;
+  border-bottom-color: hsl(262, 30%, 82%) !important;
+}
+.aurora.dark header {
+  background: linear-gradient(135deg, hsl(262, 45%, 12%) 0%, hsl(240, 40%, 8%) 100%) !important;
+  border-bottom-color: hsl(262, 35%, 22%) !important;
+}
+
+/* Title */
+.aurora h1 {
+  color: hsl(262, 80%, 55%) !important;
+}
+.aurora.dark h1 {
+  color: hsl(262, 90%, 78%) !important;
+}
+
+/* Page background */
+.aurora:not(.dark) .min-h-screen.bg-white { background-color: hsl(250, 30%, 97%) !important; }
+.aurora.dark .min-h-screen.bg-white,
+.aurora.dark .min-h-screen.dark\:bg-black { background-color: hsl(240, 40%, 6%) !important; }
+
+/* Generic white/black backgrounds — light only */
+.aurora:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(250, 28%, 95%) !important; }
+.aurora.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(240, 35%, 8%) !important; }
+.aurora.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(240, 35%, 8%) !important; }
+.aurora.dark .dark\:bg-gray-950 { background-color: hsl(240, 35%, 6%) !important; }
+.aurora.dark .dark\:bg-gray-900 { background-color: hsl(240, 32%, 10%) !important; }
+.aurora.dark .dark\:bg-gray-800 { background-color: hsl(240, 28%, 14%) !important; }
+.aurora:not(.dark) .bg-gray-50 { background-color: hsl(250, 25%, 93%) !important; }
+.aurora.dark .bg-gray-50 { background-color: hsl(240, 28%, 14%) !important; }
+.aurora.dark .dark\:bg-gray-800\/30 { background-color: hsla(240, 30%, 14%, 0.3) !important; }
+
+/* Borders — light only */
+.aurora:not(.dark) .border-gray-200 { border-color: hsl(262, 25%, 85%) !important; }
+.aurora.dark .border-gray-200 { border-color: hsl(240, 30%, 20%) !important; }
+.aurora.dark .dark\:border-gray-600 { border-color: hsl(240, 28%, 22%) !important; }
+.aurora.dark .dark\:border-gray-700 { border-color: hsl(240, 28%, 20%) !important; }
+.aurora.dark .dark\:border-gray-800 { border-color: hsl(240, 30%, 18%) !important; }
+
+/* Text colors — light only */
+.aurora:not(.dark) .text-black { color: hsl(262, 60%, 25%) !important; }
+.aurora.dark .dark\:text-white { color: hsl(220, 25%, 93%) !important; }
+.aurora:not(.dark) .text-gray-600 { color: hsl(250, 20%, 45%) !important; }
+.aurora.dark .dark\:text-gray-400 { color: hsl(220, 15%, 60%) !important; }
+.aurora:not(.dark) .text-gray-400 { color: hsl(250, 15%, 65%) !important; }
+.aurora.dark .dark\:text-gray-500 { color: hsl(220, 12%, 50%) !important; }
+.aurora:not(.dark) .text-gray-900 { color: hsl(250, 40%, 15%) !important; }
+.aurora.dark .dark\:text-gray-100 { color: hsl(220, 25%, 90%) !important; }
+
+/* Primary buttons — gradient glow (light) */
+.aurora:not(.dark) button.bg-black,
+.aurora:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(262, 83%, 58%), hsl(280, 70%, 50%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 12px hsla(262, 80%, 50%, 0.3) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.aurora:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 20px hsla(262, 80%, 50%, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — gradient glow (dark) */
+.aurora.dark button.dark\:bg-white,
+.aurora.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(262, 90%, 68%), hsl(190, 80%, 55%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 16px hsla(262, 80%, 60%, 0.35), 0 0 30px hsla(262, 80%, 60%, 0.15) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.aurora.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 24px hsla(262, 80%, 60%, 0.55), 0 0 40px hsla(262, 80%, 60%, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states — scoped */
+.aurora:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(262, 25%, 90%) !important; }
+.aurora.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(240, 28%, 16%) !important; }
+
+/* Blue accent overrides — purple in Aurora (light) */
+.aurora:not(.dark) .text-blue-600 { color: hsl(262, 83%, 58%) !important; }
+.aurora.dark .dark\:text-blue-400 { color: hsl(262, 90%, 75%) !important; }
+.aurora:not(.dark) .bg-blue-50 { background-color: hsl(262, 40%, 94%) !important; }
+.aurora.dark .bg-blue-50 { background-color: hsla(262, 50%, 15%, 0.3) !important; }
+.aurora.dark .dark\:bg-blue-900\/20 { background-color: hsla(262, 50%, 20%, 0.2) !important; }
+.aurora:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(262, 83%, 58%) !important; }
+.aurora:not(.dark) .border-blue-500 { border-color: hsl(262, 83%, 58%) !important; }
+
+/* Slider in Aurora */
+.aurora .slider {
+  background: hsl(250, 20%, 88%) !important;
+}
+.aurora.dark .slider {
+  background: hsl(240, 25%, 18%) !important;
+}
+.aurora .slider::-webkit-slider-thumb {
+  background: hsl(262, 83%, 58%) !important;
+  border-color: hsl(262, 30%, 90%) !important;
+  box-shadow: 0 0 8px hsla(262, 80%, 50%, 0.4) !important;
+}
+.aurora.dark .slider::-webkit-slider-thumb {
+  background: hsl(262, 90%, 75%) !important;
+  border-color: hsl(240, 30%, 15%) !important;
+  box-shadow: 0 0 10px hsla(262, 80%, 60%, 0.5) !important;
+}
+.aurora .slider::-moz-range-thumb {
+  background: hsl(262, 83%, 58%) !important;
+  border-color: hsl(262, 30%, 90%) !important;
+}
+.aurora.dark .slider::-moz-range-thumb {
+  background: hsl(262, 90%, 75%) !important;
+  border-color: hsl(240, 30%, 15%) !important;
+}
+
+/* Mobile slider thumb in Aurora */
+@media (max-width: 768px) {
+  .aurora input[type="range"]::-webkit-slider-thumb {
+    background: hsl(262, 83%, 58%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 8px hsla(262, 80%, 50%, 0.4), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .aurora.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(262, 90%, 75%) !important;
+    border-color: hsl(240, 30%, 15%) !important;
+    box-shadow: 0 0 10px hsla(262, 80%, 60%, 0.5), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .aurora input[type="range"]::-moz-range-thumb {
+    background: hsl(262, 83%, 58%) !important;
+    border-color: white !important;
+  }
+  .aurora.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(262, 90%, 75%) !important;
+    border-color: hsl(240, 30%, 15%) !important;
+  }
+}
+
+/* Tab triggers in Aurora */
+.aurora [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(262, 70%, 92%), hsl(250, 60%, 95%)) !important;
+  color: hsl(262, 80%, 45%) !important;
+  border-color: hsl(262, 50%, 80%) !important;
+}
+.aurora.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(262, 50%, 18%), hsl(240, 40%, 14%)) !important;
+  color: hsl(262, 90%, 80%) !important;
+  border-color: hsl(262, 40%, 30%) !important;
+}
+
+/* Cards with a subtle aurora glow in dark mode */
+.aurora.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 1px hsla(262, 60%, 50%, 0.15);
+}
+
+/* Calendar "today" in Aurora */
+.aurora .bg-blue-50[class*="today"],
+.aurora td.bg-blue-50 {
+  background-color: hsl(262, 40%, 94%) !important;
+}
+
+/* Floating timer panel in Aurora */
+.aurora .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(250, 28%, 96%), hsl(262, 25%, 94%)) !important;
+  border-color: hsl(262, 30%, 82%) !important;
+  box-shadow: 0 4px 20px hsla(262, 40%, 50%, 0.12) !important;
+}
+.aurora.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(240, 35%, 11%), hsl(262, 30%, 14%)) !important;
+  border-color: hsl(262, 35%, 22%) !important;
+  box-shadow: 0 4px 24px hsla(262, 60%, 40%, 0.2), 0 0 40px hsla(262, 60%, 30%, 0.08) !important;
+}
+
+/* Settings dropdown in Aurora */
+.aurora [role="menu"] {
+  background: hsl(250, 28%, 96%) !important;
+  border-color: hsl(262, 25%, 85%) !important;
+}
+.aurora.dark [role="menu"] {
+  background: hsl(240, 35%, 11%) !important;
+  border-color: hsl(240, 30%, 20%) !important;
+}
+.aurora [role="menuitem"]:hover {
+  background-color: hsl(262, 30%, 90%) !important;
+}
+.aurora.dark [role="menuitem"]:hover {
+  background-color: hsl(262, 30%, 18%) !important;
+}
+
+/* Smooth transition when toggling Aurora */
+.aurora * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* Floating timer animation */
+@keyframes timer-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.timer-enter {
+  animation: timer-slide-in 0.25s ease-out;
+}

@@ -9,6 +9,7 @@ import DataTransferDialog from "@/components/data-transfer-dialog";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
+import { StatsView } from "@/components/stats-view";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useTheme } from "@/components/theme-provider";
@@ -19,9 +20,13 @@ import {
   Sun,
   Monitor,
   CheckSquare,
-  GripVertical,
   ChevronDown,
   ChevronUp,
+  Settings,
+
+  Check,
+  Palette,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -30,6 +35,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import UserMenu from "../components/user-menu";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
@@ -51,41 +58,46 @@ export default function TodoApp() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [notifications, setNotifications] = useState([]);
-  const [activeTab, setActiveTab] = useState(location === "/time-tracker" ? "dashboard" : "tasks");
+  const [activeTab, setActiveTab] = useState(() => {
+    const routeToTab = {
+      "/time-tracker": "dashboard",
+      "/to-do-list": "tasks",
+      "/stats": "stats",
+    };
+    return routeToTab[location] || "dashboard";
+  });
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
   // Sync tab with URL
   useEffect(() => {
-    if (location === "/time-tracker" && activeTab !== "dashboard") {
-      setActiveTab("dashboard");
-    } else if (location === "/" && activeTab !== "tasks") {
-      setActiveTab("tasks");
+    const routeToTab = {
+      "/time-tracker": "dashboard",
+      "/to-do-list": "tasks",
+      "/stats": "stats",
+    };
+    const expectedTab = routeToTab[location];
+    if (expectedTab && activeTab !== expectedTab) {
+      setActiveTab(expectedTab);
     }
   }, [location]);
 
   const handleTabChange = (value) => {
     setActiveTab(value);
-    if (value === "dashboard") {
-      setLocation("/time-tracker");
-    } else {
-      setLocation("/");
-    }
+    const tabToRoute = {
+      tasks: "/to-do-list",
+      dashboard: "/time-tracker",
+      stats: "/stats",
+    };
+    setLocation(tabToRoute[value] || "/time-tracker");
   };
 
   const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } =
     useTasks();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, visualTheme, setVisualTheme } = useTheme();
 
   const handleCompleteTask = (task) => {
     setCurrentTask(task);
     setIsTimerModalOpen(true);
-  };
-
-  const toggleTheme = () => {
-    const themeOrder = ["system", "light", "dark"];
-    const currentIndex = themeOrder.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themeOrder.length;
-    setTheme(themeOrder[nextIndex]);
   };
 
   const showNotification = (
@@ -385,20 +397,26 @@ export default function TodoApp() {
             {/* Navigation Tabs - Center */}
             <div className="flex-1 flex justify-center">
               <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsList className="grid grid-cols-2">
-                  <TabsTrigger
-                    value="tasks"
-                    className="text-xs sm:text-sm px-2 sm:px-3"
-                  >
-                    <span className="hidden sm:inline">To Do List</span>
-                    <span className="sm:hidden">Tasks</span>
-                  </TabsTrigger>
+                <TabsList className="grid grid-cols-3">
                   <TabsTrigger
                     value="dashboard"
-                    className="text-xs sm:text-sm px-2 sm:px-3"
+                    className="text-xs sm:text-sm px-1.5 sm:px-3"
                   >
                     <span className="hidden sm:inline">Time Tracking</span>
                     <span className="sm:hidden">Time</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="stats"
+                    className="text-xs sm:text-sm px-1.5 sm:px-3"
+                  >
+                    Stats
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="tasks"
+                    className="text-xs sm:text-sm px-1.5 sm:px-3"
+                  >
+                    <span className="hidden sm:inline">To Do List</span>
+                    <span className="sm:hidden">Tasks</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -424,24 +442,38 @@ export default function TodoApp() {
                     size="sm"
                     className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
-                    {theme === "light" && <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />}
-                    {theme === "dark" && <Moon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />}
-                    {theme === "system" && <Monitor className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />}
-                    <span className="sr-only">Toggle theme</span>
+                    <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
+                    <span className="sr-only">Settings</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel>Visual Style</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setVisualTheme("default")}>
+                    <Palette className="mr-2 h-4 w-4" />
+                    <span className="flex-1">Default</span>
+                    {visualTheme === "default" && <Check className="h-4 w-4 ml-2 text-green-500" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setVisualTheme("aurora")}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    <span className="flex-1">Aurora</span>
+                    {visualTheme === "aurora" && <Check className="h-4 w-4 ml-2 text-green-500" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Appearance</DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => setTheme("light")}>
                     <Sun className="mr-2 h-4 w-4" />
-                    <span>Light</span>
+                    <span className="flex-1">Light</span>
+                    {theme === "light" && <Check className="h-4 w-4 ml-2 text-green-500" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme("dark")}>
                     <Moon className="mr-2 h-4 w-4" />
-                    <span>Dark</span>
+                    <span className="flex-1">Dark</span>
+                    {theme === "dark" && <Check className="h-4 w-4 ml-2 text-green-500" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme("system")}>
                     <Monitor className="mr-2 h-4 w-4" />
-                    <span>System</span>
+                    <span className="flex-1">System</span>
+                    {theme === "system" && <Check className="h-4 w-4 ml-2 text-green-500" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -518,6 +550,10 @@ export default function TodoApp() {
               <DashboardView />
             </TabsContent>
 
+            <TabsContent value="stats" className="mt-0">
+              <StatsView />
+            </TabsContent>
+
           </Tabs>
         </main>
       </div>
@@ -558,6 +594,7 @@ export default function TodoApp() {
 
       {/* Data Transfer Dialog */}
       <DataTransferDialog />
+
     </div>
   );
 }
