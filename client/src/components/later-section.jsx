@@ -2,16 +2,20 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle, Archive, MoreHorizontal, ChevronDown, ChevronRight } from "lucide-react";
+import { Clock, Edit, Trash2, ArrowUp, GripVertical, CheckCircle, Archive, MoreHorizontal, ChevronDown, ChevronRight, ListPlus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { WorkTypeBadge, SubtaskProgress, SubtaskSection } from "./task-table";
+import { InlineCompletionPanel } from "./timer-modal";
 
-function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchiveTask }) {
+function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchiveTask }) {
   const [expandedTasks, setExpandedTasks] = useState(new Set());
+  const [expandedSubtasks, setExpandedSubtasks] = useState(new Set());
+  const [completingTaskId, setCompletingTaskId] = useState(null);
 
   const toggleExpanded = (taskId) => {
     const newExpanded = new Set(expandedTasks);
@@ -21,6 +25,16 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
       newExpanded.add(taskId);
     }
     setExpandedTasks(newExpanded);
+  };
+
+  const toggleSubtasks = (taskId) => {
+    const newExpanded = new Set(expandedSubtasks);
+    if (newExpanded.has(taskId)) {
+      newExpanded.delete(taskId);
+    } else {
+      newExpanded.add(taskId);
+    }
+    setExpandedSubtasks(newExpanded);
   };
 
   const formatTime = (minutes) => {
@@ -70,14 +84,12 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
     if (a.completed && !b.completed) return 1;
     if (!a.completed && b.completed) return -1;
 
-    // If both completed, sort by completion time (most recent first)
     if (a.completed && b.completed) {
       if (a.completedAt && b.completedAt) {
         return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
       }
     }
 
-    // If both incomplete, sort by priority (highest first)
     if (!a.completed && !b.completed) {
       return (b.priority || 0) - (a.priority || 0);
     }
@@ -86,7 +98,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
   });
 
   return (
-    <Card 
+    <Card
       className="bg-gray-50/50 dark:bg-gray-900/50 shadow-sm border border-gray-200 dark:border-gray-700 border-dashed overflow-hidden mt-4 transition-colors"
       onDragOver={(e) => {
         e.preventDefault();
@@ -94,7 +106,6 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
         e.currentTarget.classList.add('border-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/20');
       }}
       onDragLeave={(e) => {
-        // Only remove classes if we're actually leaving the card
         if (!e.currentTarget.contains(e.relatedTarget)) {
           e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50', 'dark:bg-blue-900/20');
         }
@@ -123,8 +134,9 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
         <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
+          <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-5 text-left">Task</div>
+          <div className="col-span-4 text-left">Task</div>
           <div className="col-span-1 text-right">Est Time</div>
           <div className="col-span-1 text-right">Actual Time</div>
           <div className="col-span-1 text-right">Distracted</div>
@@ -142,41 +154,60 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
         ) : (
           sortedTasks.map((task) => {
             const isExpanded = expandedTasks.has(task.id);
+            const isSubtasksOpen = expandedSubtasks.has(task.id);
 
             return (
-              <div 
-                key={task.id} 
+              <div
+                key={task.id}
                 className={`px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors group ${
-                  task.completed 
-                    ? `${getDistractionBackgroundColor(task.distractionLevel) || ''}` 
+                  task.completed
+                    ? `${getDistractionBackgroundColor(task.distractionLevel) || ''}`
                     : ''
                 }`}
               >
                 {/* Desktop Layout - Hidden on mobile/tablet */}
                 <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
-                  <div className="col-span-1 flex justify-center">
-                    {!task.completed ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                  <div className="col-span-1 flex items-center justify-center gap-1">
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", JSON.stringify({ ...task, isLater: true }));
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="Drag to move"
+                    >
+                      <GripVertical className="h-4 w-4 text-gray-400" />
+                    </div>
+                    {!task.completed && (
+                      <button
                         onClick={() => onMoveToMain(task)}
-                        className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-xs px-1.5 py-1 h-6 font-medium"
+                        className="p-0.5 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                         title="Move to Main"
                       >
-                        ↑ Main
-                      </Button>
-                    ) : (
-                      <div className="w-6 h-6 flex items-center justify-center">
-                        <span className="text-gray-400 text-xs">✓</span>
-                      </div>
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </button>
                     )}
                   </div>
                   <div className="col-span-1 flex justify-center">
-                    <Checkbox 
-                      checked={task.completed} 
-                      onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
+                    <Checkbox
+                      checked={task.completed}
+                      onCheckedChange={() => task.completed ? onUndoCompletion(task) : setCompletingTaskId(task.id)}
                       className="cursor-pointer w-6 h-6"
                     />
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleSubtasks(task.id)}
+                      className={`text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7 ${
+                        isSubtasksOpen ? 'text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
+                      title="Subtasks"
+                    >
+                      <ListPlus className="h-4 w-4" />
+                    </Button>
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
@@ -188,14 +219,16 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-5">
+                  <div className="col-span-4 flex items-center gap-2 flex-wrap">
                     <span className={`font-medium text-lg leading-relaxed ${
-                      task.completed 
-                        ? 'text-gray-400 dark:text-gray-500 line-through' 
+                      task.completed
+                        ? 'text-gray-400 dark:text-gray-500 line-through'
                         : 'text-gray-900 dark:text-gray-100'
                     }`} title={task.title}>
                       {task.title}
                     </span>
+                    <WorkTypeBadge workType={task.workType} />
+                    <SubtaskProgress subtasks={task.subtasks} />
                   </div>
                   <div className="col-span-1 flex justify-end">
                     <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
@@ -227,30 +260,30 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                       variant="ghost"
                       size="sm"
                       onClick={() => onEditTask && onEditTask(task)}
-                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-1.5 py-1 h-7"
                       title="Edit"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-3.5 w-3.5" />
                     </Button>
                     {task.completed ? (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onArchiveTask && onArchiveTask(task)}
-                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-1.5 py-1 h-7"
                         title="Archive"
                       >
-                        <Archive className="h-4 w-4" />
+                        <Archive className="h-3.5 w-3.5" />
                       </Button>
                     ) : (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onDeleteTask(task)}
-                        className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 h-7"
+                        className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-1.5 py-1 h-7"
                         title="Delete"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     )}
                   </div>
@@ -260,9 +293,9 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                 <div className="lg:hidden">
                   <div className="flex items-center gap-3">
                     {/* Checkbox */}
-                    <Checkbox 
-                      checked={task.completed} 
-                      onCheckedChange={() => task.completed ? onUndoCompletion(task) : onCompleteTask(task)}
+                    <Checkbox
+                      checked={task.completed}
+                      onCheckedChange={() => task.completed ? onUndoCompletion(task) : setCompletingTaskId(task.id)}
                       className="cursor-pointer flex-shrink-0 h-5 w-5"
                     />
 
@@ -279,13 +312,17 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     {/* Task Title and Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
-                          task.completed 
-                            ? 'text-gray-400 dark:text-gray-500 line-through' 
-                            : 'text-gray-900 dark:text-gray-100'
-                        }`}>
-                          {task.title}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                          <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
+                            task.completed
+                              ? 'text-gray-400 dark:text-gray-500 line-through'
+                              : 'text-gray-900 dark:text-gray-100'
+                          }`}>
+                            {task.title}
+                          </span>
+                          <WorkTypeBadge workType={task.workType} />
+                          <SubtaskProgress subtasks={task.subtasks} />
+                        </div>
 
                         {/* Time and Actions Row */}
                         <div className="flex items-center gap-2 ml-2 flex-shrink-0">
@@ -326,10 +363,13 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                             <DropdownMenuContent align="end">
                               {!task.completed && (
                                 <DropdownMenuItem onClick={() => onMoveToMain(task)}>
-                                  <ArrowUp className="h-4 w-4 mr-2" />
                                   Move to Main
                                 </DropdownMenuItem>
                               )}
+                              <DropdownMenuItem onClick={() => toggleSubtasks(task.id)}>
+                                <ListPlus className="h-4 w-4 mr-2" />
+                                Subtasks
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => onEditTask && onEditTask(task)}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
@@ -340,7 +380,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                                   Archive
                                 </DropdownMenuItem>
                               ) : (
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => onDeleteTask(task)}
                                   className="text-red-600 focus:text-red-600"
                                 >
@@ -379,6 +419,23 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onMoveToL
                     </div>
                   )}
                 </div>
+
+                {/* Inline Completion Panel */}
+                {completingTaskId === task.id && !task.completed && (
+                  <InlineCompletionPanel
+                    task={task}
+                    onConfirm={(t, actualTime, distractionLevel) => {
+                      onCompleteTask(t, actualTime, distractionLevel);
+                      setCompletingTaskId(null);
+                    }}
+                    onCancel={() => setCompletingTaskId(null)}
+                  />
+                )}
+
+                {/* Subtasks Section */}
+                {isSubtasksOpen && (
+                  <SubtaskSection task={task} onUpdateTask={onUpdateTask} />
+                )}
               </div>
             );
           })

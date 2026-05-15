@@ -375,6 +375,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Archive all completed tasks (bulk)
+  app.post("/api/tasks/archive-completed", async (req, res) => {
+    try {
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous) {
+        return res.status(403).json({ message: "Anonymous users cannot archive tasks" });
+      }
+
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Archive functionality requires MongoDB" });
+      }
+
+      const count = await mongoStorage.archiveCompletedTasks(userId);
+      res.status(200).json({ message: `${count} tasks archived`, count });
+    } catch (error) {
+      console.error("Error archiving completed tasks:", error);
+      res.status(500).json({ message: "Failed to archive completed tasks" });
+    }
+  });
+
   // Archive a task
   app.post("/api/tasks/:id/archive", async (req, res) => {
     try {
@@ -597,6 +620,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+
+  // Get user settings
+  app.get("/api/settings", async (req, res) => {
+    try {
+      const userId = req.user?.uid;
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous || !userId) {
+        // Anonymous users: return empty settings (client uses localStorage)
+        return res.json({ openaiApiKey: '', voicePrompt: '' });
+      }
+
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Settings require MongoDB" });
+      }
+
+      const settings = await mongoStorage.getSettings(userId);
+      // Mask API key for security — only show last 4 chars
+      const maskedKey = settings.openaiApiKey
+        ? '***' + settings.openaiApiKey.slice(-4)
+        : '';
+
+      res.json({
+        openaiApiKey: maskedKey,
+        voicePrompt: settings.voicePrompt || '',
+        hasApiKey: !!settings.openaiApiKey,
+      });
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  // Update user settings
+  app.post("/api/settings", async (req, res) => {
+    try {
+      const userId = req.user?.uid;
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous || !userId) {
+        return res.status(401).json({ message: "Authentication required to save settings" });
+      }
+
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Settings require MongoDB" });
+      }
+
+      const { openaiApiKey, voicePrompt } = req.body;
+      const updateData: any = {};
+
+      // Only update API key if it's not the masked placeholder
+      if (openaiApiKey !== undefined && !openaiApiKey.startsWith('***')) {
+        updateData.openaiApiKey = openaiApiKey;
+      }
+      if (voicePrompt !== undefined) {
+        updateData.voicePrompt = voicePrompt;
+      }
+
+      const success = await mongoStorage.updateSettings(userId, updateData);
+      if (success) {
+        res.json({ message: "Settings saved successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to save settings" });
+      }
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      res.status(500).json({ message: "Failed to save settings" });
+    }
+  });
+
+  // Transcribe audio using OpenAI Whisper + GPT formatting
+  app.post("/api/transcribe", async (req, res) => {
+    try {
+      const userId = req.user?.uid;
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous || !userId) {
+        return res.status(401).json({ message: "Authentication required for transcription" });
+      }
+
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Transcription requires MongoDB for API key storage" });
+      }
+
+      // Get user's OpenAI API key
+      const settings = await mongoStorage.getSettings(userId);
+      if (!settings.openaiApiKey) {
+        return res.status(400).json({ message: "OpenAI API key not configured. Please add it in Settings." });
+      }
+
+      const { audio, mimeType } = req.body;
+      if (!audio) {
+        return res.status(400).json({ message: "Audio data is required" });
+      }
+
+      // Convert base64 audio to a Blob for the Whisper API
+      const audioBuffer = Buffer.from(audio, 'base64');
+      const audioBlob = new Blob([audioBuffer], { type: mimeType || 'audio/webm' });
+
+      // Step 1: Transcribe with Whisper
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'recording.webm');
+      formData.append('model', 'whisper-1');
+
+      const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${settings.openaiApiKey}`,
+        },
+        body: formData,
+      });
+
+      if (!whisperRes.ok) {
+        const errorText = await whisperRes.text();
+        console.error('Whisper API error:', errorText);
+        return res.status(502).json({ message: "Transcription failed. Check your OpenAI API key." });
+      }
+
+      const whisperData = await whisperRes.json() as any;
+      const transcript = whisperData.text;
+
+      if (!transcript || transcript.trim().length === 0) {
+        return res.json({ transcript: '', formatted: '' });
+      }
+
+      // Step 2: Format with GPT-4o-mini
+      const voicePrompt = settings.voicePrompt || 'Convert the following transcript into concise bullet points. Keep it brief and organized.';
+
+      const gptRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${settings.openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: voicePrompt },
+            { role: 'user', content: transcript },
+          ],
+          max_tokens: 1000,
+          temperature: 0.3,
+        }),
+      });
+
+      if (!gptRes.ok) {
+        const errorText = await gptRes.text();
+        console.error('GPT API error:', errorText);
+        // Return raw transcript if formatting fails
+        return res.json({ transcript, formatted: transcript });
+      }
+
+      const gptData = await gptRes.json() as any;
+      const formatted = gptData.choices?.[0]?.message?.content || transcript;
+
+      res.json({ transcript, formatted });
+    } catch (error) {
+      console.error("Error in transcription:", error);
+      res.status(500).json({ message: "Transcription failed" });
+    }
+  });
+
+  // Get planning data
+  app.get("/api/planning-nodes", async (req, res) => {
+    try {
+      const userId = req.user?.uid;
+      const isAnonymous = !req.user || req.user.isAnonymous;
+      if (isAnonymous || !userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Planning requires MongoDB" });
+      }
+      const data = await mongoStorage.getPlanningData(userId);
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching planning data:", error);
+      res.status(500).json({ message: "Failed to fetch planning data" });
+    }
+  });
+
+  // Save planning data
+  app.post("/api/planning-nodes", async (req, res) => {
+    try {
+      const userId = req.user?.uid;
+      const isAnonymous = !req.user || req.user.isAnonymous;
+      if (isAnonymous || !userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Planning requires MongoDB" });
+      }
+      const { elements, appState, files, nodes, edges, viewport } = req.body;
+      // Support both Excalidraw format (elements/appState/files) and legacy React Flow format
+      const data = elements ? { elements, appState, files } : { nodes, edges, viewport };
+      const success = await mongoStorage.savePlanningData(userId, data);
+      if (success) {
+        res.json({ message: "Planning data saved" });
+      } else {
+        res.status(500).json({ message: "Failed to save planning data" });
+      }
+    } catch (error) {
+      console.error("Error saving planning data:", error);
+      res.status(500).json({ message: "Failed to save planning data" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

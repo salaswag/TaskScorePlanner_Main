@@ -20,6 +20,9 @@ export const insertTaskSchema = createInsertSchema(tasks).pick({
   title: true,
   priority: true,
   estimatedTime: true,
+}).extend({
+  estimatedTime: z.number().nullable().optional(),
+  workType: z.enum(["deep", "shallow"]).nullable().optional(),
 });
 
 export const updateTaskSchema = z.object({
@@ -32,6 +35,13 @@ export const updateTaskSchema = z.object({
   completed: z.boolean().optional(),
   completedAt: z.union([z.string(), z.date()]).nullable().optional(),
   isLater: z.boolean().optional(),
+  workType: z.enum(["deep", "shallow"]).nullable().optional(),
+  subtasks: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    completed: z.boolean(),
+    estimatedTime: z.number().nullable().optional(),
+  })).optional(),
 });
 
 export type InsertTask = z.infer<typeof insertTaskSchema>;
@@ -92,3 +102,10 @@ export const updateTimelineSchema = z.object({
 export type InsertTimelineEvent = z.infer<typeof insertTimelineSchema>;
 export type UpdateTimelineEvent = z.infer<typeof updateTimelineSchema>;
 export type TimelineEvent = typeof timelineEvents.$inferSelect;
+
+export const settingsSchema = z.object({
+  openaiApiKey: z.string().optional(),
+  voicePrompt: z.string().optional(),
+});
+
+export type Settings = z.infer<typeof settingsSchema>;

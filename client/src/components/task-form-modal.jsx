@@ -12,8 +12,9 @@ export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, is
   const [formData, setFormData] = useState({
     title: "",
     priority: 5,
-    estimatedTime: 30,
+    estimatedTime: null,
     isFocus: false,
+    workType: "shallow",
   });
 
   const handleSubmit = (taskData) => {
@@ -25,8 +26,9 @@ export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, is
     setFormData({
       title: "",
       priority: 5,
-      estimatedTime: 30,
+      estimatedTime: null,
       isFocus: false,
+      workType: "shallow",
     });
   };
 

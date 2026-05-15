@@ -2,32 +2,68 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
+import { Plus, Brain, Coffee } from "lucide-react";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
+
+function WorkTypeToggle({ value, onChange }) {
+  return (
+    <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-100 dark:bg-gray-800">
+      <button
+        type="button"
+        onClick={() => onChange(value === "deep" ? "shallow" : "deep")}
+        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+          value === "deep"
+            ? "bg-blue-500 text-white shadow-sm"
+            : "text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+        }`}
+      >
+        <Brain className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Deep</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange(value === "shallow" ? "deep" : "shallow")}
+        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+          value === "shallow"
+            ? "bg-yellow-500 text-white shadow-sm"
+            : "text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+        }`}
+      >
+        <Coffee className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Shallow</span>
+      </button>
+    </div>
+  );
+}
 
 function TaskForm({ onSubmit, isLoading }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
-  
+  const [timeInteracted, setTimeInteracted] = useState(false);
+  const [workType, setWorkType] = useState("shallow");
+
   const { isKeyboardVisible, viewportHeight, keyboardHeight } = useKeyboardAware();
   const { handleInputFocus, handleInputBlur, focusNextInput } = useInputFocus();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (title.trim() && priority >= 1 && priority <= 10 && estimatedTime > 0) {
+    if (title.trim() && priority >= 1 && priority <= 10) {
       const taskData = {
         title: title.trim(),
         priority: Number(priority),
-        estimatedTime: Number(estimatedTime),
+        estimatedTime: timeInteracted ? Number(estimatedTime) : null,
         isFocus: false,
+        workType: workType,
       };
       console.log('Submitting task with data:', taskData);
       onSubmit(taskData);
       setTitle("");
       setPriority(5);
       setEstimatedTime(30);
+      setTimeInteracted(false);
+      setWorkType("shallow");
     }
   };
 
@@ -38,7 +74,7 @@ function TaskForm({ onSubmit, isLoading }) {
   };
 
   return (
-    <div 
+    <div
       className="w-full flex justify-center transition-all duration-300 ease-in-out"
       style={{
         transform: isKeyboardVisible ? 'translateY(-10px)' : 'translateY(0)',
@@ -46,9 +82,9 @@ function TaskForm({ onSubmit, isLoading }) {
         minHeight: 'auto'
       }}
     >
-      <form 
-        onSubmit={handleSubmit} 
-        className={`w-full max-w-4xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 transition-all duration-300 ${
+      <form
+        onSubmit={handleSubmit}
+        className={`w-full max-w-7xl bg-white dark:bg-black shadow-lg border border-gray-200 dark:border-gray-800 rounded-lg p-3 transition-all duration-300 ${
           isKeyboardVisible ? 'shadow-xl border-blue-300 dark:border-blue-600' : ''
         }`}
       >
@@ -72,6 +108,9 @@ function TaskForm({ onSubmit, isLoading }) {
               }}
               className="w-full lg:flex-1 px-4 py-4 h-12 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md"
             />
+
+            {/* Work Type Toggle */}
+            <WorkTypeToggle value={workType} onChange={setWorkType} />
 
             {/* Mobile: Priority and Time in same row, Desktop: Separate */}
             <div className="flex flex-col sm:flex-row lg:flex-row gap-4 lg:gap-4 w-full lg:w-auto">
@@ -98,10 +137,12 @@ function TaskForm({ onSubmit, isLoading }) {
                 />
               </div>
 
-              {/* Time Slider */}
-              <div className="flex items-center gap-2 lg:min-w-[250px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              {/* Time Slider — grayed out until user interacts */}
+              <div className={`flex items-center gap-2 lg:min-w-[250px] p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
+                !timeInteracted ? 'opacity-40' : ''
+              }`}>
                 <label className="text-sm font-medium text-black dark:text-white whitespace-nowrap">
-                  Time: {formatTime(estimatedTime)}
+                  Time: {timeInteracted ? formatTime(estimatedTime) : formatTime(estimatedTime)}
                 </label>
                 <input
                   type="range"
@@ -109,7 +150,10 @@ function TaskForm({ onSubmit, isLoading }) {
                   max="180"
                   step="5"
                   value={estimatedTime}
-                  onChange={(e) => setEstimatedTime(parseInt(e.target.value))}
+                  onChange={(e) => {
+                    setEstimatedTime(parseInt(e.target.value));
+                    setTimeInteracted(true);
+                  }}
                   onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
                   className="slider flex-1 lg:w-32"
@@ -132,4 +176,5 @@ function TaskForm({ onSubmit, isLoading }) {
   );
 }
 
+export { WorkTypeToggle };
 export default TaskForm;

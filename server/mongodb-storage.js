@@ -26,6 +26,8 @@ export class MongoStorage {
       this.archiveCollection = this.db.collection('Archive');
       this.laterTasksCollection = this.db.collection('Later Tasks');
       this.timeEntriesCollection = this.db.collection('TimeEntries');
+      this.settingsCollection = this.db.collection('Settings');
+      this.planningCollection = this.db.collection('Planning');
       // Test the connection with a ping
       await this.db.command({ ping: 1 });
 
@@ -81,7 +83,9 @@ export class MongoStorage {
           distractionLevel: task.distractionLevel,
           isLater: task.isLater || false,  // Main tasks are not later by default
           isFocus: task.isFocus || false,
-          archived: task.archived || false
+          archived: task.archived || false,
+          workType: task.workType || null,
+          subtasks: task.subtasks || [],
         })),
         ...laterTasks.map(task => ({
           ...task,
@@ -92,7 +96,9 @@ export class MongoStorage {
           distractionLevel: task.distractionLevel,
           isLater: true,  // Later tasks are always marked as later
           isFocus: task.isFocus || false,
-          archived: task.archived || false
+          archived: task.archived || false,
+          workType: task.workType || null,
+          subtasks: task.subtasks || [],
         }))
       ];
 
@@ -152,6 +158,8 @@ export class MongoStorage {
         isLater: isLaterFlag,
         isFocus: Boolean(taskData.isFocus),
         archived: Boolean(taskData.archived),
+        workType: taskData.workType || null,
+        subtasks: taskData.subtasks || [],
         userId: taskData.userId || 'anonymous',
         createdAt: new Date(),
         completedAt: null
@@ -503,6 +511,64 @@ export class MongoStorage {
     }
   }
 
+  async archiveCompletedTasks(userId) {
+    try {
+      console.log('===== BULK ARCHIVING COMPLETED TASKS =====');
+      console.log('User:', userId);
+
+      const filter = { userId, completed: true };
+
+      // Find all completed tasks from both collections
+      const completedMain = await this.tasksCollection.find(filter).toArray();
+      const completedLater = await this.laterTasksCollection.find(filter).toArray();
+      const allCompleted = [...completedMain, ...completedLater];
+
+      console.log(`Found ${completedMain.length} completed main tasks, ${completedLater.length} completed later tasks`);
+
+      if (allCompleted.length === 0) {
+        console.log('No completed tasks to archive');
+        return 0;
+      }
+
+      // Add archive metadata to each task
+      const archivedTasks = allCompleted.map(task => ({
+        ...task,
+        archived: true,
+        archivedAt: new Date(),
+      }));
+
+      // Bulk insert into archive collection
+      const insertResult = await this.archiveCollection.insertMany(archivedTasks);
+      console.log('Bulk archive insert result:', insertResult.insertedCount);
+
+      if (insertResult.acknowledged) {
+        // Bulk delete from source collections
+        const mainIds = completedMain.map(t => t._id);
+        const laterIds = completedLater.map(t => t._id);
+
+        let deletedCount = 0;
+        if (mainIds.length > 0) {
+          const mainDelete = await this.tasksCollection.deleteMany({ _id: { $in: mainIds } });
+          deletedCount += mainDelete.deletedCount;
+          console.log(`Deleted ${mainDelete.deletedCount} from main collection`);
+        }
+        if (laterIds.length > 0) {
+          const laterDelete = await this.laterTasksCollection.deleteMany({ _id: { $in: laterIds } });
+          deletedCount += laterDelete.deletedCount;
+          console.log(`Deleted ${laterDelete.deletedCount} from later collection`);
+        }
+
+        console.log(`✅ Successfully archived ${allCompleted.length} completed tasks`);
+        return allCompleted.length;
+      }
+
+      return 0;
+    } catch (error) {
+      console.error('Error bulk archiving completed tasks:', error);
+      return 0;
+    }
+  }
+
   async transferUserData(fromUserId, toUserId) {
     try {
       console.log(`Transferring data from ${fromUserId} to ${toUserId}`);
@@ -632,6 +698,87 @@ export class MongoStorage {
       return result.deletedCount > 0;
     } catch (error) {
       console.error('Error deleting time entry:', error);
+      return false;
+    }
+  }
+
+  async getSettings(userId) {
+    try {
+      const settings = await this.settingsCollection.findOne({ userId });
+      if (!settings) {
+        return { openaiApiKey: '', voicePrompt: '' };
+      }
+      return {
+        openaiApiKey: settings.openaiApiKey || '',
+        voicePrompt: settings.voicePrompt || '',
+      };
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      return { openaiApiKey: '', voicePrompt: '' };
+    }
+  }
+
+  async updateSettings(userId, data) {
+    try {
+      console.log('Updating settings for user:', userId);
+      const updateFields = {};
+      if (data.openaiApiKey !== undefined) updateFields.openaiApiKey = data.openaiApiKey;
+      if (data.voicePrompt !== undefined) updateFields.voicePrompt = data.voicePrompt;
+
+      const result = await this.settingsCollection.updateOne(
+        { userId },
+        { $set: { ...updateFields, userId, updatedAt: new Date() } },
+        { upsert: true }
+      );
+      console.log('Settings updated:', result);
+      return true;
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      return false;
+    }
+  }
+
+  async getPlanningData(userId) {
+    try {
+      const doc = await this.planningCollection.findOne({ userId });
+      if (!doc) {
+        return {};
+      }
+      // Excalidraw format (elements, appState, files)
+      if (doc.elements) {
+        return {
+          elements: doc.elements,
+          appState: doc.appState || {},
+          files: doc.files || {},
+        };
+      }
+      // Legacy React Flow format
+      return {
+        nodes: doc.nodes || [],
+        edges: doc.edges || [],
+        viewport: doc.viewport || { x: 0, y: 0, zoom: 1 },
+      };
+    } catch (error) {
+      console.error('Error fetching planning data:', error);
+      return {};
+    }
+  }
+
+  async savePlanningData(userId, data) {
+    try {
+      // Excalidraw format: { elements, appState, files }
+      // Legacy format: { nodes, edges, viewport }
+      const saveDoc = { userId, ...data, updatedAt: new Date() };
+      console.log('Saving planning data for user:', userId, 'elements:', data.elements?.length || 0);
+      const result = await this.planningCollection.updateOne(
+        { userId },
+        { $set: saveDoc },
+        { upsert: true }
+      );
+      console.log('Planning data saved:', result.modifiedCount || result.upsertedCount, 'docs');
+      return true;
+    } catch (error) {
+      console.error('Error saving planning data:', error);
       return false;
     }
   }

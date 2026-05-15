@@ -8,19 +8,12 @@ import TodoApp from "@/pages/todo-app";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
-function RedirectToTimeTracker() {
-  const [, setLocation] = useLocation();
-  useEffect(() => { setLocation("/time-tracker"); }, []);
-  return null;
-}
-
 function Router() {
   return (
     <Switch>
       <Route path="/time-tracker" component={TodoApp} />
-      <Route path="/to-do-list" component={TodoApp} />
-      <Route path="/stats" component={TodoApp} />
-      <Route path="/" component={RedirectToTimeTracker} />
+      <Route path="/planning" component={TodoApp} />
+      <Route path="/" component={TodoApp} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -65,7 +65,7 @@ setInterval(() => {
 export const mongoStorage = new MongoStorage();
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false }));
 
 // Add cache control headers to prevent browser caching issues
