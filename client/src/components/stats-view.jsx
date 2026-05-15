@@ -37,6 +37,7 @@ export function StatsView() {
   const [timeData, setTimeData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("day");
+  const [visibleSeries, setVisibleSeries] = useState({ hours: true, deepHours: true, shallowHours: true });
   const isAnonymous = !user || user.isAnonymous;
 
   useEffect(() => {
@@ -297,13 +298,32 @@ export function StatsView() {
         </Card>
       </div>
 
-      {/* Total Hours Line Chart */}
+      {/* Combined Hours & Work Type Chart */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">{rangeLabels[timeRange]} Hours</CardTitle>
+          <CardTitle className="text-base">{rangeLabels[timeRange]} Hours & Work Type</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-64">
+          <div className="flex items-center gap-4 pb-3">
+            {[
+              { key: 'hours', label: 'Total Hours', color: '#10b981' },
+              { key: 'deepHours', label: 'Deep Work', color: '#3b82f6' },
+              { key: 'shallowHours', label: 'Shallow Work', color: '#eab308' },
+            ].map(({ key, label, color }) => (
+              <label key={key} className="flex items-center gap-1.5 cursor-pointer text-xs text-gray-600 dark:text-gray-400 select-none">
+                <input
+                  type="checkbox"
+                  checked={visibleSeries[key]}
+                  onChange={() => setVisibleSeries(prev => ({ ...prev, [key]: !prev[key] }))}
+                  className="w-3 h-3 rounded accent-current"
+                  style={{ accentColor: color }}
+                />
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                {label}
+              </label>
+            ))}
+          </div>
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
@@ -311,70 +331,69 @@ export function StatsView() {
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
+                  <linearGradient id="deepGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id="shallowGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#eab308" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#eab308" stopOpacity={0.02} />
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" strokeOpacity={0.5} />
                 <XAxis
                   dataKey="label"
                   tick={{ fontSize: 11, fill: "#9ca3af" }}
-                  interval={timeRange === "day" ? 4 : 0}
+                  interval={timeRange === "day" ? 2 : 0}
                   angle={timeRange === "month" ? -45 : 0}
                   textAnchor={timeRange === "month" ? "end" : "middle"}
                 />
                 <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`${value}h`, "Hours"]} />
-                <Area
-                  type="monotone"
-                  dataKey="hours"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  fill="url(#hoursGradient)"
-                  dot={timeRange !== "day"}
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={(value, name) => {
+                    if (value == null) return ["--", name];
+                    const labels = { hours: "Total Hours", deepHours: "Deep Work", shallowHours: "Shallow Work" };
+                    return [`${value}h`, labels[name] || name];
+                  }}
                 />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Deep vs Shallow Line Chart */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Deep vs Shallow Work</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" strokeOpacity={0.5} />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 11, fill: "#9ca3af" }}
-                  interval={timeRange === "day" ? 4 : 0}
-                  angle={timeRange === "month" ? -45 : 0}
-                  textAnchor={timeRange === "month" ? "end" : "middle"}
-                />
-                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value) => value != null ? [`${value}h`] : ["—"]} />
                 <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="deepHours"
-                  name="Deep Work"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={timeRange !== "day"}
-                  connectNulls
-                />
-                <Line
-                  type="monotone"
-                  dataKey="shallowHours"
-                  name="Shallow Work"
-                  stroke="#eab308"
-                  strokeWidth={2}
-                  dot={timeRange !== "day"}
-                  connectNulls
-                />
-              </LineChart>
+                {visibleSeries.hours && (
+                  <Area
+                    type="monotone"
+                    dataKey="hours"
+                    name="hours"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    fill="url(#hoursGradient)"
+                    dot={timeRange !== "day"}
+                  />
+                )}
+                {visibleSeries.deepHours && (
+                  <Area
+                    type="monotone"
+                    dataKey="deepHours"
+                    name="deepHours"
+                    stroke="#3b82f6"
+                    strokeWidth={3}
+                    fill="url(#deepGradient)"
+                    dot={timeRange !== "day" ? { r: 4, fill: "#3b82f6" } : false}
+                    connectNulls
+                  />
+                )}
+                {visibleSeries.shallowHours && (
+                  <Area
+                    type="monotone"
+                    dataKey="shallowHours"
+                    name="shallowHours"
+                    stroke="#eab308"
+                    strokeWidth={3}
+                    fill="url(#shallowGradient)"
+                    dot={timeRange !== "day" ? { r: 4, fill: "#eab308" } : false}
+                    connectNulls
+                  />
+                )}
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>

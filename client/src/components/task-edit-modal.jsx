@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
+import { WorkTypeToggle } from "./task-form";
 
 export default function TaskEditModal({
   task,
@@ -21,6 +22,7 @@ export default function TaskEditModal({
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
+  const [workType, setWorkType] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const { isKeyboardVisible } = useKeyboardAware();
@@ -31,6 +33,7 @@ export default function TaskEditModal({
       setTitle(task.title || "");
       setPriority(task.priority || 5);
       setEstimatedTime(task.estimatedTime || 30);
+      setWorkType(task.workType || null);
     }
   }, [task]);
 
@@ -43,6 +46,7 @@ export default function TaskEditModal({
           title: title.trim(),
           priority: Number(priority),
           estimatedTime: Number(estimatedTime),
+          workType: workType,
         });
         handleClose();
       } catch (error) {
@@ -57,6 +61,7 @@ export default function TaskEditModal({
     setTitle("");
     setPriority(5);
     setEstimatedTime(30);
+    setWorkType(null);
     onClose();
   };
 
@@ -90,6 +95,14 @@ export default function TaskEditModal({
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-3 bg-white dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all duration-200"
             />
+          </div>
+
+          {/* Work Type Toggle */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-black dark:text-white">
+              Work Type
+            </label>
+            <WorkTypeToggle value={workType} onChange={setWorkType} />
           </div>
 
           {/* Priority and Time Controls */}

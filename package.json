@@ -12,6 +12,7 @@
     "render-build": "npm install && npm run build"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
@@ -45,6 +46,7 @@
     "@tailwindcss/typography": "^0.5.15",
     "@tanstack/react-query": "^5.60.5",
     "@vitejs/plugin-react": "^4.3.2",
+    "@xyflow/react": "^12.10.2",
     "autoprefixer": "^10.4.20",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",

@@ -2,14 +2,199 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, GripVertical, MoreHorizontal, ChevronDown, ChevronRight } from "lucide-react";
-import { Archive } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import {
+  Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, GripVertical,
+  MoreHorizontal, ChevronDown, ChevronRight, Archive, ListPlus, Plus,
+  Brain, Coffee, X,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { InlineCompletionPanel } from "./timer-modal";
+
+// Work type badge component
+function WorkTypeBadge({ workType }) {
+  if (!workType) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
+      workType === 'deep'
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+    }`}>
+      {workType === 'deep' ? <Brain className="h-3 w-3" /> : <Coffee className="h-3 w-3" />}
+      {workType === 'deep' ? 'Deep' : 'Shallow'}
+    </span>
+  );
+}
+
+// Subtask progress indicator
+function SubtaskProgress({ subtasks }) {
+  if (!subtasks || subtasks.length === 0) return null;
+  const done = subtasks.filter(s => s.completed).length;
+  const total = subtasks.length;
+  const remainingTime = subtasks
+    .filter(s => !s.completed && s.estimatedTime)
+    .reduce((sum, s) => sum + s.estimatedTime, 0);
+
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 ml-1">
+      <ListPlus className="h-3 w-3" />
+      {done}/{total}
+      {remainingTime > 0 && (
+        <span className="text-gray-400">
+          ({remainingTime >= 60 ? `${Math.floor(remainingTime / 60)}h ${remainingTime % 60}m` : `${remainingTime}m`})
+        </span>
+      )}
+    </span>
+  );
+}
+
+// Inline subtask input
+function SubtaskInput({ onAdd }) {
+  const [title, setTitle] = useState("");
+  const [time, setTime] = useState(null);
+
+  const handleSubmit = (e) => {
+    e?.preventDefault();
+    if (title.trim()) {
+      onAdd(title.trim(), time ? Number(time) : null);
+      setTitle("");
+      setTime(null);
+    }
+  };
+
+  const formatTime = (m) => {
+    if (!m) return "";
+    return m >= 60 ? `${Math.floor(m/60)}h${m%60 ? ` ${m%60}m` : ''}` : `${m}m`;
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 mt-3">
+      <input
+        type="text"
+        placeholder="Add subtask..."
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 dark:focus:border-blue-400 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+      />
+      <div className="flex items-center gap-1.5 shrink-0" onMouseDown={(e) => e.stopPropagation()} onDragStart={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+        <Clock className="h-3 w-3 text-gray-400" />
+        <input
+          type="range"
+          min="5"
+          max="120"
+          step="5"
+          value={time || 30}
+          onChange={(e) => setTime(Number(e.target.value))}
+          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="slider w-20 cursor-pointer"
+        />
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 w-8 text-right whitespace-nowrap">
+          {time ? formatTime(time) : "—"}
+        </span>
+      </div>
+      <Button
+        type="submit"
+        variant="ghost"
+        size="sm"
+        disabled={!title.trim()}
+        className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 h-7 shrink-0"
+      >
+        <Plus className="h-3.5 w-3.5" />
+      </Button>
+    </form>
+  );
+}
+
+// Subtask section component
+function SubtaskSection({ task, onUpdateTask }) {
+  const subtasks = task.subtasks || [];
+
+  // Auto-bump parent estimated time if subtask total exceeds it
+  const syncEstimatedTime = (updatedSubtasks, taskObj) => {
+    const subtaskTotal = updatedSubtasks
+      .filter(s => s.estimatedTime)
+      .reduce((sum, s) => sum + s.estimatedTime, 0);
+    if (subtaskTotal > (taskObj.estimatedTime || 0)) {
+      return { ...taskObj, subtasks: updatedSubtasks, estimatedTime: subtaskTotal };
+    }
+    return { ...taskObj, subtasks: updatedSubtasks };
+  };
+
+  const handleAdd = (title, estimatedTime) => {
+    const newSubtask = {
+      id: crypto.randomUUID(),
+      title,
+      completed: false,
+      estimatedTime: estimatedTime,
+    };
+    const newSubtasks = [...subtasks, newSubtask];
+    onUpdateTask(syncEstimatedTime(newSubtasks, task));
+  };
+
+  const handleToggle = (subtaskId, completed) => {
+    const updated = subtasks.map(s =>
+      s.id === subtaskId ? { ...s, completed } : s
+    );
+    onUpdateTask({ ...task, subtasks: updated });
+  };
+
+  const handleDelete = (subtaskId) => {
+    const updated = subtasks.filter(s => s.id !== subtaskId);
+    onUpdateTask(syncEstimatedTime(updated, task));
+  };
+
+  const formatSubTime = (minutes) => {
+    if (!minutes) return null;
+    if (minutes >= 60) return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+    return `${minutes}m`;
+  };
+
+  return (
+    <div className="ml-4 lg:ml-12 mt-2 pl-3 border-l-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 rounded-r-lg py-2 pr-3">
+      {subtasks.map((sub, idx) => (
+        <div key={sub.id} className={`flex items-center gap-2 py-1.5 group/sub hover:bg-gray-100/50 dark:hover:bg-gray-800/30 rounded px-1 ${
+          idx < subtasks.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''
+        }`}>
+          <Checkbox
+            checked={sub.completed}
+            onCheckedChange={(checked) => handleToggle(sub.id, Boolean(checked))}
+            className="w-4 h-4 flex-shrink-0"
+          />
+          <span className={`text-sm flex-1 ${
+            sub.completed
+              ? 'line-through text-gray-400 dark:text-gray-500'
+              : 'text-gray-700 dark:text-gray-300'
+          }`}>
+            {sub.title}
+          </span>
+          {sub.estimatedTime && (
+            <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-0.5">
+              <Clock className="h-3 w-3" />
+              {formatSubTime(sub.estimatedTime)}
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(sub.id)}
+            className="opacity-0 group-hover/sub:opacity-100 text-gray-400 hover:text-red-500 px-1 py-0 h-5 transition-opacity"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+      ))}
+      <SubtaskInput onAdd={handleAdd} />
+    </div>
+  );
+}
+
+export { WorkTypeBadge, SubtaskProgress, SubtaskSection };
 
 export default function TaskTable({
   tasks,
@@ -17,8 +202,10 @@ export default function TaskTable({
   onCompleteTask,
   onDeleteTask,
   onEditTask,
+  onUpdateTask,
   onUndoCompletion,
   onArchive,
+  onArchiveAllCompleted,
   onMoveToMain,
   onMoveToLater,
   totalScore,
@@ -27,6 +214,8 @@ export default function TaskTable({
   isAnonymous = false,
 }) {
   const [expandedTasks, setExpandedTasks] = useState(new Set());
+  const [expandedSubtasks, setExpandedSubtasks] = useState(new Set());
+  const [completingTaskId, setCompletingTaskId] = useState(null);
 
   const toggleExpanded = (taskId) => {
     const newExpanded = new Set(expandedTasks);
@@ -36,6 +225,16 @@ export default function TaskTable({
       newExpanded.add(taskId);
     }
     setExpandedTasks(newExpanded);
+  };
+
+  const toggleSubtasks = (taskId) => {
+    const newExpanded = new Set(expandedSubtasks);
+    if (newExpanded.has(taskId)) {
+      newExpanded.delete(taskId);
+    } else {
+      newExpanded.add(taskId);
+    }
+    setExpandedSubtasks(newExpanded);
   };
 
   const formatTime = (minutes) => {
@@ -107,6 +306,8 @@ export default function TaskTable({
     return 0;
   });
 
+  const completedCount = tasks.filter(t => t.completed).length;
+
   if (isLoading) {
     return (
       <Card className="bg-white shadow-sm border border-gray-200">
@@ -121,7 +322,7 @@ export default function TaskTable({
   }
 
   return (
-    <Card 
+    <Card
       className="bg-white dark:bg-black shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden transition-colors"
       onDragOver={(e) => {
         e.preventDefault();
@@ -129,7 +330,6 @@ export default function TaskTable({
         e.currentTarget.classList.add('border-green-400', 'bg-green-50/50', 'dark:bg-green-900/20');
       }}
       onDragLeave={(e) => {
-        // Only remove classes if we're actually leaving the card
         if (!e.currentTarget.contains(e.relatedTarget)) {
           e.currentTarget.classList.remove('border-green-400', 'bg-green-50/50', 'dark:bg-green-900/20');
         }
@@ -153,31 +353,49 @@ export default function TaskTable({
         <div className="flex items-center justify-between">
           <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white">Main Tasks</h3>
 
-          {/* Score Display - moved from separate component */}
-          <div className="flex items-center justify-end divide-x divide-gray-300 dark:divide-gray-600">
-            {/* Score Fraction */}
-            <div className="text-center px-3">
-              <div className={`text-lg sm:text-xl font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
-                {totalScore} / {totalPossibleScore}
+          {/* Score Display + Archive Done */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end divide-x divide-gray-300 dark:divide-gray-600">
+              {/* Score Fraction */}
+              <div className="text-center px-3">
+                <div className={`text-lg sm:text-xl font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
+                  {totalScore} / {totalPossibleScore}
+                </div>
+              </div>
+
+              {/* Percentage */}
+              <div className="text-center px-3">
+                <div className={`text-lg sm:text-xl font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
+                  {totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0}%
+                </div>
+              </div>
+
+              {/* Time Left */}
+              <div className="text-center px-3">
+                <div className="text-xs sm:text-sm font-medium text-black dark:text-white">
+                  {formatTime(totalEstimatedTime)}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">
+                  Time Left
+                </div>
               </div>
             </div>
 
-            {/* Percentage */}
-            <div className="text-center px-3">
-              <div className={`text-lg sm:text-xl font-bold ${getScoreColor(totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0)}`}>
-                {totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0}%
-              </div>
-            </div>
-
-            {/* Time Left */}
-            <div className="text-center px-3">
-              <div className="text-xs sm:text-sm font-medium text-black dark:text-white">
-                {formatTime(totalEstimatedTime)}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
-                Time Left
-              </div>
-            </div>
+            {/* Archive All Completed Button */}
+            {completedCount > 0 && onArchiveAllCompleted && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onArchiveAllCompleted}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 h-8 border border-gray-300 dark:border-gray-600"
+                title={isAnonymous ? "Clear all completed tasks" : "Archive all completed tasks"}
+              >
+                <Archive className="h-3.5 w-3.5 mr-1" />
+                <span className="hidden sm:inline text-xs">
+                  {isAnonymous ? "Clear Done" : "Archive Done"}
+                </span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -187,8 +405,9 @@ export default function TaskTable({
         <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
           <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Done</div>
+          <div className="col-span-1 text-center"></div>
           <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-5 text-left">Task</div>
+          <div className="col-span-4 text-left">Task</div>
           <div className="col-span-1 text-right">Est Time</div>
           <div className="col-span-1 text-right">Actual Time</div>
           <div className="col-span-1 text-right">Distracted</div>
@@ -207,52 +426,58 @@ export default function TaskTable({
         ) : (
           sortedTasks.map((task) => {
             const isExpanded = expandedTasks.has(task.id);
+            const isSubtasksOpen = expandedSubtasks.has(task.id);
+            const hasSubtasks = task.subtasks && task.subtasks.length > 0;
 
             return (
-              <div 
+              <div
                 key={task.id}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("application/json", JSON.stringify(task));
-                  e.dataTransfer.effectAllowed = "move";
-                }}
-                className={`px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group cursor-grab active:cursor-grabbing ${
-                  task.completed 
-                    ? `${getDistractionBackgroundColor(task.distractionLevel) || 'bg-gray-50 dark:bg-gray-800'}` 
+                className={`px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group ${
+                  task.completed
+                    ? `${getDistractionBackgroundColor(task.distractionLevel) || 'bg-gray-50 dark:bg-gray-800'}`
                     : ''
                 }`}
               >
                 {/* Desktop Layout - Hidden on mobile/tablet */}
                 <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
                   <div className="col-span-1 flex justify-center">
-                    {!task.completed ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onMoveToLater && onMoveToLater(task)}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs px-1.5 py-1 h-6 font-medium"
-                        title="Move to Later"
-                      >
-                        Later
-                      </Button>
-                    ) : (
-                      <div className="w-6 h-6 flex items-center justify-center">
-                        <GripVertical className="h-4 w-4 text-gray-400" />
-                      </div>
-                    )}
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", JSON.stringify(task));
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="Drag to move"
+                    >
+                      <GripVertical className="h-4 w-4 text-gray-400" />
+                    </div>
                   </div>
                   <div className="col-span-1 flex justify-center">
-                    <Checkbox 
-                      checked={task.completed} 
+                    <Checkbox
+                      checked={task.completed}
                       onCheckedChange={(checked) => {
                         if (checked && !task.completed) {
-                          onCompleteTask(task);
+                          setCompletingTaskId(task.id);
                         } else if (!checked && task.completed) {
                           onUndoCompletion(task);
                         }
                       }}
                       className="cursor-pointer w-6 h-6"
                     />
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleSubtasks(task.id)}
+                      className={`text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7 ${
+                        isSubtasksOpen ? 'text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
+                      title="Subtasks"
+                    >
+                      <ListPlus className="h-4 w-4" />
+                    </Button>
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
@@ -264,14 +489,16 @@ export default function TaskTable({
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-5">
+                  <div className="col-span-4 flex items-center gap-2 flex-wrap">
                     <span className={`font-medium text-lg leading-relaxed ${
-                      task.completed 
-                        ? 'text-gray-400 dark:text-gray-500 line-through' 
+                      task.completed
+                        ? 'text-gray-400 dark:text-gray-500 line-through'
                         : 'text-gray-900 dark:text-gray-100'
                     }`} title={task.title}>
                       {task.title}
                     </span>
+                    <WorkTypeBadge workType={task.workType} />
+                    <SubtaskProgress subtasks={task.subtasks} />
                   </div>
                   <div className="col-span-1 flex justify-end">
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
@@ -298,47 +525,46 @@ export default function TaskTable({
                       <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-end gap-1">
+                  <div className="col-span-1 flex justify-end gap-0.5">
+                    {!task.completed && onMoveToLater && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onMoveToLater(task)}
+                        className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-1.5 py-1 h-7 text-[10px] font-medium"
+                        title="Move to Later"
+                      >
+                        Later
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onEditTask && onEditTask(task)}
-                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
+                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-1.5 py-1 h-7"
                       title="Edit"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-3.5 w-3.5" />
                     </Button>
-                    {task.completed ? (
-                      isAnonymous ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onDeleteTask && onDeleteTask(task)}
-                          className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 h-7"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onArchive && onArchive(task)}
-                          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7"
-                          title="Archive"
-                        >
-                          <Archive className="h-4 w-4" />
-                        </Button>
-                      )
+                    {task.completed && !isAnonymous ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onArchive && onArchive(task)}
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-1.5 py-1 h-7"
+                        title="Archive"
+                      >
+                        <Archive className="h-3.5 w-3.5" />
+                      </Button>
                     ) : (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onDeleteTask && onDeleteTask(task)}
-                        className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 h-7"
+                        className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-1.5 py-1 h-7"
                         title="Delete"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     )}
                   </div>
@@ -348,11 +574,11 @@ export default function TaskTable({
                 <div className="lg:hidden">
                   <div className="flex items-center gap-3">
                     {/* Checkbox */}
-                    <Checkbox 
-                      checked={task.completed} 
+                    <Checkbox
+                      checked={task.completed}
                       onCheckedChange={(checked) => {
                         if (checked && !task.completed) {
-                          onCompleteTask(task);
+                          setCompletingTaskId(task.id);
                         } else if (!checked && task.completed) {
                           onUndoCompletion(task);
                         }
@@ -373,13 +599,17 @@ export default function TaskTable({
                     {/* Task Title and Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
-                          task.completed 
-                            ? 'text-gray-400 dark:text-gray-500 line-through' 
-                            : 'text-gray-900 dark:text-gray-100'
-                        }`}>
-                          {task.title}
-                        </span>
+                        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                          <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
+                            task.completed
+                              ? 'text-gray-400 dark:text-gray-500 line-through'
+                              : 'text-gray-900 dark:text-gray-100'
+                          }`}>
+                            {task.title}
+                          </span>
+                          <WorkTypeBadge workType={task.workType} />
+                          <SubtaskProgress subtasks={task.subtasks} />
+                        </div>
 
                         {/* Time and Actions Row */}
                         <div className="flex items-start gap-2 flex-shrink-0 mt-1">
@@ -423,13 +653,17 @@ export default function TaskTable({
                                   Move to Later
                                 </DropdownMenuItem>
                               )}
+                              <DropdownMenuItem onClick={() => toggleSubtasks(task.id)}>
+                                <ListPlus className="h-4 w-4 mr-2" />
+                                Subtasks
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => onEditTask && onEditTask(task)}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
                               {task.completed ? (
                                 isAnonymous ? (
-                                  <DropdownMenuItem 
+                                  <DropdownMenuItem
                                     onClick={() => onDeleteTask && onDeleteTask(task)}
                                     className="text-red-600 focus:text-red-600"
                                   >
@@ -443,7 +677,7 @@ export default function TaskTable({
                                   </DropdownMenuItem>
                                 )
                               ) : (
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => onDeleteTask && onDeleteTask(task)}
                                   className="text-red-600 focus:text-red-600"
                                 >
@@ -482,6 +716,23 @@ export default function TaskTable({
                     </div>
                   )}
                 </div>
+
+                {/* Inline Completion Panel */}
+                {completingTaskId === task.id && !task.completed && (
+                  <InlineCompletionPanel
+                    task={task}
+                    onConfirm={(t, actualTime, distractionLevel) => {
+                      onCompleteTask(t, actualTime, distractionLevel);
+                      setCompletingTaskId(null);
+                    }}
+                    onCancel={() => setCompletingTaskId(null)}
+                  />
+                )}
+
+                {/* Subtasks Section (shared for desktop & mobile) */}
+                {isSubtasksOpen && (
+                  <SubtaskSection task={task} onUpdateTask={onUpdateTask} />
+                )}
               </div>
             );
           })

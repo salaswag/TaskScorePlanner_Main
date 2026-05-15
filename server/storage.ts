@@ -80,6 +80,8 @@ export class MemStorage implements IStorage {
       isFocus: Boolean(taskData.isFocus),
       actualTime: taskData.actualTime || null,
       distractionLevel: taskData.distractionLevel || null,
+      workType: taskData.workType || null,
+      subtasks: taskData.subtasks || [],
     };
     this.tasks.set(id, task);
     console.log('In-memory storage: Task created successfully', task);

@@ -191,6 +191,8 @@ export function useTasks() {
           actualTime: null,
           distractionLevel: null,
           completedAt: null,
+          workType: taskData.workType || null,
+          subtasks: taskData.subtasks || [],
         };
         
         currentTasks.push(newTask);
@@ -324,6 +326,31 @@ export function useTasks() {
     },
   });
 
+  const archiveAllCompleted = useMutation({
+    mutationFn: async () => {
+      const isAnonymous = user?.isAnonymous || !user;
+
+      // For anonymous users, delete all completed tasks from localStorage
+      if (isAnonymous) {
+        const currentTasks = getAnonymousTasks();
+        const remaining = currentTasks.filter(t => !t.completed);
+        const archivedCount = currentTasks.length - remaining.length;
+        saveAnonymousTasks(remaining);
+        console.log(`Anonymous: cleared ${archivedCount} completed tasks from localStorage`);
+        return { count: archivedCount, message: `${archivedCount} tasks cleared` };
+      }
+
+      // For authenticated users, use server API
+      const response = await apiRequest("/api/tasks/archive-completed", {
+        method: "POST",
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
   // Transfer anonymous tasks to authenticated account
   const transferAnonymousData = useMutation({
     mutationFn: async () => {
@@ -372,6 +399,7 @@ export function useTasks() {
     updateTask,
     deleteTask,
     archiveTask,
+    archiveAllCompleted,
     transferAnonymousData,
     mainTasks,
     laterTasks,

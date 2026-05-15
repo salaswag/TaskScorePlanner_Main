@@ -61,23 +61,86 @@
 .slider {
     -webkit-appearance: none;
     appearance: none;
-    height: 8px;
-    border-radius: 4px;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
     background: #e5e7eb;
     outline: none;
-    opacity: 0.8;
-    transition: all 0.2s ease;
+    cursor: pointer;
+    padding: 8px 0;
+    background-clip: content-box;
   }
 
-  .slider:hover {
-    opacity: 1;
+  .slider::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 3px;
+    background: #e5e7eb;
   }
 
   .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #000;
+    cursor: grab;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    margin-top: -7px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
 
+  .slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  .slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.2);
+  }
+
+  .slider::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background: #e5e7eb;
+    border: none;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #000;
+    cursor: grab;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  .dark .slider::-webkit-slider-runnable-track {
+    background: #374151;
+  }
+
+  .dark .slider::-moz-range-track {
+    background: #374151;
+  }
+
+  .dark .slider::-webkit-slider-thumb {
+    background: #e5e7eb;
+    border-color: #1f2937;
+  }
+
+  .dark .slider::-moz-range-thumb {
+    background: #e5e7eb;
+    border-color: #1f2937;
+  }
 
 /* Keyboard-aware form styles */
 .input-focused {
@@ -133,50 +196,6 @@
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
-
-    height: 20px;
-    border-radius: 50%;
-    background: #000;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  .slider::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #000;
-    cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
-  }
-
-  .slider::-moz-range-thumb:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .dark .slider {
-    background: #374151;
-  }
-
-  .dark .slider::-webkit-slider-thumb {
-    background: #fff;
-    border: 2px solid #1f2937;
-  }
-
-  .dark .slider::-moz-range-thumb {
-    background: #fff;
-    border: 2px solid #1f2937;
-  }
 
   /* Floating button animation */
   @keyframes float {
@@ -463,4 +482,2018 @@
 
 .timer-enter {
   animation: timer-slide-in 0.25s ease-out;
+}
+
+/* ============================================
+   OCEAN THEME — Light Mode
+   ============================================ */
+.ocean {
+  --background: hsl(210, 30%, 97%);
+  --foreground: hsl(210, 40%, 15%);
+  --card: hsl(210, 28%, 94%);
+  --card-foreground: hsl(210, 40%, 15%);
+  --popover: hsl(210, 30%, 97%);
+  --popover-foreground: hsl(210, 40%, 15%);
+  --primary: hsl(210, 83%, 52%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(210, 20%, 90%);
+  --secondary-foreground: hsl(210, 40%, 20%);
+  --muted: hsl(210, 20%, 90%);
+  --muted-foreground: hsl(210, 15%, 50%);
+  --accent: hsl(210, 50%, 90%);
+  --accent-foreground: hsl(210, 80%, 35%);
+  --destructive: hsl(0, 72%, 55%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(210, 25%, 85%);
+  --input: hsl(210, 25%, 85%);
+  --ring: hsl(210, 83%, 52%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   OCEAN THEME — Dark Mode
+   ============================================ */
+.ocean.dark {
+  --background: hsl(210, 40%, 6%);
+  --foreground: hsl(210, 25%, 93%);
+  --card: hsl(210, 35%, 10%);
+  --card-foreground: hsl(210, 25%, 93%);
+  --popover: hsl(210, 35%, 10%);
+  --popover-foreground: hsl(210, 25%, 93%);
+  --primary: hsl(210, 90%, 62%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(210, 30%, 15%);
+  --secondary-foreground: hsl(210, 20%, 85%);
+  --muted: hsl(210, 28%, 14%);
+  --muted-foreground: hsl(210, 15%, 60%);
+  --accent: hsl(210, 50%, 20%);
+  --accent-foreground: hsl(210, 90%, 78%);
+  --destructive: hsl(0, 62%, 35%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(210, 30%, 20%);
+  --input: hsl(210, 30%, 20%);
+  --ring: hsl(210, 90%, 62%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   OCEAN — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.ocean header {
+  background: linear-gradient(135deg, hsl(210, 30%, 93%) 0%, hsl(210, 28%, 96%) 100%) !important;
+  border-bottom-color: hsl(210, 30%, 82%) !important;
+}
+.ocean.dark header {
+  background: linear-gradient(135deg, hsl(210, 45%, 12%) 0%, hsl(210, 40%, 8%) 100%) !important;
+  border-bottom-color: hsl(210, 35%, 22%) !important;
+}
+
+/* Title */
+.ocean h1 {
+  color: hsl(210, 80%, 48%) !important;
+}
+.ocean.dark h1 {
+  color: hsl(210, 90%, 72%) !important;
+}
+
+/* Page background */
+.ocean:not(.dark) .min-h-screen.bg-white { background-color: hsl(210, 30%, 97%) !important; }
+.ocean.dark .min-h-screen.bg-white,
+.ocean.dark .min-h-screen.dark\:bg-black { background-color: hsl(210, 40%, 6%) !important; }
+
+/* Generic white/black backgrounds */
+.ocean:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(210, 28%, 95%) !important; }
+.ocean.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(210, 35%, 8%) !important; }
+.ocean.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(210, 35%, 8%) !important; }
+.ocean.dark .dark\:bg-gray-950 { background-color: hsl(210, 35%, 6%) !important; }
+.ocean.dark .dark\:bg-gray-900 { background-color: hsl(210, 32%, 10%) !important; }
+.ocean.dark .dark\:bg-gray-800 { background-color: hsl(210, 28%, 14%) !important; }
+.ocean:not(.dark) .bg-gray-50 { background-color: hsl(210, 25%, 93%) !important; }
+.ocean.dark .bg-gray-50 { background-color: hsl(210, 28%, 14%) !important; }
+.ocean.dark .dark\:bg-gray-800\/30 { background-color: hsla(210, 30%, 14%, 0.3) !important; }
+
+/* Borders */
+.ocean:not(.dark) .border-gray-200 { border-color: hsl(210, 25%, 85%) !important; }
+.ocean.dark .border-gray-200 { border-color: hsl(210, 30%, 20%) !important; }
+.ocean.dark .dark\:border-gray-600 { border-color: hsl(210, 28%, 22%) !important; }
+.ocean.dark .dark\:border-gray-700 { border-color: hsl(210, 28%, 20%) !important; }
+.ocean.dark .dark\:border-gray-800 { border-color: hsl(210, 30%, 18%) !important; }
+
+/* Text colors */
+.ocean:not(.dark) .text-black { color: hsl(210, 60%, 22%) !important; }
+.ocean.dark .dark\:text-white { color: hsl(210, 25%, 93%) !important; }
+.ocean:not(.dark) .text-gray-600 { color: hsl(210, 20%, 45%) !important; }
+.ocean.dark .dark\:text-gray-400 { color: hsl(210, 15%, 60%) !important; }
+.ocean:not(.dark) .text-gray-400 { color: hsl(210, 15%, 65%) !important; }
+.ocean.dark .dark\:text-gray-500 { color: hsl(210, 12%, 50%) !important; }
+.ocean:not(.dark) .text-gray-900 { color: hsl(210, 40%, 15%) !important; }
+.ocean.dark .dark\:text-gray-100 { color: hsl(210, 25%, 90%) !important; }
+
+/* Primary buttons — gradient glow (light) */
+.ocean:not(.dark) button.bg-black,
+.ocean:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(210, 83%, 52%), hsl(195, 75%, 48%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 12px hsla(210, 80%, 45%, 0.3) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.ocean:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 20px hsla(210, 80%, 45%, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — gradient glow (dark) */
+.ocean.dark button.dark\:bg-white,
+.ocean.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(210, 90%, 62%), hsl(190, 80%, 55%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 16px hsla(210, 80%, 55%, 0.35), 0 0 30px hsla(210, 80%, 55%, 0.15) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.ocean.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 24px hsla(210, 80%, 55%, 0.55), 0 0 40px hsla(210, 80%, 55%, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states */
+.ocean:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(210, 25%, 90%) !important; }
+.ocean.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(210, 28%, 16%) !important; }
+
+/* Blue accent overrides — ocean blue */
+.ocean:not(.dark) .text-blue-600 { color: hsl(210, 83%, 52%) !important; }
+.ocean.dark .dark\:text-blue-400 { color: hsl(210, 90%, 72%) !important; }
+.ocean:not(.dark) .bg-blue-50 { background-color: hsl(210, 40%, 94%) !important; }
+.ocean.dark .bg-blue-50 { background-color: hsla(210, 50%, 15%, 0.3) !important; }
+.ocean.dark .dark\:bg-blue-900\/20 { background-color: hsla(210, 50%, 20%, 0.2) !important; }
+.ocean:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(210, 83%, 52%) !important; }
+.ocean:not(.dark) .border-blue-500 { border-color: hsl(210, 83%, 52%) !important; }
+
+/* Slider in Ocean */
+.ocean .slider {
+  background: hsl(210, 20%, 88%) !important;
+}
+.ocean.dark .slider {
+  background: hsl(210, 25%, 18%) !important;
+}
+.ocean .slider::-webkit-slider-thumb {
+  background: hsl(210, 83%, 52%) !important;
+  border-color: hsl(210, 30%, 90%) !important;
+  box-shadow: 0 0 8px hsla(210, 80%, 45%, 0.4) !important;
+}
+.ocean.dark .slider::-webkit-slider-thumb {
+  background: hsl(210, 90%, 70%) !important;
+  border-color: hsl(210, 30%, 15%) !important;
+  box-shadow: 0 0 10px hsla(210, 80%, 55%, 0.5) !important;
+}
+.ocean .slider::-moz-range-thumb {
+  background: hsl(210, 83%, 52%) !important;
+  border-color: hsl(210, 30%, 90%) !important;
+}
+.ocean.dark .slider::-moz-range-thumb {
+  background: hsl(210, 90%, 70%) !important;
+  border-color: hsl(210, 30%, 15%) !important;
+}
+
+/* Mobile slider thumb in Ocean */
+@media (max-width: 768px) {
+  .ocean input[type="range"]::-webkit-slider-thumb {
+    background: hsl(210, 83%, 52%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 8px hsla(210, 80%, 45%, 0.4), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .ocean.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(210, 90%, 70%) !important;
+    border-color: hsl(210, 30%, 15%) !important;
+    box-shadow: 0 0 10px hsla(210, 80%, 55%, 0.5), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .ocean input[type="range"]::-moz-range-thumb {
+    background: hsl(210, 83%, 52%) !important;
+    border-color: white !important;
+  }
+  .ocean.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(210, 90%, 70%) !important;
+    border-color: hsl(210, 30%, 15%) !important;
+  }
+}
+
+/* Tab triggers in Ocean */
+.ocean [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(210, 70%, 92%), hsl(210, 60%, 95%)) !important;
+  color: hsl(210, 80%, 40%) !important;
+  border-color: hsl(210, 50%, 80%) !important;
+}
+.ocean.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(210, 50%, 18%), hsl(210, 40%, 14%)) !important;
+  color: hsl(210, 90%, 78%) !important;
+  border-color: hsl(210, 40%, 30%) !important;
+}
+
+/* Cards with a subtle ocean glow in dark mode */
+.ocean.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 1px hsla(210, 60%, 50%, 0.15);
+}
+
+/* Calendar "today" in Ocean */
+.ocean .bg-blue-50[class*="today"],
+.ocean td.bg-blue-50 {
+  background-color: hsl(210, 40%, 94%) !important;
+}
+
+/* Floating timer panel in Ocean */
+.ocean .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(210, 28%, 96%), hsl(210, 25%, 94%)) !important;
+  border-color: hsl(210, 30%, 82%) !important;
+  box-shadow: 0 4px 20px hsla(210, 40%, 45%, 0.12) !important;
+}
+.ocean.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(210, 35%, 11%), hsl(210, 30%, 14%)) !important;
+  border-color: hsl(210, 35%, 22%) !important;
+  box-shadow: 0 4px 24px hsla(210, 60%, 40%, 0.2), 0 0 40px hsla(210, 60%, 30%, 0.08) !important;
+}
+
+/* Settings dropdown in Ocean */
+.ocean [role="menu"] {
+  background: hsl(210, 28%, 96%) !important;
+  border-color: hsl(210, 25%, 85%) !important;
+}
+.ocean.dark [role="menu"] {
+  background: hsl(210, 35%, 11%) !important;
+  border-color: hsl(210, 30%, 20%) !important;
+}
+.ocean [role="menuitem"]:hover {
+  background-color: hsl(210, 30%, 90%) !important;
+}
+.ocean.dark [role="menuitem"]:hover {
+  background-color: hsl(210, 30%, 18%) !important;
+}
+
+/* Smooth transition when toggling Ocean */
+.ocean * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* ============================================
+   SUNSET THEME — Light Mode
+   ============================================ */
+.sunset {
+  --background: hsl(30, 35%, 97%);
+  --foreground: hsl(20, 40%, 15%);
+  --card: hsl(30, 30%, 94%);
+  --card-foreground: hsl(20, 40%, 15%);
+  --popover: hsl(30, 35%, 97%);
+  --popover-foreground: hsl(20, 40%, 15%);
+  --primary: hsl(25, 92%, 55%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(30, 22%, 90%);
+  --secondary-foreground: hsl(20, 40%, 20%);
+  --muted: hsl(30, 22%, 90%);
+  --muted-foreground: hsl(25, 15%, 50%);
+  --accent: hsl(25, 55%, 90%);
+  --accent-foreground: hsl(25, 85%, 38%);
+  --destructive: hsl(0, 72%, 55%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(25, 28%, 84%);
+  --input: hsl(25, 28%, 84%);
+  --ring: hsl(25, 92%, 55%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   SUNSET THEME — Dark Mode
+   ============================================ */
+.sunset.dark {
+  --background: hsl(20, 40%, 6%);
+  --foreground: hsl(30, 25%, 93%);
+  --card: hsl(20, 35%, 10%);
+  --card-foreground: hsl(30, 25%, 93%);
+  --popover: hsl(20, 35%, 10%);
+  --popover-foreground: hsl(30, 25%, 93%);
+  --primary: hsl(25, 95%, 62%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(20, 30%, 15%);
+  --secondary-foreground: hsl(30, 20%, 85%);
+  --muted: hsl(20, 28%, 14%);
+  --muted-foreground: hsl(25, 15%, 60%);
+  --accent: hsl(25, 55%, 20%);
+  --accent-foreground: hsl(25, 95%, 76%);
+  --destructive: hsl(0, 62%, 35%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(20, 30%, 20%);
+  --input: hsl(20, 30%, 20%);
+  --ring: hsl(25, 95%, 62%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   SUNSET — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.sunset header {
+  background: linear-gradient(135deg, hsl(25, 35%, 93%) 0%, hsl(30, 30%, 96%) 100%) !important;
+  border-bottom-color: hsl(25, 30%, 82%) !important;
+}
+.sunset.dark header {
+  background: linear-gradient(135deg, hsl(25, 45%, 12%) 0%, hsl(20, 40%, 8%) 100%) !important;
+  border-bottom-color: hsl(25, 35%, 22%) !important;
+}
+
+/* Title */
+.sunset h1 {
+  color: hsl(25, 85%, 50%) !important;
+}
+.sunset.dark h1 {
+  color: hsl(25, 95%, 72%) !important;
+}
+
+/* Page background */
+.sunset:not(.dark) .min-h-screen.bg-white { background-color: hsl(30, 35%, 97%) !important; }
+.sunset.dark .min-h-screen.bg-white,
+.sunset.dark .min-h-screen.dark\:bg-black { background-color: hsl(20, 40%, 6%) !important; }
+
+/* Generic white/black backgrounds */
+.sunset:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(30, 30%, 95%) !important; }
+.sunset.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(20, 35%, 8%) !important; }
+.sunset.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(20, 35%, 8%) !important; }
+.sunset.dark .dark\:bg-gray-950 { background-color: hsl(20, 35%, 6%) !important; }
+.sunset.dark .dark\:bg-gray-900 { background-color: hsl(20, 32%, 10%) !important; }
+.sunset.dark .dark\:bg-gray-800 { background-color: hsl(20, 28%, 14%) !important; }
+.sunset:not(.dark) .bg-gray-50 { background-color: hsl(30, 25%, 93%) !important; }
+.sunset.dark .bg-gray-50 { background-color: hsl(20, 28%, 14%) !important; }
+.sunset.dark .dark\:bg-gray-800\/30 { background-color: hsla(20, 30%, 14%, 0.3) !important; }
+
+/* Borders */
+.sunset:not(.dark) .border-gray-200 { border-color: hsl(25, 28%, 84%) !important; }
+.sunset.dark .border-gray-200 { border-color: hsl(20, 30%, 20%) !important; }
+.sunset.dark .dark\:border-gray-600 { border-color: hsl(20, 28%, 22%) !important; }
+.sunset.dark .dark\:border-gray-700 { border-color: hsl(20, 28%, 20%) !important; }
+.sunset.dark .dark\:border-gray-800 { border-color: hsl(20, 30%, 18%) !important; }
+
+/* Text colors */
+.sunset:not(.dark) .text-black { color: hsl(25, 60%, 22%) !important; }
+.sunset.dark .dark\:text-white { color: hsl(30, 25%, 93%) !important; }
+.sunset:not(.dark) .text-gray-600 { color: hsl(25, 20%, 45%) !important; }
+.sunset.dark .dark\:text-gray-400 { color: hsl(25, 15%, 60%) !important; }
+.sunset:not(.dark) .text-gray-400 { color: hsl(25, 15%, 65%) !important; }
+.sunset.dark .dark\:text-gray-500 { color: hsl(25, 12%, 50%) !important; }
+.sunset:not(.dark) .text-gray-900 { color: hsl(20, 40%, 15%) !important; }
+.sunset.dark .dark\:text-gray-100 { color: hsl(30, 25%, 90%) !important; }
+
+/* Primary buttons — gradient glow (light) */
+.sunset:not(.dark) button.bg-black,
+.sunset:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(25, 92%, 55%), hsl(10, 80%, 50%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 12px hsla(25, 85%, 50%, 0.3) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.sunset:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 20px hsla(25, 85%, 50%, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — gradient glow (dark) */
+.sunset.dark button.dark\:bg-white,
+.sunset.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(25, 95%, 62%), hsl(40, 90%, 55%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 16px hsla(25, 85%, 55%, 0.35), 0 0 30px hsla(25, 85%, 55%, 0.15) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.sunset.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 24px hsla(25, 85%, 55%, 0.55), 0 0 40px hsla(25, 85%, 55%, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states */
+.sunset:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(25, 28%, 90%) !important; }
+.sunset.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(20, 28%, 16%) !important; }
+
+/* Blue accent overrides — sunset orange */
+.sunset:not(.dark) .text-blue-600 { color: hsl(25, 92%, 55%) !important; }
+.sunset.dark .dark\:text-blue-400 { color: hsl(25, 95%, 72%) !important; }
+.sunset:not(.dark) .bg-blue-50 { background-color: hsl(25, 45%, 94%) !important; }
+.sunset.dark .bg-blue-50 { background-color: hsla(25, 55%, 15%, 0.3) !important; }
+.sunset.dark .dark\:bg-blue-900\/20 { background-color: hsla(25, 55%, 20%, 0.2) !important; }
+.sunset:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(25, 92%, 55%) !important; }
+.sunset:not(.dark) .border-blue-500 { border-color: hsl(25, 92%, 55%) !important; }
+
+/* Slider in Sunset */
+.sunset .slider {
+  background: hsl(30, 22%, 88%) !important;
+}
+.sunset.dark .slider {
+  background: hsl(20, 25%, 18%) !important;
+}
+.sunset .slider::-webkit-slider-thumb {
+  background: hsl(25, 92%, 55%) !important;
+  border-color: hsl(25, 35%, 90%) !important;
+  box-shadow: 0 0 8px hsla(25, 85%, 50%, 0.4) !important;
+}
+.sunset.dark .slider::-webkit-slider-thumb {
+  background: hsl(25, 95%, 70%) !important;
+  border-color: hsl(20, 30%, 15%) !important;
+  box-shadow: 0 0 10px hsla(25, 85%, 55%, 0.5) !important;
+}
+.sunset .slider::-moz-range-thumb {
+  background: hsl(25, 92%, 55%) !important;
+  border-color: hsl(25, 35%, 90%) !important;
+}
+.sunset.dark .slider::-moz-range-thumb {
+  background: hsl(25, 95%, 70%) !important;
+  border-color: hsl(20, 30%, 15%) !important;
+}
+
+/* Mobile slider thumb in Sunset */
+@media (max-width: 768px) {
+  .sunset input[type="range"]::-webkit-slider-thumb {
+    background: hsl(25, 92%, 55%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 8px hsla(25, 85%, 50%, 0.4), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .sunset.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(25, 95%, 70%) !important;
+    border-color: hsl(20, 30%, 15%) !important;
+    box-shadow: 0 0 10px hsla(25, 85%, 55%, 0.5), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .sunset input[type="range"]::-moz-range-thumb {
+    background: hsl(25, 92%, 55%) !important;
+    border-color: white !important;
+  }
+  .sunset.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(25, 95%, 70%) !important;
+    border-color: hsl(20, 30%, 15%) !important;
+  }
+}
+
+/* Tab triggers in Sunset */
+.sunset [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(25, 75%, 92%), hsl(30, 65%, 95%)) !important;
+  color: hsl(25, 85%, 40%) !important;
+  border-color: hsl(25, 55%, 80%) !important;
+}
+.sunset.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(25, 50%, 18%), hsl(20, 40%, 14%)) !important;
+  color: hsl(25, 95%, 78%) !important;
+  border-color: hsl(25, 40%, 30%) !important;
+}
+
+/* Cards with a subtle sunset glow in dark mode */
+.sunset.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 1px hsla(25, 60%, 50%, 0.15);
+}
+
+/* Calendar "today" in Sunset */
+.sunset .bg-blue-50[class*="today"],
+.sunset td.bg-blue-50 {
+  background-color: hsl(25, 45%, 94%) !important;
+}
+
+/* Floating timer panel in Sunset */
+.sunset .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(30, 30%, 96%), hsl(25, 28%, 94%)) !important;
+  border-color: hsl(25, 30%, 82%) !important;
+  box-shadow: 0 4px 20px hsla(25, 45%, 50%, 0.12) !important;
+}
+.sunset.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(20, 35%, 11%), hsl(25, 30%, 14%)) !important;
+  border-color: hsl(25, 35%, 22%) !important;
+  box-shadow: 0 4px 24px hsla(25, 60%, 40%, 0.2), 0 0 40px hsla(25, 60%, 30%, 0.08) !important;
+}
+
+/* Settings dropdown in Sunset */
+.sunset [role="menu"] {
+  background: hsl(30, 30%, 96%) !important;
+  border-color: hsl(25, 28%, 85%) !important;
+}
+.sunset.dark [role="menu"] {
+  background: hsl(20, 35%, 11%) !important;
+  border-color: hsl(20, 30%, 20%) !important;
+}
+.sunset [role="menuitem"]:hover {
+  background-color: hsl(25, 32%, 90%) !important;
+}
+.sunset.dark [role="menuitem"]:hover {
+  background-color: hsl(25, 30%, 18%) !important;
+}
+
+/* Smooth transition when toggling Sunset */
+.sunset * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* ============================================
+   FOREST THEME — Light Mode
+   ============================================ */
+.forest {
+  --background: hsl(145, 28%, 97%);
+  --foreground: hsl(150, 40%, 14%);
+  --card: hsl(145, 25%, 94%);
+  --card-foreground: hsl(150, 40%, 14%);
+  --popover: hsl(145, 28%, 97%);
+  --popover-foreground: hsl(150, 40%, 14%);
+  --primary: hsl(150, 70%, 40%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(145, 18%, 90%);
+  --secondary-foreground: hsl(150, 40%, 20%);
+  --muted: hsl(145, 18%, 90%);
+  --muted-foreground: hsl(150, 12%, 48%);
+  --accent: hsl(150, 40%, 90%);
+  --accent-foreground: hsl(150, 65%, 30%);
+  --destructive: hsl(0, 72%, 55%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(150, 22%, 84%);
+  --input: hsl(150, 22%, 84%);
+  --ring: hsl(150, 70%, 40%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   FOREST THEME — Dark Mode
+   ============================================ */
+.forest.dark {
+  --background: hsl(155, 38%, 5%);
+  --foreground: hsl(140, 22%, 93%);
+  --card: hsl(155, 32%, 9%);
+  --card-foreground: hsl(140, 22%, 93%);
+  --popover: hsl(155, 32%, 9%);
+  --popover-foreground: hsl(140, 22%, 93%);
+  --primary: hsl(150, 80%, 50%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(155, 28%, 14%);
+  --secondary-foreground: hsl(140, 18%, 85%);
+  --muted: hsl(155, 25%, 13%);
+  --muted-foreground: hsl(145, 14%, 58%);
+  --accent: hsl(150, 45%, 18%);
+  --accent-foreground: hsl(150, 80%, 72%);
+  --destructive: hsl(0, 62%, 35%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(155, 28%, 18%);
+  --input: hsl(155, 28%, 18%);
+  --ring: hsl(150, 80%, 50%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   FOREST — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.forest header {
+  background: linear-gradient(135deg, hsl(150, 28%, 93%) 0%, hsl(145, 25%, 96%) 100%) !important;
+  border-bottom-color: hsl(150, 25%, 82%) !important;
+}
+.forest.dark header {
+  background: linear-gradient(135deg, hsl(150, 40%, 10%) 0%, hsl(155, 35%, 7%) 100%) !important;
+  border-bottom-color: hsl(150, 32%, 20%) !important;
+}
+
+/* Title */
+.forest h1 {
+  color: hsl(150, 65%, 36%) !important;
+}
+.forest.dark h1 {
+  color: hsl(150, 80%, 62%) !important;
+}
+
+/* Page background */
+.forest:not(.dark) .min-h-screen.bg-white { background-color: hsl(145, 28%, 97%) !important; }
+.forest.dark .min-h-screen.bg-white,
+.forest.dark .min-h-screen.dark\:bg-black { background-color: hsl(155, 38%, 5%) !important; }
+
+/* Generic white/black backgrounds */
+.forest:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(145, 25%, 95%) !important; }
+.forest.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(155, 32%, 7%) !important; }
+.forest.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(155, 32%, 7%) !important; }
+.forest.dark .dark\:bg-gray-950 { background-color: hsl(155, 32%, 5%) !important; }
+.forest.dark .dark\:bg-gray-900 { background-color: hsl(155, 28%, 9%) !important; }
+.forest.dark .dark\:bg-gray-800 { background-color: hsl(155, 25%, 13%) !important; }
+.forest:not(.dark) .bg-gray-50 { background-color: hsl(145, 22%, 93%) !important; }
+.forest.dark .bg-gray-50 { background-color: hsl(155, 25%, 13%) !important; }
+.forest.dark .dark\:bg-gray-800\/30 { background-color: hsla(155, 28%, 13%, 0.3) !important; }
+
+/* Borders */
+.forest:not(.dark) .border-gray-200 { border-color: hsl(150, 22%, 84%) !important; }
+.forest.dark .border-gray-200 { border-color: hsl(155, 28%, 18%) !important; }
+.forest.dark .dark\:border-gray-600 { border-color: hsl(155, 25%, 22%) !important; }
+.forest.dark .dark\:border-gray-700 { border-color: hsl(155, 25%, 18%) !important; }
+.forest.dark .dark\:border-gray-800 { border-color: hsl(155, 28%, 16%) !important; }
+
+/* Text colors */
+.forest:not(.dark) .text-black { color: hsl(150, 55%, 20%) !important; }
+.forest.dark .dark\:text-white { color: hsl(140, 22%, 93%) !important; }
+.forest:not(.dark) .text-gray-600 { color: hsl(150, 18%, 44%) !important; }
+.forest.dark .dark\:text-gray-400 { color: hsl(145, 14%, 58%) !important; }
+.forest:not(.dark) .text-gray-400 { color: hsl(150, 12%, 64%) !important; }
+.forest.dark .dark\:text-gray-500 { color: hsl(145, 10%, 48%) !important; }
+.forest:not(.dark) .text-gray-900 { color: hsl(150, 40%, 14%) !important; }
+.forest.dark .dark\:text-gray-100 { color: hsl(140, 22%, 90%) !important; }
+
+/* Primary buttons — gradient glow (light) */
+.forest:not(.dark) button.bg-black,
+.forest:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(150, 70%, 40%), hsl(170, 60%, 38%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 12px hsla(150, 65%, 35%, 0.3) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.forest:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 20px hsla(150, 65%, 35%, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — gradient glow (dark) */
+.forest.dark button.dark\:bg-white,
+.forest.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(150, 80%, 50%), hsl(170, 70%, 48%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 16px hsla(150, 75%, 45%, 0.35), 0 0 30px hsla(150, 75%, 45%, 0.15) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.forest.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 24px hsla(150, 75%, 45%, 0.55), 0 0 40px hsla(150, 75%, 45%, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states */
+.forest:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(150, 22%, 90%) !important; }
+.forest.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(155, 25%, 15%) !important; }
+
+/* Blue accent overrides — forest green */
+.forest:not(.dark) .text-blue-600 { color: hsl(150, 70%, 40%) !important; }
+.forest.dark .dark\:text-blue-400 { color: hsl(150, 80%, 62%) !important; }
+.forest:not(.dark) .bg-blue-50 { background-color: hsl(150, 35%, 94%) !important; }
+.forest.dark .bg-blue-50 { background-color: hsla(150, 45%, 14%, 0.3) !important; }
+.forest.dark .dark\:bg-blue-900\/20 { background-color: hsla(150, 45%, 18%, 0.2) !important; }
+.forest:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(150, 70%, 40%) !important; }
+.forest:not(.dark) .border-blue-500 { border-color: hsl(150, 70%, 40%) !important; }
+
+/* Slider in Forest */
+.forest .slider {
+  background: hsl(145, 18%, 88%) !important;
+}
+.forest.dark .slider {
+  background: hsl(155, 22%, 16%) !important;
+}
+.forest .slider::-webkit-slider-thumb {
+  background: hsl(150, 70%, 40%) !important;
+  border-color: hsl(150, 25%, 90%) !important;
+  box-shadow: 0 0 8px hsla(150, 65%, 35%, 0.4) !important;
+}
+.forest.dark .slider::-webkit-slider-thumb {
+  background: hsl(150, 80%, 58%) !important;
+  border-color: hsl(155, 28%, 13%) !important;
+  box-shadow: 0 0 10px hsla(150, 75%, 45%, 0.5) !important;
+}
+.forest .slider::-moz-range-thumb {
+  background: hsl(150, 70%, 40%) !important;
+  border-color: hsl(150, 25%, 90%) !important;
+}
+.forest.dark .slider::-moz-range-thumb {
+  background: hsl(150, 80%, 58%) !important;
+  border-color: hsl(155, 28%, 13%) !important;
+}
+
+/* Mobile slider thumb in Forest */
+@media (max-width: 768px) {
+  .forest input[type="range"]::-webkit-slider-thumb {
+    background: hsl(150, 70%, 40%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 8px hsla(150, 65%, 35%, 0.4), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .forest.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(150, 80%, 58%) !important;
+    border-color: hsl(155, 28%, 13%) !important;
+    box-shadow: 0 0 10px hsla(150, 75%, 45%, 0.5), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .forest input[type="range"]::-moz-range-thumb {
+    background: hsl(150, 70%, 40%) !important;
+    border-color: white !important;
+  }
+  .forest.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(150, 80%, 58%) !important;
+    border-color: hsl(155, 28%, 13%) !important;
+  }
+}
+
+/* Tab triggers in Forest */
+.forest [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(150, 60%, 92%), hsl(145, 50%, 95%)) !important;
+  color: hsl(150, 65%, 32%) !important;
+  border-color: hsl(150, 42%, 80%) !important;
+}
+.forest.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(150, 45%, 16%), hsl(155, 35%, 12%)) !important;
+  color: hsl(150, 80%, 72%) !important;
+  border-color: hsl(150, 38%, 28%) !important;
+}
+
+/* Cards with a subtle forest glow in dark mode */
+.forest.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 1px hsla(150, 55%, 45%, 0.15);
+}
+
+/* Calendar "today" in Forest */
+.forest .bg-blue-50[class*="today"],
+.forest td.bg-blue-50 {
+  background-color: hsl(150, 35%, 94%) !important;
+}
+
+/* Floating timer panel in Forest */
+.forest .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(145, 25%, 96%), hsl(150, 22%, 94%)) !important;
+  border-color: hsl(150, 25%, 82%) !important;
+  box-shadow: 0 4px 20px hsla(150, 38%, 40%, 0.12) !important;
+}
+.forest.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(155, 32%, 10%), hsl(150, 28%, 12%)) !important;
+  border-color: hsl(150, 32%, 20%) !important;
+  box-shadow: 0 4px 24px hsla(150, 55%, 35%, 0.2), 0 0 40px hsla(150, 55%, 25%, 0.08) !important;
+}
+
+/* Settings dropdown in Forest */
+.forest [role="menu"] {
+  background: hsl(145, 25%, 96%) !important;
+  border-color: hsl(150, 22%, 84%) !important;
+}
+.forest.dark [role="menu"] {
+  background: hsl(155, 32%, 10%) !important;
+  border-color: hsl(155, 28%, 18%) !important;
+}
+.forest [role="menuitem"]:hover {
+  background-color: hsl(150, 25%, 90%) !important;
+}
+.forest.dark [role="menuitem"]:hover {
+  background-color: hsl(150, 28%, 16%) !important;
+}
+
+/* Smooth transition when toggling Forest */
+.forest * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* ============================================
+   ROSE THEME — Light Mode
+   ============================================ */
+.rose {
+  --background: hsl(345, 30%, 97%);
+  --foreground: hsl(340, 40%, 15%);
+  --card: hsl(345, 28%, 94%);
+  --card-foreground: hsl(340, 40%, 15%);
+  --popover: hsl(345, 30%, 97%);
+  --popover-foreground: hsl(340, 40%, 15%);
+  --primary: hsl(340, 82%, 55%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(345, 20%, 90%);
+  --secondary-foreground: hsl(340, 40%, 20%);
+  --muted: hsl(345, 20%, 90%);
+  --muted-foreground: hsl(340, 15%, 50%);
+  --accent: hsl(340, 50%, 90%);
+  --accent-foreground: hsl(340, 78%, 40%);
+  --destructive: hsl(0, 72%, 55%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(340, 25%, 85%);
+  --input: hsl(340, 25%, 85%);
+  --ring: hsl(340, 82%, 55%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   ROSE THEME — Dark Mode
+   ============================================ */
+.rose.dark {
+  --background: hsl(340, 38%, 6%);
+  --foreground: hsl(340, 22%, 93%);
+  --card: hsl(340, 32%, 10%);
+  --card-foreground: hsl(340, 22%, 93%);
+  --popover: hsl(340, 32%, 10%);
+  --popover-foreground: hsl(340, 22%, 93%);
+  --primary: hsl(340, 88%, 65%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(340, 28%, 15%);
+  --secondary-foreground: hsl(340, 18%, 85%);
+  --muted: hsl(340, 25%, 14%);
+  --muted-foreground: hsl(340, 14%, 58%);
+  --accent: hsl(340, 48%, 20%);
+  --accent-foreground: hsl(340, 88%, 78%);
+  --destructive: hsl(0, 62%, 35%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(340, 28%, 20%);
+  --input: hsl(340, 28%, 20%);
+  --ring: hsl(340, 88%, 65%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   ROSE — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.rose header {
+  background: linear-gradient(135deg, hsl(340, 30%, 93%) 0%, hsl(345, 28%, 96%) 100%) !important;
+  border-bottom-color: hsl(340, 28%, 82%) !important;
+}
+.rose.dark header {
+  background: linear-gradient(135deg, hsl(340, 42%, 11%) 0%, hsl(340, 38%, 7%) 100%) !important;
+  border-bottom-color: hsl(340, 32%, 22%) !important;
+}
+
+/* Title */
+.rose h1 {
+  color: hsl(340, 78%, 50%) !important;
+}
+.rose.dark h1 {
+  color: hsl(340, 88%, 75%) !important;
+}
+
+/* Page background */
+.rose:not(.dark) .min-h-screen.bg-white { background-color: hsl(345, 30%, 97%) !important; }
+.rose.dark .min-h-screen.bg-white,
+.rose.dark .min-h-screen.dark\:bg-black { background-color: hsl(340, 38%, 6%) !important; }
+
+/* Generic white/black backgrounds */
+.rose:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(345, 28%, 95%) !important; }
+.rose.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(340, 32%, 8%) !important; }
+.rose.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(340, 32%, 8%) !important; }
+.rose.dark .dark\:bg-gray-950 { background-color: hsl(340, 32%, 5%) !important; }
+.rose.dark .dark\:bg-gray-900 { background-color: hsl(340, 28%, 10%) !important; }
+.rose.dark .dark\:bg-gray-800 { background-color: hsl(340, 25%, 14%) !important; }
+.rose:not(.dark) .bg-gray-50 { background-color: hsl(345, 22%, 93%) !important; }
+.rose.dark .bg-gray-50 { background-color: hsl(340, 25%, 14%) !important; }
+.rose.dark .dark\:bg-gray-800\/30 { background-color: hsla(340, 28%, 14%, 0.3) !important; }
+
+/* Borders */
+.rose:not(.dark) .border-gray-200 { border-color: hsl(340, 25%, 85%) !important; }
+.rose.dark .border-gray-200 { border-color: hsl(340, 28%, 20%) !important; }
+.rose.dark .dark\:border-gray-600 { border-color: hsl(340, 25%, 22%) !important; }
+.rose.dark .dark\:border-gray-700 { border-color: hsl(340, 25%, 20%) !important; }
+.rose.dark .dark\:border-gray-800 { border-color: hsl(340, 28%, 18%) !important; }
+
+/* Text colors */
+.rose:not(.dark) .text-black { color: hsl(340, 58%, 24%) !important; }
+.rose.dark .dark\:text-white { color: hsl(340, 22%, 93%) !important; }
+.rose:not(.dark) .text-gray-600 { color: hsl(340, 18%, 45%) !important; }
+.rose.dark .dark\:text-gray-400 { color: hsl(340, 14%, 58%) !important; }
+.rose:not(.dark) .text-gray-400 { color: hsl(340, 12%, 65%) !important; }
+.rose.dark .dark\:text-gray-500 { color: hsl(340, 10%, 50%) !important; }
+.rose:not(.dark) .text-gray-900 { color: hsl(340, 40%, 15%) !important; }
+.rose.dark .dark\:text-gray-100 { color: hsl(340, 22%, 90%) !important; }
+
+/* Primary buttons — gradient glow (light) */
+.rose:not(.dark) button.bg-black,
+.rose:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(340, 82%, 55%), hsl(320, 70%, 50%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 12px hsla(340, 78%, 50%, 0.3) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.rose:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 20px hsla(340, 78%, 50%, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — gradient glow (dark) */
+.rose.dark button.dark\:bg-white,
+.rose.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(340, 88%, 65%), hsl(360, 78%, 62%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 16px hsla(340, 82%, 58%, 0.35), 0 0 30px hsla(340, 82%, 58%, 0.15) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.rose.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 24px hsla(340, 82%, 58%, 0.55), 0 0 40px hsla(340, 82%, 58%, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states */
+.rose:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(340, 25%, 90%) !important; }
+.rose.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(340, 25%, 16%) !important; }
+
+/* Blue accent overrides — rose pink */
+.rose:not(.dark) .text-blue-600 { color: hsl(340, 82%, 55%) !important; }
+.rose.dark .dark\:text-blue-400 { color: hsl(340, 88%, 75%) !important; }
+.rose:not(.dark) .bg-blue-50 { background-color: hsl(340, 40%, 94%) !important; }
+.rose.dark .bg-blue-50 { background-color: hsla(340, 48%, 15%, 0.3) !important; }
+.rose.dark .dark\:bg-blue-900\/20 { background-color: hsla(340, 48%, 20%, 0.2) !important; }
+.rose:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(340, 82%, 55%) !important; }
+.rose:not(.dark) .border-blue-500 { border-color: hsl(340, 82%, 55%) !important; }
+
+/* Slider in Rose */
+.rose .slider {
+  background: hsl(345, 20%, 88%) !important;
+}
+.rose.dark .slider {
+  background: hsl(340, 22%, 18%) !important;
+}
+.rose .slider::-webkit-slider-thumb {
+  background: hsl(340, 82%, 55%) !important;
+  border-color: hsl(340, 28%, 90%) !important;
+  box-shadow: 0 0 8px hsla(340, 78%, 50%, 0.4) !important;
+}
+.rose.dark .slider::-webkit-slider-thumb {
+  background: hsl(340, 88%, 72%) !important;
+  border-color: hsl(340, 28%, 14%) !important;
+  box-shadow: 0 0 10px hsla(340, 82%, 58%, 0.5) !important;
+}
+.rose .slider::-moz-range-thumb {
+  background: hsl(340, 82%, 55%) !important;
+  border-color: hsl(340, 28%, 90%) !important;
+}
+.rose.dark .slider::-moz-range-thumb {
+  background: hsl(340, 88%, 72%) !important;
+  border-color: hsl(340, 28%, 14%) !important;
+}
+
+/* Mobile slider thumb in Rose */
+@media (max-width: 768px) {
+  .rose input[type="range"]::-webkit-slider-thumb {
+    background: hsl(340, 82%, 55%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 8px hsla(340, 78%, 50%, 0.4), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .rose.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(340, 88%, 72%) !important;
+    border-color: hsl(340, 28%, 14%) !important;
+    box-shadow: 0 0 10px hsla(340, 82%, 58%, 0.5), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .rose input[type="range"]::-moz-range-thumb {
+    background: hsl(340, 82%, 55%) !important;
+    border-color: white !important;
+  }
+  .rose.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(340, 88%, 72%) !important;
+    border-color: hsl(340, 28%, 14%) !important;
+  }
+}
+
+/* Tab triggers in Rose */
+.rose [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(340, 68%, 92%), hsl(345, 58%, 95%)) !important;
+  color: hsl(340, 78%, 42%) !important;
+  border-color: hsl(340, 48%, 80%) !important;
+}
+.rose.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(340, 48%, 17%), hsl(340, 38%, 13%)) !important;
+  color: hsl(340, 88%, 78%) !important;
+  border-color: hsl(340, 38%, 28%) !important;
+}
+
+/* Cards with a subtle rose glow in dark mode */
+.rose.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 1px hsla(340, 58%, 50%, 0.15);
+}
+
+/* Calendar "today" in Rose */
+.rose .bg-blue-50[class*="today"],
+.rose td.bg-blue-50 {
+  background-color: hsl(340, 40%, 94%) !important;
+}
+
+/* Floating timer panel in Rose */
+.rose .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(345, 28%, 96%), hsl(340, 25%, 94%)) !important;
+  border-color: hsl(340, 28%, 82%) !important;
+  box-shadow: 0 4px 20px hsla(340, 40%, 48%, 0.12) !important;
+}
+.rose.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(340, 32%, 10%), hsl(340, 28%, 13%)) !important;
+  border-color: hsl(340, 32%, 22%) !important;
+  box-shadow: 0 4px 24px hsla(340, 58%, 38%, 0.2), 0 0 40px hsla(340, 58%, 28%, 0.08) !important;
+}
+
+/* Settings dropdown in Rose */
+.rose [role="menu"] {
+  background: hsl(345, 28%, 96%) !important;
+  border-color: hsl(340, 25%, 85%) !important;
+}
+.rose.dark [role="menu"] {
+  background: hsl(340, 32%, 10%) !important;
+  border-color: hsl(340, 28%, 20%) !important;
+}
+.rose [role="menuitem"]:hover {
+  background-color: hsl(340, 28%, 90%) !important;
+}
+.rose.dark [role="menuitem"]:hover {
+  background-color: hsl(340, 28%, 17%) !important;
+}
+
+/* Smooth transition when toggling Rose */
+.rose * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+}
+
+/* ============================================
+   EMBER THEME — Light Mode
+   ============================================ */
+.ember {
+  --background: hsl(15, 35%, 97%);
+  --foreground: hsl(10, 42%, 15%);
+  --card: hsl(15, 30%, 94%);
+  --card-foreground: hsl(10, 42%, 15%);
+  --popover: hsl(15, 35%, 97%);
+  --popover-foreground: hsl(10, 42%, 15%);
+  --primary: hsl(10, 90%, 52%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(15, 22%, 90%);
+  --secondary-foreground: hsl(10, 42%, 20%);
+  --muted: hsl(15, 22%, 90%);
+  --muted-foreground: hsl(10, 15%, 50%);
+  --accent: hsl(10, 52%, 90%);
+  --accent-foreground: hsl(10, 85%, 38%);
+  --destructive: hsl(0, 72%, 55%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(10, 28%, 84%);
+  --input: hsl(10, 28%, 84%);
+  --ring: hsl(10, 90%, 52%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   EMBER THEME — Dark Mode
+   ============================================ */
+.ember.dark {
+  --background: hsl(8, 42%, 6%);
+  --foreground: hsl(15, 25%, 93%);
+  --card: hsl(8, 36%, 10%);
+  --card-foreground: hsl(15, 25%, 93%);
+  --popover: hsl(8, 36%, 10%);
+  --popover-foreground: hsl(15, 25%, 93%);
+  --primary: hsl(10, 95%, 62%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(8, 30%, 15%);
+  --secondary-foreground: hsl(15, 20%, 85%);
+  --muted: hsl(8, 28%, 14%);
+  --muted-foreground: hsl(10, 15%, 58%);
+  --accent: hsl(10, 55%, 20%);
+  --accent-foreground: hsl(10, 95%, 76%);
+  --destructive: hsl(0, 62%, 35%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(8, 30%, 20%);
+  --input: hsl(8, 30%, 20%);
+  --ring: hsl(10, 95%, 62%);
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   EMBER — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.ember header {
+  background: linear-gradient(135deg, hsl(10, 35%, 93%) 0%, hsl(15, 30%, 96%) 100%) !important;
+  border-bottom-color: hsl(10, 30%, 82%) !important;
+}
+.ember.dark header {
+  background: linear-gradient(135deg, hsl(10, 45%, 11%) 0%, hsl(8, 40%, 7%) 100%) !important;
+  border-bottom-color: hsl(10, 35%, 22%) !important;
+}
+
+/* Title */
+.ember h1 {
+  color: hsl(10, 85%, 48%) !important;
+}
+.ember.dark h1 {
+  color: hsl(10, 95%, 72%) !important;
+}
+
+/* Page background */
+.ember:not(.dark) .min-h-screen.bg-white { background-color: hsl(15, 35%, 97%) !important; }
+.ember.dark .min-h-screen.bg-white,
+.ember.dark .min-h-screen.dark\:bg-black { background-color: hsl(8, 42%, 6%) !important; }
+
+/* Generic white/black backgrounds */
+.ember:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(15, 30%, 95%) !important; }
+.ember.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(8, 36%, 8%) !important; }
+.ember.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(8, 36%, 8%) !important; }
+.ember.dark .dark\:bg-gray-950 { background-color: hsl(8, 36%, 5%) !important; }
+.ember.dark .dark\:bg-gray-900 { background-color: hsl(8, 32%, 10%) !important; }
+.ember.dark .dark\:bg-gray-800 { background-color: hsl(8, 28%, 14%) !important; }
+.ember:not(.dark) .bg-gray-50 { background-color: hsl(15, 25%, 93%) !important; }
+.ember.dark .bg-gray-50 { background-color: hsl(8, 28%, 14%) !important; }
+.ember.dark .dark\:bg-gray-800\/30 { background-color: hsla(8, 30%, 14%, 0.3) !important; }
+
+/* Borders */
+.ember:not(.dark) .border-gray-200 { border-color: hsl(10, 28%, 84%) !important; }
+.ember.dark .border-gray-200 { border-color: hsl(8, 30%, 20%) !important; }
+.ember.dark .dark\:border-gray-600 { border-color: hsl(8, 28%, 22%) !important; }
+.ember.dark .dark\:border-gray-700 { border-color: hsl(8, 28%, 20%) !important; }
+.ember.dark .dark\:border-gray-800 { border-color: hsl(8, 30%, 18%) !important; }
+
+/* Text colors */
+.ember:not(.dark) .text-black { color: hsl(10, 58%, 22%) !important; }
+.ember.dark .dark\:text-white { color: hsl(15, 25%, 93%) !important; }
+.ember:not(.dark) .text-gray-600 { color: hsl(10, 20%, 44%) !important; }
+.ember.dark .dark\:text-gray-400 { color: hsl(10, 15%, 58%) !important; }
+.ember:not(.dark) .text-gray-400 { color: hsl(10, 15%, 65%) !important; }
+.ember.dark .dark\:text-gray-500 { color: hsl(10, 12%, 50%) !important; }
+.ember:not(.dark) .text-gray-900 { color: hsl(10, 42%, 15%) !important; }
+.ember.dark .dark\:text-gray-100 { color: hsl(15, 25%, 90%) !important; }
+
+/* Primary buttons — gradient glow (light) */
+.ember:not(.dark) button.bg-black,
+.ember:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(10, 90%, 52%), hsl(0, 78%, 48%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 12px hsla(10, 85%, 48%, 0.3) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.ember:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 20px hsla(10, 85%, 48%, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — gradient glow (dark) */
+.ember.dark button.dark\:bg-white,
+.ember.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(10, 95%, 62%), hsl(25, 90%, 58%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 16px hsla(10, 88%, 55%, 0.35), 0 0 30px hsla(10, 88%, 55%, 0.15) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.ember.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 24px hsla(10, 88%, 55%, 0.55), 0 0 40px hsla(10, 88%, 55%, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states */
+.ember:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(10, 28%, 90%) !important; }
+.ember.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(8, 28%, 16%) !important; }
+
+/* Blue accent overrides — ember red-orange */
+.ember:not(.dark) .text-blue-600 { color: hsl(10, 90%, 52%) !important; }
+.ember.dark .dark\:text-blue-400 { color: hsl(10, 95%, 72%) !important; }
+.ember:not(.dark) .bg-blue-50 { background-color: hsl(10, 45%, 94%) !important; }
+.ember.dark .bg-blue-50 { background-color: hsla(10, 55%, 15%, 0.3) !important; }
+.ember.dark .dark\:bg-blue-900\/20 { background-color: hsla(10, 55%, 20%, 0.2) !important; }
+.ember:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(10, 90%, 52%) !important; }
+.ember:not(.dark) .border-blue-500 { border-color: hsl(10, 90%, 52%) !important; }
+
+/* Slider in Ember */
+.ember .slider {
+  background: hsl(15, 22%, 88%) !important;
+}
+.ember.dark .slider {
+  background: hsl(8, 25%, 18%) !important;
+}
+.ember .slider::-webkit-slider-thumb {
+  background: hsl(10, 90%, 52%) !important;
+  border-color: hsl(10, 35%, 90%) !important;
+  box-shadow: 0 0 8px hsla(10, 85%, 48%, 0.4) !important;
+}
+.ember.dark .slider::-webkit-slider-thumb {
+  background: hsl(10, 95%, 68%) !important;
+  border-color: hsl(8, 30%, 14%) !important;
+  box-shadow: 0 0 10px hsla(10, 88%, 55%, 0.5) !important;
+}
+.ember .slider::-moz-range-thumb {
+  background: hsl(10, 90%, 52%) !important;
+  border-color: hsl(10, 35%, 90%) !important;
+}
+.ember.dark .slider::-moz-range-thumb {
+  background: hsl(10, 95%, 68%) !important;
+  border-color: hsl(8, 30%, 14%) !important;
+}
+
+/* Mobile slider thumb in Ember */
+@media (max-width: 768px) {
+  .ember input[type="range"]::-webkit-slider-thumb {
+    background: hsl(10, 90%, 52%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 8px hsla(10, 85%, 48%, 0.4), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .ember.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(10, 95%, 68%) !important;
+    border-color: hsl(8, 30%, 14%) !important;
+    box-shadow: 0 0 10px hsla(10, 88%, 55%, 0.5), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .ember input[type="range"]::-moz-range-thumb {
+    background: hsl(10, 90%, 52%) !important;
+    border-color: white !important;
+  }
+  .ember.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(10, 95%, 68%) !important;
+    border-color: hsl(8, 30%, 14%) !important;
+  }
+}
+
+/* Tab triggers in Ember */
+.ember [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(10, 72%, 92%), hsl(15, 62%, 95%)) !important;
+  color: hsl(10, 85%, 40%) !important;
+  border-color: hsl(10, 52%, 80%) !important;
+}
+.ember.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(10, 50%, 17%), hsl(8, 40%, 13%)) !important;
+  color: hsl(10, 95%, 78%) !important;
+  border-color: hsl(10, 40%, 28%) !important;
+}
+
+/* Cards with a subtle ember glow in dark mode */
+.ember.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 1px hsla(10, 60%, 50%, 0.15);
+}
+
+/* Calendar "today" in Ember */
+.ember .bg-blue-50[class*="today"],
+.ember td.bg-blue-50 {
+  background-color: hsl(10, 45%, 94%) !important;
+}
+
+/* Floating timer panel in Ember */
+.ember .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(15, 30%, 96%), hsl(10, 28%, 94%)) !important;
+  border-color: hsl(10, 30%, 82%) !important;
+  box-shadow: 0 4px 20px hsla(10, 45%, 48%, 0.12) !important;
+}
+.ember.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(8, 36%, 10%), hsl(10, 30%, 13%)) !important;
+  border-color: hsl(10, 35%, 22%) !important;
+  box-shadow: 0 4px 24px hsla(10, 60%, 38%, 0.2), 0 0 40px hsla(10, 60%, 28%, 0.08) !important;
+}
+
+/* Settings dropdown in Ember */
+.ember [role="menu"] {
+  background: hsl(15, 30%, 96%) !important;
+  border-color: hsl(10, 28%, 85%) !important;
+}
+.ember.dark [role="menu"] {
+  background: hsl(8, 36%, 10%) !important;
+  border-color: hsl(8, 30%, 20%) !important;
+}
+.ember [role="menuitem"]:hover {
+  background-color: hsl(10, 30%, 90%) !important;
+}
+.ember.dark [role="menuitem"]:hover {
+  background-color: hsl(10, 30%, 17%) !important;
+}
+
+/* Smooth transition when toggling Ember */
+.ember * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+}
+
+
+/* ============================================
+   MIDNIGHT THEME — Light Mode
+   Deep indigo with electric blue accents
+   ============================================ */
+.midnight {
+  --background: hsl(225, 25%, 97%);
+  --foreground: hsl(225, 50%, 10%);
+  --card: hsl(225, 28%, 94%);
+  --card-foreground: hsl(225, 50%, 10%);
+  --popover: hsl(225, 25%, 97%);
+  --popover-foreground: hsl(225, 50%, 10%);
+  --primary: hsl(225, 100%, 50%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(225, 20%, 90%);
+  --secondary-foreground: hsl(225, 50%, 15%);
+  --muted: hsl(225, 18%, 91%);
+  --muted-foreground: hsl(225, 15%, 45%);
+  --accent: hsl(225, 55%, 90%);
+  --accent-foreground: hsl(225, 90%, 42%);
+  --destructive: hsl(0, 80%, 55%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(225, 22%, 82%);
+  --input: hsl(225, 22%, 82%);
+  --ring: hsl(225, 100%, 50%);
+  --radius: 0.5rem;
+}
+
+/* ============================================
+   MIDNIGHT THEME — Dark Mode
+   ============================================ */
+.midnight.dark {
+  --background: hsl(228, 55%, 5%);
+  --foreground: hsl(220, 30%, 94%);
+  --card: hsl(228, 48%, 8%);
+  --card-foreground: hsl(220, 30%, 94%);
+  --popover: hsl(228, 48%, 8%);
+  --popover-foreground: hsl(220, 30%, 94%);
+  --primary: hsl(220, 100%, 62%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(228, 38%, 13%);
+  --secondary-foreground: hsl(220, 20%, 85%);
+  --muted: hsl(228, 35%, 12%);
+  --muted-foreground: hsl(220, 15%, 52%);
+  --accent: hsl(220, 60%, 18%);
+  --accent-foreground: hsl(220, 100%, 76%);
+  --destructive: hsl(0, 65%, 38%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(228, 35%, 16%);
+  --input: hsl(228, 35%, 16%);
+  --ring: hsl(220, 100%, 62%);
+  --radius: 0.5rem;
+}
+
+/* ============================================
+   MIDNIGHT — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.midnight header {
+  background: linear-gradient(135deg, hsl(225, 28%, 93%) 0%, hsl(225, 22%, 96%) 100%) !important;
+  border-bottom-color: hsl(225, 25%, 78%) !important;
+}
+.midnight.dark header {
+  background: linear-gradient(135deg, hsl(228, 52%, 9%) 0%, hsl(230, 55%, 5%) 100%) !important;
+  border-bottom-color: hsl(225, 40%, 18%) !important;
+}
+
+/* Title */
+.midnight h1 {
+  color: hsl(225, 100%, 48%) !important;
+}
+.midnight.dark h1 {
+  color: hsl(220, 100%, 72%) !important;
+}
+
+/* Page background */
+.midnight:not(.dark) .min-h-screen.bg-white { background-color: hsl(225, 25%, 97%) !important; }
+.midnight.dark .min-h-screen.bg-white,
+.midnight.dark .min-h-screen.dark\:bg-black { background-color: hsl(228, 55%, 5%) !important; }
+
+/* Generic backgrounds */
+.midnight:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(225, 22%, 95%) !important; }
+.midnight.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(228, 48%, 7%) !important; }
+.midnight.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(228, 48%, 7%) !important; }
+.midnight.dark .dark\:bg-gray-950 { background-color: hsl(228, 50%, 4%) !important; }
+.midnight.dark .dark\:bg-gray-900 { background-color: hsl(228, 45%, 8%) !important; }
+.midnight.dark .dark\:bg-gray-800 { background-color: hsl(228, 40%, 12%) !important; }
+.midnight:not(.dark) .bg-gray-50 { background-color: hsl(225, 20%, 93%) !important; }
+.midnight.dark .bg-gray-50 { background-color: hsl(228, 38%, 12%) !important; }
+.midnight.dark .dark\:bg-gray-800\/30 { background-color: hsla(228, 38%, 12%, 0.3) !important; }
+
+/* Borders */
+.midnight:not(.dark) .border-gray-200 { border-color: hsl(225, 22%, 82%) !important; }
+.midnight.dark .border-gray-200 { border-color: hsl(228, 32%, 18%) !important; }
+.midnight.dark .dark\:border-gray-600 { border-color: hsl(228, 30%, 22%) !important; }
+.midnight.dark .dark\:border-gray-700 { border-color: hsl(228, 32%, 18%) !important; }
+.midnight.dark .dark\:border-gray-800 { border-color: hsl(228, 35%, 15%) !important; }
+
+/* Text colors */
+.midnight:not(.dark) .text-black { color: hsl(225, 55%, 12%) !important; }
+.midnight.dark .dark\:text-white { color: hsl(220, 30%, 94%) !important; }
+.midnight:not(.dark) .text-gray-600 { color: hsl(225, 18%, 40%) !important; }
+.midnight.dark .dark\:text-gray-400 { color: hsl(220, 18%, 55%) !important; }
+.midnight:not(.dark) .text-gray-400 { color: hsl(225, 12%, 60%) !important; }
+.midnight.dark .dark\:text-gray-500 { color: hsl(220, 14%, 46%) !important; }
+.midnight:not(.dark) .text-gray-900 { color: hsl(225, 50%, 12%) !important; }
+.midnight.dark .dark\:text-gray-100 { color: hsl(220, 25%, 90%) !important; }
+
+/* Primary buttons — light */
+.midnight:not(.dark) button.bg-black,
+.midnight:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(225, 100%, 50%), hsl(240, 85%, 42%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 14px hsla(225, 95%, 48%, 0.35) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.midnight:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 22px hsla(225, 95%, 48%, 0.55) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — dark */
+.midnight.dark button.dark\:bg-white,
+.midnight.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(220, 100%, 62%), hsl(235, 95%, 58%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 18px hsla(220, 100%, 60%, 0.4), 0 0 35px hsla(220, 100%, 60%, 0.15) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.midnight.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 28px hsla(220, 100%, 60%, 0.6), 0 0 45px hsla(220, 100%, 60%, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states */
+.midnight:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(225, 22%, 89%) !important; }
+.midnight.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(228, 38%, 14%) !important; }
+
+/* Blue accent overrides — stays electric blue */
+.midnight:not(.dark) .text-blue-600 { color: hsl(225, 100%, 50%) !important; }
+.midnight.dark .dark\:text-blue-400 { color: hsl(220, 100%, 72%) !important; }
+.midnight:not(.dark) .bg-blue-50 { background-color: hsl(225, 50%, 94%) !important; }
+.midnight.dark .bg-blue-50 { background-color: hsla(225, 60%, 15%, 0.3) !important; }
+.midnight.dark .dark\:bg-blue-900\/20 { background-color: hsla(225, 60%, 18%, 0.2) !important; }
+.midnight:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(225, 100%, 50%) !important; }
+.midnight:not(.dark) .border-blue-500 { border-color: hsl(225, 100%, 50%) !important; }
+
+/* Slider in Midnight */
+.midnight .slider {
+  background: hsl(225, 18%, 86%) !important;
+}
+.midnight.dark .slider {
+  background: hsl(228, 30%, 16%) !important;
+}
+.midnight .slider::-webkit-slider-thumb {
+  background: hsl(225, 100%, 50%) !important;
+  border-color: hsl(225, 25%, 92%) !important;
+  box-shadow: 0 0 10px hsla(225, 100%, 50%, 0.5) !important;
+}
+.midnight.dark .slider::-webkit-slider-thumb {
+  background: hsl(220, 100%, 65%) !important;
+  border-color: hsl(228, 40%, 12%) !important;
+  box-shadow: 0 0 14px hsla(220, 100%, 62%, 0.6) !important;
+}
+.midnight .slider::-moz-range-thumb {
+  background: hsl(225, 100%, 50%) !important;
+  border-color: hsl(225, 25%, 92%) !important;
+}
+.midnight.dark .slider::-moz-range-thumb {
+  background: hsl(220, 100%, 65%) !important;
+  border-color: hsl(228, 40%, 12%) !important;
+}
+
+/* Mobile slider thumb in Midnight */
+@media (max-width: 768px) {
+  .midnight input[type="range"]::-webkit-slider-thumb {
+    background: hsl(225, 100%, 50%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 10px hsla(225, 100%, 50%, 0.5), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .midnight.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(220, 100%, 65%) !important;
+    border-color: hsl(228, 40%, 12%) !important;
+    box-shadow: 0 0 14px hsla(220, 100%, 62%, 0.6), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .midnight input[type="range"]::-moz-range-thumb {
+    background: hsl(225, 100%, 50%) !important;
+    border-color: white !important;
+  }
+  .midnight.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(220, 100%, 65%) !important;
+    border-color: hsl(228, 40%, 12%) !important;
+  }
+}
+
+/* Tab triggers in Midnight */
+.midnight [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(225, 62%, 92%), hsl(230, 50%, 95%)) !important;
+  color: hsl(225, 95%, 42%) !important;
+  border-color: hsl(225, 48%, 78%) !important;
+}
+.midnight.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(225, 55%, 15%), hsl(228, 48%, 10%)) !important;
+  color: hsl(220, 100%, 78%) !important;
+  border-color: hsl(225, 45%, 25%) !important;
+}
+
+/* Cards with glow in dark mode */
+.midnight.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 1px hsla(220, 80%, 55%, 0.2);
+}
+
+/* Calendar today */
+.midnight .bg-blue-50[class*="today"],
+.midnight td.bg-blue-50 {
+  background-color: hsl(225, 50%, 93%) !important;
+}
+
+/* Floating timer panel */
+.midnight .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(225, 25%, 96%), hsl(228, 20%, 94%)) !important;
+  border-color: hsl(225, 22%, 80%) !important;
+  box-shadow: 0 4px 20px hsla(225, 50%, 45%, 0.15) !important;
+}
+.midnight.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(228, 48%, 8%), hsl(230, 45%, 11%)) !important;
+  border-color: hsl(225, 38%, 20%) !important;
+  box-shadow: 0 4px 28px hsla(220, 80%, 40%, 0.25), 0 0 45px hsla(220, 80%, 35%, 0.1) !important;
+}
+
+/* Dropdown menus */
+.midnight [role="menu"] {
+  background: hsl(225, 22%, 96%) !important;
+  border-color: hsl(225, 22%, 82%) !important;
+}
+.midnight.dark [role="menu"] {
+  background: hsl(228, 48%, 8%) !important;
+  border-color: hsl(228, 35%, 18%) !important;
+}
+.midnight [role="menuitem"]:hover {
+  background-color: hsl(225, 25%, 89%) !important;
+}
+.midnight.dark [role="menuitem"]:hover {
+  background-color: hsl(228, 38%, 14%) !important;
+}
+
+/* Smooth transition */
+.midnight * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+}
+
+
+/* ============================================
+   CRIMSON THEME — Light Mode
+   Bold red-black with stark white/red accents
+   ============================================ */
+.crimson {
+  --background: hsl(350, 20%, 97%);
+  --foreground: hsl(350, 60%, 8%);
+  --card: hsl(350, 22%, 94%);
+  --card-foreground: hsl(350, 60%, 8%);
+  --popover: hsl(350, 20%, 97%);
+  --popover-foreground: hsl(350, 60%, 8%);
+  --primary: hsl(350, 92%, 48%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(350, 16%, 90%);
+  --secondary-foreground: hsl(350, 55%, 15%);
+  --muted: hsl(350, 14%, 91%);
+  --muted-foreground: hsl(350, 12%, 45%);
+  --accent: hsl(350, 50%, 90%);
+  --accent-foreground: hsl(350, 85%, 38%);
+  --destructive: hsl(0, 82%, 50%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(350, 18%, 82%);
+  --input: hsl(350, 18%, 82%);
+  --ring: hsl(350, 92%, 48%);
+  --radius: 0.5rem;
+}
+
+/* ============================================
+   CRIMSON THEME — Dark Mode
+   ============================================ */
+.crimson.dark {
+  --background: hsl(348, 60%, 4%);
+  --foreground: hsl(350, 20%, 94%);
+  --card: hsl(348, 50%, 7%);
+  --card-foreground: hsl(350, 20%, 94%);
+  --popover: hsl(348, 50%, 7%);
+  --popover-foreground: hsl(350, 20%, 94%);
+  --primary: hsl(350, 95%, 58%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(348, 40%, 12%);
+  --secondary-foreground: hsl(350, 15%, 85%);
+  --muted: hsl(348, 35%, 11%);
+  --muted-foreground: hsl(350, 12%, 50%);
+  --accent: hsl(350, 60%, 18%);
+  --accent-foreground: hsl(350, 95%, 75%);
+  --destructive: hsl(0, 68%, 35%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(348, 35%, 16%);
+  --input: hsl(348, 35%, 16%);
+  --ring: hsl(350, 95%, 58%);
+  --radius: 0.5rem;
+}
+
+/* ============================================
+   CRIMSON — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.crimson header {
+  background: linear-gradient(135deg, hsl(350, 22%, 93%) 0%, hsl(350, 18%, 96%) 100%) !important;
+  border-bottom-color: hsl(350, 20%, 78%) !important;
+}
+.crimson.dark header {
+  background: linear-gradient(135deg, hsl(348, 55%, 8%) 0%, hsl(350, 58%, 4%) 100%) !important;
+  border-bottom-color: hsl(350, 42%, 18%) !important;
+}
+
+/* Title */
+.crimson h1 {
+  color: hsl(350, 90%, 42%) !important;
+}
+.crimson.dark h1 {
+  color: hsl(350, 95%, 68%) !important;
+}
+
+/* Page background */
+.crimson:not(.dark) .min-h-screen.bg-white { background-color: hsl(350, 20%, 97%) !important; }
+.crimson.dark .min-h-screen.bg-white,
+.crimson.dark .min-h-screen.dark\:bg-black { background-color: hsl(348, 60%, 4%) !important; }
+
+/* Generic backgrounds */
+.crimson:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(350, 18%, 95%) !important; }
+.crimson.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(348, 50%, 6%) !important; }
+.crimson.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(348, 50%, 6%) !important; }
+.crimson.dark .dark\:bg-gray-950 { background-color: hsl(348, 55%, 3%) !important; }
+.crimson.dark .dark\:bg-gray-900 { background-color: hsl(348, 45%, 7%) !important; }
+.crimson.dark .dark\:bg-gray-800 { background-color: hsl(348, 38%, 11%) !important; }
+.crimson:not(.dark) .bg-gray-50 { background-color: hsl(350, 16%, 93%) !important; }
+.crimson.dark .bg-gray-50 { background-color: hsl(348, 35%, 11%) !important; }
+.crimson.dark .dark\:bg-gray-800\/30 { background-color: hsla(348, 35%, 11%, 0.3) !important; }
+
+/* Borders */
+.crimson:not(.dark) .border-gray-200 { border-color: hsl(350, 18%, 82%) !important; }
+.crimson.dark .border-gray-200 { border-color: hsl(348, 30%, 18%) !important; }
+.crimson.dark .dark\:border-gray-600 { border-color: hsl(348, 28%, 22%) !important; }
+.crimson.dark .dark\:border-gray-700 { border-color: hsl(348, 30%, 18%) !important; }
+.crimson.dark .dark\:border-gray-800 { border-color: hsl(348, 32%, 14%) !important; }
+
+/* Text colors */
+.crimson:not(.dark) .text-black { color: hsl(350, 60%, 10%) !important; }
+.crimson.dark .dark\:text-white { color: hsl(350, 20%, 94%) !important; }
+.crimson:not(.dark) .text-gray-600 { color: hsl(350, 15%, 38%) !important; }
+.crimson.dark .dark\:text-gray-400 { color: hsl(350, 14%, 55%) !important; }
+.crimson:not(.dark) .text-gray-400 { color: hsl(350, 10%, 58%) !important; }
+.crimson.dark .dark\:text-gray-500 { color: hsl(350, 10%, 46%) !important; }
+.crimson:not(.dark) .text-gray-900 { color: hsl(350, 55%, 10%) !important; }
+.crimson.dark .dark\:text-gray-100 { color: hsl(350, 18%, 90%) !important; }
+
+/* Primary buttons — light */
+.crimson:not(.dark) button.bg-black,
+.crimson:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(350, 92%, 48%), hsl(340, 82%, 38%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 14px hsla(350, 90%, 45%, 0.35) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.crimson:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 22px hsla(350, 90%, 45%, 0.55) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — dark */
+.crimson.dark button.dark\:bg-white,
+.crimson.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(350, 95%, 58%), hsl(360, 88%, 52%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 18px hsla(350, 92%, 55%, 0.45), 0 0 35px hsla(350, 92%, 55%, 0.18) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.crimson.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 28px hsla(350, 92%, 55%, 0.65), 0 0 50px hsla(350, 92%, 55%, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states */
+.crimson:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(350, 18%, 89%) !important; }
+.crimson.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(348, 35%, 14%) !important; }
+
+/* Blue accent overrides — crimson red */
+.crimson:not(.dark) .text-blue-600 { color: hsl(350, 92%, 48%) !important; }
+.crimson.dark .dark\:text-blue-400 { color: hsl(350, 95%, 70%) !important; }
+.crimson:not(.dark) .bg-blue-50 { background-color: hsl(350, 42%, 94%) !important; }
+.crimson.dark .bg-blue-50 { background-color: hsla(350, 55%, 14%, 0.3) !important; }
+.crimson.dark .dark\:bg-blue-900\/20 { background-color: hsla(350, 55%, 18%, 0.2) !important; }
+.crimson:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(350, 92%, 48%) !important; }
+.crimson:not(.dark) .border-blue-500 { border-color: hsl(350, 92%, 48%) !important; }
+
+/* Slider in Crimson */
+.crimson .slider {
+  background: hsl(350, 14%, 86%) !important;
+}
+.crimson.dark .slider {
+  background: hsl(348, 28%, 15%) !important;
+}
+.crimson .slider::-webkit-slider-thumb {
+  background: hsl(350, 92%, 48%) !important;
+  border-color: hsl(350, 18%, 92%) !important;
+  box-shadow: 0 0 10px hsla(350, 90%, 45%, 0.5) !important;
+}
+.crimson.dark .slider::-webkit-slider-thumb {
+  background: hsl(350, 95%, 62%) !important;
+  border-color: hsl(348, 40%, 10%) !important;
+  box-shadow: 0 0 14px hsla(350, 92%, 55%, 0.6) !important;
+}
+.crimson .slider::-moz-range-thumb {
+  background: hsl(350, 92%, 48%) !important;
+  border-color: hsl(350, 18%, 92%) !important;
+}
+.crimson.dark .slider::-moz-range-thumb {
+  background: hsl(350, 95%, 62%) !important;
+  border-color: hsl(348, 40%, 10%) !important;
+}
+
+/* Mobile slider thumb in Crimson */
+@media (max-width: 768px) {
+  .crimson input[type="range"]::-webkit-slider-thumb {
+    background: hsl(350, 92%, 48%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 10px hsla(350, 90%, 45%, 0.5), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .crimson.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(350, 95%, 62%) !important;
+    border-color: hsl(348, 40%, 10%) !important;
+    box-shadow: 0 0 14px hsla(350, 92%, 55%, 0.6), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .crimson input[type="range"]::-moz-range-thumb {
+    background: hsl(350, 92%, 48%) !important;
+    border-color: white !important;
+  }
+  .crimson.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(350, 95%, 62%) !important;
+    border-color: hsl(348, 40%, 10%) !important;
+  }
+}
+
+/* Tab triggers in Crimson */
+.crimson [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(350, 55%, 92%), hsl(345, 45%, 95%)) !important;
+  color: hsl(350, 88%, 38%) !important;
+  border-color: hsl(350, 42%, 78%) !important;
+}
+.crimson.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(350, 52%, 15%), hsl(348, 45%, 10%)) !important;
+  color: hsl(350, 95%, 75%) !important;
+  border-color: hsl(350, 40%, 25%) !important;
+}
+
+/* Cards glow */
+.crimson.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 1px hsla(350, 70%, 50%, 0.2);
+}
+
+/* Calendar today */
+.crimson .bg-blue-50[class*="today"],
+.crimson td.bg-blue-50 {
+  background-color: hsl(350, 42%, 93%) !important;
+}
+
+/* Floating timer panel */
+.crimson .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(350, 20%, 96%), hsl(348, 16%, 94%)) !important;
+  border-color: hsl(350, 18%, 80%) !important;
+  box-shadow: 0 4px 20px hsla(350, 50%, 42%, 0.15) !important;
+}
+.crimson.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(348, 50%, 7%), hsl(350, 45%, 10%)) !important;
+  border-color: hsl(350, 38%, 18%) !important;
+  box-shadow: 0 4px 28px hsla(350, 75%, 38%, 0.28), 0 0 45px hsla(350, 75%, 35%, 0.1) !important;
+}
+
+/* Dropdown menus */
+.crimson [role="menu"] {
+  background: hsl(350, 18%, 96%) !important;
+  border-color: hsl(350, 18%, 82%) !important;
+}
+.crimson.dark [role="menu"] {
+  background: hsl(348, 50%, 7%) !important;
+  border-color: hsl(348, 32%, 16%) !important;
+}
+.crimson [role="menuitem"]:hover {
+  background-color: hsl(350, 20%, 89%) !important;
+}
+.crimson.dark [role="menuitem"]:hover {
+  background-color: hsl(348, 35%, 13%) !important;
+}
+
+/* Smooth transition */
+.crimson * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
+}
+
+
+/* ============================================
+   NEON THEME — Light Mode
+   Cyberpunk — electric cyan/green accents
+   ============================================ */
+.neon {
+  --background: hsl(170, 18%, 97%);
+  --foreground: hsl(170, 50%, 6%);
+  --card: hsl(170, 20%, 94%);
+  --card-foreground: hsl(170, 50%, 6%);
+  --popover: hsl(170, 18%, 97%);
+  --popover-foreground: hsl(170, 50%, 6%);
+  --primary: hsl(165, 100%, 38%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(170, 14%, 90%);
+  --secondary-foreground: hsl(170, 45%, 12%);
+  --muted: hsl(170, 12%, 91%);
+  --muted-foreground: hsl(170, 10%, 42%);
+  --accent: hsl(165, 48%, 88%);
+  --accent-foreground: hsl(165, 88%, 28%);
+  --destructive: hsl(0, 80%, 55%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(170, 16%, 80%);
+  --input: hsl(170, 16%, 80%);
+  --ring: hsl(165, 100%, 38%);
+  --radius: 0.5rem;
+}
+
+/* ============================================
+   NEON THEME — Dark Mode
+   ============================================ */
+.neon.dark {
+  --background: hsl(172, 60%, 3%);
+  --foreground: hsl(165, 30%, 92%);
+  --card: hsl(172, 50%, 6%);
+  --card-foreground: hsl(165, 30%, 92%);
+  --popover: hsl(172, 50%, 6%);
+  --popover-foreground: hsl(165, 30%, 92%);
+  --primary: hsl(165, 100%, 48%);
+  --primary-foreground: hsl(170, 60%, 5%);
+  --secondary: hsl(172, 38%, 10%);
+  --secondary-foreground: hsl(165, 18%, 82%);
+  --muted: hsl(172, 32%, 10%);
+  --muted-foreground: hsl(170, 12%, 48%);
+  --accent: hsl(165, 58%, 16%);
+  --accent-foreground: hsl(165, 100%, 72%);
+  --destructive: hsl(0, 65%, 35%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(172, 32%, 14%);
+  --input: hsl(172, 32%, 14%);
+  --ring: hsl(165, 100%, 48%);
+  --radius: 0.5rem;
+}
+
+/* ============================================
+   NEON — Hardcoded Color Overrides
+   ============================================ */
+
+/* Header */
+.neon header {
+  background: linear-gradient(135deg, hsl(170, 20%, 93%) 0%, hsl(168, 16%, 96%) 100%) !important;
+  border-bottom-color: hsl(170, 18%, 76%) !important;
+}
+.neon.dark header {
+  background: linear-gradient(135deg, hsl(172, 52%, 7%) 0%, hsl(175, 55%, 3%) 100%) !important;
+  border-bottom-color: hsl(170, 40%, 15%) !important;
+}
+
+/* Title */
+.neon h1 {
+  color: hsl(165, 100%, 32%) !important;
+}
+.neon.dark h1 {
+  color: hsl(165, 100%, 55%) !important;
+}
+
+/* Page background */
+.neon:not(.dark) .min-h-screen.bg-white { background-color: hsl(170, 18%, 97%) !important; }
+.neon.dark .min-h-screen.bg-white,
+.neon.dark .min-h-screen.dark\:bg-black { background-color: hsl(172, 60%, 3%) !important; }
+
+/* Generic backgrounds */
+.neon:not(.dark) .bg-white:not(header):not(.min-h-screen) { background-color: hsl(170, 16%, 95%) !important; }
+.neon.dark .bg-white:not(header):not(.min-h-screen) { background-color: hsl(172, 50%, 5%) !important; }
+.neon.dark .dark\:bg-black:not(header):not(.min-h-screen) { background-color: hsl(172, 50%, 5%) !important; }
+.neon.dark .dark\:bg-gray-950 { background-color: hsl(172, 55%, 2%) !important; }
+.neon.dark .dark\:bg-gray-900 { background-color: hsl(172, 45%, 6%) !important; }
+.neon.dark .dark\:bg-gray-800 { background-color: hsl(172, 36%, 10%) !important; }
+.neon:not(.dark) .bg-gray-50 { background-color: hsl(170, 14%, 92%) !important; }
+.neon.dark .bg-gray-50 { background-color: hsl(172, 32%, 10%) !important; }
+.neon.dark .dark\:bg-gray-800\/30 { background-color: hsla(172, 32%, 10%, 0.3) !important; }
+
+/* Borders */
+.neon:not(.dark) .border-gray-200 { border-color: hsl(170, 16%, 80%) !important; }
+.neon.dark .border-gray-200 { border-color: hsl(172, 28%, 16%) !important; }
+.neon.dark .dark\:border-gray-600 { border-color: hsl(172, 25%, 20%) !important; }
+.neon.dark .dark\:border-gray-700 { border-color: hsl(172, 28%, 16%) !important; }
+.neon.dark .dark\:border-gray-800 { border-color: hsl(172, 30%, 12%) !important; }
+
+/* Text colors */
+.neon:not(.dark) .text-black { color: hsl(170, 55%, 8%) !important; }
+.neon.dark .dark\:text-white { color: hsl(165, 30%, 92%) !important; }
+.neon:not(.dark) .text-gray-600 { color: hsl(170, 14%, 38%) !important; }
+.neon.dark .dark\:text-gray-400 { color: hsl(170, 14%, 52%) !important; }
+.neon:not(.dark) .text-gray-400 { color: hsl(170, 10%, 58%) !important; }
+.neon.dark .dark\:text-gray-500 { color: hsl(170, 10%, 44%) !important; }
+.neon:not(.dark) .text-gray-900 { color: hsl(170, 48%, 8%) !important; }
+.neon.dark .dark\:text-gray-100 { color: hsl(165, 22%, 88%) !important; }
+
+/* Primary buttons — light */
+.neon:not(.dark) button.bg-black,
+.neon:not(.dark) .bg-black[class*="text-white"] {
+  background: linear-gradient(135deg, hsl(165, 100%, 38%), hsl(175, 92%, 32%)) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 14px hsla(165, 100%, 36%, 0.35) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.neon:not(.dark) button.bg-black:hover {
+  box-shadow: 0 4px 22px hsla(165, 100%, 36%, 0.55) !important;
+  transform: translateY(-1px) !important;
+}
+/* Primary buttons — dark (NEON GLOW!) */
+.neon.dark button.dark\:bg-white,
+.neon.dark .dark\:bg-white[class*="dark:text-black"] {
+  background: linear-gradient(135deg, hsl(165, 100%, 48%), hsl(175, 95%, 42%)) !important;
+  color: hsl(172, 60%, 4%) !important;
+  border: none !important;
+  box-shadow: 0 2px 20px hsla(165, 100%, 48%, 0.5), 0 0 40px hsla(165, 100%, 48%, 0.2) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.neon.dark button.dark\:bg-white:hover {
+  box-shadow: 0 4px 30px hsla(165, 100%, 48%, 0.7), 0 0 55px hsla(165, 100%, 48%, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Hover states */
+.neon:not(.dark) .hover\:bg-gray-100:hover { background-color: hsl(170, 16%, 88%) !important; }
+.neon.dark .dark\:hover\:bg-gray-800:hover { background-color: hsl(172, 32%, 12%) !important; }
+
+/* Blue accent overrides — neon cyan */
+.neon:not(.dark) .text-blue-600 { color: hsl(165, 100%, 32%) !important; }
+.neon.dark .dark\:text-blue-400 { color: hsl(165, 100%, 60%) !important; }
+.neon:not(.dark) .bg-blue-50 { background-color: hsl(165, 40%, 93%) !important; }
+.neon.dark .bg-blue-50 { background-color: hsla(165, 55%, 12%, 0.3) !important; }
+.neon.dark .dark\:bg-blue-900\/20 { background-color: hsla(165, 55%, 16%, 0.2) !important; }
+.neon:not(.dark) .ring-blue-500 { --tw-ring-color: hsl(165, 100%, 38%) !important; }
+.neon:not(.dark) .border-blue-500 { border-color: hsl(165, 100%, 38%) !important; }
+
+/* Slider in Neon */
+.neon .slider {
+  background: hsl(170, 12%, 84%) !important;
+}
+.neon.dark .slider {
+  background: hsl(172, 26%, 14%) !important;
+}
+.neon .slider::-webkit-slider-thumb {
+  background: hsl(165, 100%, 38%) !important;
+  border-color: hsl(170, 16%, 92%) !important;
+  box-shadow: 0 0 10px hsla(165, 100%, 38%, 0.5) !important;
+}
+.neon.dark .slider::-webkit-slider-thumb {
+  background: hsl(165, 100%, 52%) !important;
+  border-color: hsl(172, 38%, 8%) !important;
+  box-shadow: 0 0 16px hsla(165, 100%, 48%, 0.7) !important;
+}
+.neon .slider::-moz-range-thumb {
+  background: hsl(165, 100%, 38%) !important;
+  border-color: hsl(170, 16%, 92%) !important;
+}
+.neon.dark .slider::-moz-range-thumb {
+  background: hsl(165, 100%, 52%) !important;
+  border-color: hsl(172, 38%, 8%) !important;
+}
+
+/* Mobile slider thumb in Neon */
+@media (max-width: 768px) {
+  .neon input[type="range"]::-webkit-slider-thumb {
+    background: hsl(165, 100%, 38%) !important;
+    border-color: white !important;
+    box-shadow: 0 0 10px hsla(165, 100%, 38%, 0.5), 0 2px 4px rgba(0,0,0,0.2) !important;
+  }
+  .neon.dark input[type="range"]::-webkit-slider-thumb {
+    background: hsl(165, 100%, 52%) !important;
+    border-color: hsl(172, 38%, 8%) !important;
+    box-shadow: 0 0 16px hsla(165, 100%, 48%, 0.7), 0 2px 4px rgba(0,0,0,0.3) !important;
+  }
+  .neon input[type="range"]::-moz-range-thumb {
+    background: hsl(165, 100%, 38%) !important;
+    border-color: white !important;
+  }
+  .neon.dark input[type="range"]::-moz-range-thumb {
+    background: hsl(165, 100%, 52%) !important;
+    border-color: hsl(172, 38%, 8%) !important;
+  }
+}
+
+/* Tab triggers in Neon */
+.neon [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(165, 48%, 90%), hsl(170, 38%, 93%)) !important;
+  color: hsl(165, 92%, 28%) !important;
+  border-color: hsl(165, 38%, 75%) !important;
+}
+.neon.dark [data-state="active"][role="tab"] {
+  background: linear-gradient(135deg, hsl(168, 50%, 12%), hsl(172, 42%, 8%)) !important;
+  color: hsl(165, 100%, 62%) !important;
+  border-color: hsl(168, 38%, 22%) !important;
+}
+
+/* Cards neon glow in dark mode */
+.neon.dark .rounded-lg[class*="border"] {
+  box-shadow: 0 0 2px hsla(165, 80%, 45%, 0.15);
+}
+
+/* Calendar today */
+.neon .bg-blue-50[class*="today"],
+.neon td.bg-blue-50 {
+  background-color: hsl(165, 40%, 92%) !important;
+}
+
+/* Floating timer panel */
+.neon .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(170, 18%, 96%), hsl(168, 14%, 94%)) !important;
+  border-color: hsl(170, 16%, 78%) !important;
+  box-shadow: 0 4px 20px hsla(165, 60%, 35%, 0.12) !important;
+}
+.neon.dark .floating-timer-panel {
+  background: linear-gradient(145deg, hsl(172, 50%, 6%), hsl(170, 42%, 9%)) !important;
+  border-color: hsl(170, 35%, 16%) !important;
+  box-shadow: 0 4px 28px hsla(165, 90%, 40%, 0.25), 0 0 50px hsla(165, 90%, 40%, 0.1) !important;
+}
+
+/* Dropdown menus */
+.neon [role="menu"] {
+  background: hsl(170, 16%, 96%) !important;
+  border-color: hsl(170, 16%, 80%) !important;
+}
+.neon.dark [role="menu"] {
+  background: hsl(172, 50%, 6%) !important;
+  border-color: hsl(172, 28%, 14%) !important;
+}
+.neon [role="menuitem"]:hover {
+  background-color: hsl(170, 18%, 88%) !important;
+}
+.neon.dark [role="menuitem"]:hover {
+  background-color: hsl(172, 32%, 12%) !important;
+}
+
+/* Smooth transition */
+.neon * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease, box-shadow 0.3s ease;
 }

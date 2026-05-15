@@ -9,35 +9,21 @@ import DataTransferDialog from "@/components/data-transfer-dialog";
 
 import NotificationToast from "@/components/notification-toast";
 import { DashboardView } from "@/components/dashboard-view";
-import { StatsView } from "@/components/stats-view";
+const PlanningView = React.lazy(() => import("@/components/planning-view"));
 
 import { useTasks } from "@/hooks/use-tasks";
-import { useTheme } from "@/components/theme-provider";
+// Theme is managed via UserMenu settings popups
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import {
-  Moon,
-  Sun,
-  Monitor,
   CheckSquare,
   ChevronDown,
   ChevronUp,
-  Settings,
-
-  Check,
-  Palette,
-  Sparkles,
+  Calendar,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
 import UserMenu from "../components/user-menu";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
@@ -61,19 +47,20 @@ export default function TodoApp() {
   const [activeTab, setActiveTab] = useState(() => {
     const routeToTab = {
       "/time-tracker": "dashboard",
-      "/to-do-list": "tasks",
-      "/stats": "stats",
+      "/planning": "planning",
+      "/": "tasks",
     };
-    return routeToTab[location] || "dashboard";
+    return routeToTab[location] || "tasks";
   });
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [dashboardViewMode, setDashboardViewMode] = useState("calendar");
 
   // Sync tab with URL
   useEffect(() => {
     const routeToTab = {
       "/time-tracker": "dashboard",
-      "/to-do-list": "tasks",
-      "/stats": "stats",
+      "/planning": "planning",
+      "/": "tasks",
     };
     const expectedTab = routeToTab[location];
     if (expectedTab && activeTab !== expectedTab) {
@@ -84,18 +71,45 @@ export default function TodoApp() {
   const handleTabChange = (value) => {
     setActiveTab(value);
     const tabToRoute = {
-      tasks: "/to-do-list",
+      tasks: "/",
       dashboard: "/time-tracker",
-      stats: "/stats",
+      planning: "/planning",
     };
-    setLocation(tabToRoute[value] || "/time-tracker");
+    setLocation(tabToRoute[value] || "/");
   };
 
-  const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask } =
+  const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask, archiveAllCompleted } =
     useTasks();
-  const { theme, setTheme, visualTheme, setVisualTheme } = useTheme();
+  // Theme is handled by UserMenu component directly via useTheme()
 
-  const handleCompleteTask = (task) => {
+  const handleCompleteTask = (task, actualTime, distractionLevel) => {
+    // Inline completion — receives values directly from the panel
+    if (actualTime !== undefined && distractionLevel !== undefined) {
+      const updatedTask = {
+        id: task.id,
+        title: task.title,
+        priority: task.priority,
+        estimatedTime: task.estimatedTime,
+        actualTime,
+        distractionLevel,
+        completed: true,
+        completedAt: new Date().toISOString(),
+      };
+      console.log("Completing task with data:", updatedTask);
+      updateTask.mutate(updatedTask);
+
+      const hours = Math.floor(actualTime / 60);
+      const minutes = actualTime % 60;
+      const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+      showNotification(
+        `Task completed! — ${task.title} (${timeStr})`,
+        "success",
+        true,
+        () => handleUndoCompletion(task),
+      );
+      return;
+    }
+    // Fallback (shouldn't happen with inline panel)
     setCurrentTask(task);
     setIsTimerModalOpen(true);
   };
@@ -201,6 +215,8 @@ export default function TodoApp() {
       title: task.title,
       priority: task.priority,
       estimatedTime: task.estimatedTime,
+      workType: task.workType || null,
+      subtasks: task.subtasks || [],
     });
     showNotification("Task deletion undone", "success");
   };
@@ -274,6 +290,8 @@ export default function TodoApp() {
       actualTime: task.actualTime,
       distractionLevel: task.distractionLevel,
       isLater: task.isLater,
+      workType: task.workType || null,
+      subtasks: task.subtasks || [],
     });
     showNotification("Task archive undone", "success");
   };
@@ -292,6 +310,25 @@ export default function TodoApp() {
       onError: (error) => {
         console.error("Task creation failed:", error);
         showNotification(`Failed to create task "${taskData.title}"`, "error");
+      },
+    });
+  };
+
+  const handleArchiveAllCompleted = () => {
+    if (completedTasks.length === 0) return;
+
+    archiveAllCompleted.mutate(undefined, {
+      onSuccess: (result) => {
+        const count = result?.count || completedTasks.length;
+        const isAnon = user?.isAnonymous || !user;
+        showNotification(
+          `${count} completed task${count !== 1 ? 's' : ''} ${isAnon ? 'cleared' : 'archived'}!`,
+          "success",
+        );
+      },
+      onError: (error) => {
+        console.error("Archive all completed failed:", error);
+        showNotification("Failed to archive completed tasks", "error");
       },
     });
   };
@@ -381,7 +418,7 @@ export default function TodoApp() {
 
       {/* Header */}
       <header
-        className={`bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-4 transition-all duration-300 ${
+        className={`bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-6 py-3 transition-all duration-300 ${
           user && !user.isAnonymous && !isHeaderVisible ? "hidden" : ""
         }`}
       >
@@ -399,6 +436,13 @@ export default function TodoApp() {
               <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="grid grid-cols-3">
                   <TabsTrigger
+                    value="tasks"
+                    className="text-xs sm:text-sm px-1.5 sm:px-3"
+                  >
+                    <span className="hidden sm:inline">To Do List</span>
+                    <span className="sm:hidden">Tasks</span>
+                  </TabsTrigger>
+                  <TabsTrigger
                     value="dashboard"
                     className="text-xs sm:text-sm px-1.5 sm:px-3"
                   >
@@ -406,20 +450,42 @@ export default function TodoApp() {
                     <span className="sm:hidden">Time</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    value="stats"
+                    value="planning"
                     className="text-xs sm:text-sm px-1.5 sm:px-3"
                   >
-                    Stats
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="tasks"
-                    className="text-xs sm:text-sm px-1.5 sm:px-3"
-                  >
-                    <span className="hidden sm:inline">To Do List</span>
-                    <span className="sm:hidden">Tasks</span>
+                    <span className="hidden sm:inline">Planning</span>
+                    <span className="sm:hidden">Plan</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
+
+              {/* Calendar/Journal toggle — visible only when Time Tracking active */}
+              {activeTab === "dashboard" && (
+                <div className="hidden sm:flex gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-md p-0.5 ml-2">
+                  <button
+                    onClick={() => setDashboardViewMode("calendar")}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                      dashboardViewMode === "calendar"
+                        ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    <Calendar className="h-3 w-3" />
+                    Calendar
+                  </button>
+                  <button
+                    onClick={() => setDashboardViewMode("journal")}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                      dashboardViewMode === "journal"
+                        ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    <BookOpen className="h-3 w-3" />
+                    Journal
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center space-x-1 sm:space-x-2">
@@ -434,49 +500,6 @@ export default function TodoApp() {
                   <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
                 </Button>
               )}
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
-                    <span className="sr-only">Settings</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel>Visual Style</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => setVisualTheme("default")}>
-                    <Palette className="mr-2 h-4 w-4" />
-                    <span className="flex-1">Default</span>
-                    {visualTheme === "default" && <Check className="h-4 w-4 ml-2 text-green-500" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setVisualTheme("aurora")}>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    <span className="flex-1">Aurora</span>
-                    {visualTheme === "aurora" && <Check className="h-4 w-4 ml-2 text-green-500" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => setTheme("light")}>
-                    <Sun className="mr-2 h-4 w-4" />
-                    <span className="flex-1">Light</span>
-                    {theme === "light" && <Check className="h-4 w-4 ml-2 text-green-500" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme("dark")}>
-                    <Moon className="mr-2 h-4 w-4" />
-                    <span className="flex-1">Dark</span>
-                    {theme === "dark" && <Check className="h-4 w-4 ml-2 text-green-500" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme("system")}>
-                    <Monitor className="mr-2 h-4 w-4" />
-                    <span className="flex-1">System</span>
-                    {theme === "system" && <Check className="h-4 w-4 ml-2 text-green-500" />}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
 
               <UserMenu />
             </div>
@@ -486,9 +509,9 @@ export default function TodoApp() {
 
       {/* Main Content */}
       <div
-        className={`${user && !user.isAnonymous && !isHeaderVisible ? "h-screen" : "h-[calc(100vh-125px)]"} overflow-y-auto transition-all duration-300`}
+        className={`${user && !user.isAnonymous && !isHeaderVisible ? "h-screen" : "h-[calc(100vh-60px)]"} overflow-y-auto transition-all duration-300`}
       >
-        <main className="max-w-7xl mx-auto px-2 md:px-4 py-4 md:py-6">
+        <main className={`mx-auto px-2 md:px-4 py-2 md:py-3 ${activeTab === "planning" ? "" : "max-w-7xl"}`}>
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
@@ -515,12 +538,14 @@ export default function TodoApp() {
                     onDeleteTask={handleDeleteTask}
                     onEditTask={handleEditTask}
                     onArchive={handleArchive}
+                    onArchiveAllCompleted={handleArchiveAllCompleted}
                     onUpdateTask={handleUpdateTask}
                     onMoveToMain={handleMoveToMain}
                     onMoveToLater={handleMoveToLater}
                     totalScore={totalScore}
                     totalPossibleScore={totalPossibleScore}
                     totalEstimatedTime={totalEstimatedTime}
+                    isAnonymous={!user || user.isAnonymous}
                   />
 
                   {/* Later Section */}
@@ -529,6 +554,7 @@ export default function TodoApp() {
                     onMoveToMain={handleMoveToMain}
                     onDeleteTask={handleDeleteTask}
                     onEditTask={handleEditTask}
+                    onUpdateTask={handleUpdateTask}
                     onMoveToLater={handleMoveToLater}
                     onCompleteTask={handleCompleteTask}
                     onUndoCompletion={handleUndoCompletion}
@@ -547,11 +573,13 @@ export default function TodoApp() {
             </TabsContent>
 
             <TabsContent value="dashboard" className="mt-0">
-              <DashboardView />
+              <DashboardView viewMode={dashboardViewMode} onViewModeChange={setDashboardViewMode} />
             </TabsContent>
 
-            <TabsContent value="stats" className="mt-0">
-              <StatsView />
+            <TabsContent value="planning" className="mt-0">
+              <React.Suspense fallback={<div className="text-center py-12 text-gray-500">Loading planning view...</div>}>
+                <PlanningView />
+              </React.Suspense>
             </TabsContent>
 
           </Tabs>
@@ -594,7 +622,6 @@ export default function TodoApp() {
 
       {/* Data Transfer Dialog */}
       <DataTransferDialog />
-
     </div>
   );
 }

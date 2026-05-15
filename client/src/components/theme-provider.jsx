@@ -41,9 +41,10 @@ export function ThemeProvider({ children, defaultTheme = 'system' }) {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove('aurora');
-    if (visualTheme === 'aurora') {
-      root.classList.add('aurora');
+    const allThemes = ['aurora', 'ocean', 'sunset', 'forest', 'rose', 'ember', 'midnight', 'crimson', 'neon'];
+    allThemes.forEach(t => root.classList.remove(t));
+    if (visualTheme !== 'default') {
+      root.classList.add(visualTheme);
     }
     localStorage.setItem('visual-theme', visualTheme);
   }, [visualTheme]);
@@ -62,11 +63,17 @@ export function ThemeProvider({ children, defaultTheme = 'system' }) {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
+  // Resolved theme (always "light" or "dark", never "system")
+  const resolvedTheme = theme === 'system'
+    ? (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : theme;
+
   const value = {
     theme,
     setTheme,
     visualTheme,
     setVisualTheme,
+    resolvedTheme,
   };
 
   return (
