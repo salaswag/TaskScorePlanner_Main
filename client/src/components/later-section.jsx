@@ -246,7 +246,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
                       task.completed
                         ? 'text-muted-foreground line-through'
                         : 'text-foreground'
-                    } truncate`} title={task.title}>
+                    } break-words`} title={task.title}>
                       {task.title}
                     </span>
                     <WorkTypeBadge workType={task.workType} />

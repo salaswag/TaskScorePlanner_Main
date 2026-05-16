@@ -635,7 +635,7 @@ export default function TaskTable({
                       task.completed
                         ? 'text-gray-400 dark:text-gray-500 line-through'
                         : 'text-gray-900 dark:text-gray-100'
-                    } truncate`} title={task.title}>
+                    } break-words`} title={task.title}>
                       {task.title}
                     </span>
                     <WorkTypeBadge workType={task.workType} />
@@ -1033,7 +1033,7 @@ export default function TaskTable({
                         <div className="flex items-center gap-2 flex-wrap min-w-0">
                           <span className={`font-medium ${isCompact ? 'text-sm leading-snug' : 'text-base leading-relaxed'} ${
                             task.completed ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-900 dark:text-gray-100'
-                          } truncate`} title={task.title}>
+                          } break-words`} title={task.title}>
                             {task.title}
                           </span>
                           <WorkTypeBadge workType={task.workType} />

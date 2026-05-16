@@ -205,7 +205,7 @@ export function useTasks() {
     enabled: !!user && !user.isAnonymous,
   });
 
-  // Categories query — fetch eagerly alongside tasks
+  // Categories query — same aggressive settings as tasks so they load together
   const { data: categories } = useQuery({
     queryKey: ["/api/categories", user?.uid || 'anonymous', user?.isAnonymous],
     queryFn: async () => {
@@ -215,9 +215,12 @@ export function useTasks() {
       const response = await apiRequest("/api/categories");
       return response.json();
     },
-    staleTime: 5000,
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnWindowFocus: false,
     refetchOnMount: true,
     enabled: true,
+    placeholderData: [],
   });
 
   const createCategory = useMutation({
