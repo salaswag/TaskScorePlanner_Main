@@ -529,22 +529,35 @@ export default function TaskTable({
 
       {/* New Category Input */}
       {showNewCategoryInput && (
-        <div className="px-4 sm:px-6 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex items-center gap-2">
-          <Folder className="h-4 w-4 text-gray-400" />
-          <input
+        <div className="px-4 sm:px-6 py-2.5 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/80 flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-blue-100 dark:bg-blue-900/30">
+            <FolderPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <Input
             type="text"
-            placeholder="Category name..."
+            placeholder="New category name..."
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleCreateCategory(); if (e.key === 'Escape') { setShowNewCategoryInput(false); setNewCategoryName(""); } }}
             autoFocus
-            className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+            className="flex-1 min-w-0 h-9 text-sm"
           />
-          <Button variant="ghost" size="sm" onClick={handleCreateCategory} disabled={!newCategoryName.trim()} className="text-blue-500 hover:text-blue-700 px-2 py-1 h-7">
-            <Plus className="h-3.5 w-3.5" />
+          <Button
+            size="sm"
+            onClick={handleCreateCategory}
+            disabled={!newCategoryName.trim()}
+            className="h-9 px-3 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-600 dark:hover:bg-blue-500 text-xs font-medium"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => { setShowNewCategoryInput(false); setNewCategoryName(""); }} className="text-gray-400 hover:text-gray-600 px-2 py-1 h-7">
-            <X className="h-3.5 w-3.5" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { setShowNewCategoryInput(false); setNewCategoryName(""); }}
+            className="h-9 px-3 text-xs"
+          >
+            Cancel
           </Button>
         </div>
       )}
