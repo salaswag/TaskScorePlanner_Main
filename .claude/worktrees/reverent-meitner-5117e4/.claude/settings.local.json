@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Command git -ErrorAction SilentlyContinue)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "PowerShell($conn = Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue; if \\($conn\\) { Stop-Process -Id $conn.OwningProcess -Force -ErrorAction SilentlyContinue; \"Killed process on port 5000\" } else { \"Port 5000 already free\" })",
+      "PowerShell(where.exe gh 2>$null; if \\(-not $?\\) { \"gh not found - checking common locations\"; Test-Path \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\"; Test-Path \"$env:LOCALAPPDATA\\\\GitHub CLI\\\\gh.exe\"; Test-Path \"C:\\\\ProgramData\\\\chocolatey\\\\bin\\\\gh.exe\" })",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue })",
+      "Bash(rm -rf server/public/*)",
+      "Bash(cp -r dist/public/* server/public/)",
+      "PowerShell(Set-Location \"C:\\\\Sala_Swag\\\\All Programing Projects\\\\TaskScorePlanner_Main\\\\.claude\\\\worktrees\\\\reverent-meitner-5117e4\"; $env:NODE_ENV = \"production\"; Start-Process -NoNewWindow -FilePath \"npx\" -ArgumentList \"tsx\", \"server/index.ts\" -PassThru | Select-Object Id)",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:5000/\" -UseBasicParsing -TimeoutSec 5; \"$\\($r.StatusCode\\) - Content length: $\\($r.Content.Length\\)\")",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "Bash(git push origin*)",
+      "Bash(git commit*)"
+    ]
+  }
+}
