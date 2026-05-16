@@ -161,7 +161,7 @@ function SubtaskSection({ task, onUpdateTask }) {
   };
 
   return (
-    <div className="ml-4 lg:ml-12 mt-2 pl-3 border-l-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 rounded-r-lg py-2 pr-3">
+    <div className="mt-2 pl-3 border-l-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 rounded-r-lg py-2 pr-3 ml-4 lg:ml-[33.5%]">
       {subtasks.map((sub, idx) => (
         <div key={sub.id} className={`flex items-center gap-2 py-1.5 group/sub hover:bg-gray-100/50 dark:hover:bg-gray-800/30 rounded px-1 ${
           idx < subtasks.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''
@@ -574,7 +574,7 @@ export default function TaskTable({
                 {/* Desktop Layout - Hidden on mobile/tablet */}
                 <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
                   {/* Controls group: drag + later + checkbox + subtask */}
-                  <div className="col-span-3 flex items-center gap-2 pl-2">
+                  <div className="col-span-3 flex items-center justify-end gap-2 pr-3">
                     <div
                       draggable
                       onDragStart={(e) => {
@@ -992,7 +992,7 @@ export default function TaskTable({
                       {/* Desktop Layout */}
                       <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
                         {/* Controls group: drag + checkbox + subtask (NO Later for categorized tasks) */}
-                        <div className="col-span-3 flex items-center gap-2 pl-2">
+                        <div className="col-span-3 flex items-center justify-end gap-2 pr-3">
                           <div
                             draggable
                             onDragStart={(e) => {

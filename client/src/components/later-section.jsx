@@ -191,7 +191,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
                 {/* Desktop Layout - Hidden on mobile/tablet */}
                 <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
                   {/* Controls group: drag + move-to-main + checkbox + subtask */}
-                  <div className="col-span-3 flex items-center gap-2 pl-2">
+                  <div className="col-span-3 flex items-center justify-end gap-2 pr-3">
                     <div
                       draggable
                       onDragStart={(e) => {
