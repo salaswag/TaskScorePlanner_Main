@@ -12,6 +12,8 @@ import {
 import { WorkTypeBadge, SubtaskProgress, SubtaskSection } from "./task-table";
 import { InlineCompletionPanel } from "./timer-modal";
 
+const TASK_GRID = "grid-cols-[7.5rem_3.5rem_1fr_5rem_5rem_5rem_5rem]";
+
 function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateTask, onMoveToLater, onCompleteTask, onUndoCompletion, onArchiveTask, onMoveCategoryToLater, viewDensity = 'extended', layoutWidth = 'compact' }) {
   const isCompact = viewDensity === 'compact';
   const [expandedTasks, setExpandedTasks] = useState(new Set());
@@ -156,14 +158,14 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
 
       {/* Table Header - Only visible on larger screens */}
       <div className="hidden lg:block px-4 py-2 bg-muted/50 border-b border-border border-dashed">
-        <div className="grid grid-cols-12 gap-1 text-xs font-medium text-muted-foreground">
-          <div className="col-span-3 text-center"></div>
-          <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-4 text-left pl-1">Task</div>
-          <div className="col-span-1 text-right">Est</div>
-          <div className="col-span-1 text-right">Actual</div>
-          <div className="col-span-1 text-right">Distract</div>
-          <div className="col-span-1 text-right">Actions</div>
+        <div className={`grid ${TASK_GRID} gap-1 text-xs font-medium text-muted-foreground`}>
+          <div></div>
+          <div className="text-center">Priority</div>
+          <div className="text-left pl-1">Task</div>
+          <div className="text-right">Est</div>
+          <div className="text-right">Actual</div>
+          <div className="text-right">Distract</div>
+          <div className="text-right">Actions</div>
         </div>
       </div>
 
@@ -189,9 +191,9 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
                 }`}
               >
                 {/* Desktop Layout - Hidden on mobile/tablet */}
-                <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
+                <div className={`hidden lg:grid ${TASK_GRID} gap-1 items-center`}>
                   {/* Controls group: drag + move-to-main + checkbox + subtask */}
-                  <div className="col-span-3 flex items-center justify-end gap-2 pr-3">
+                  <div className="flex items-center justify-end gap-2 pr-3">
                     <div
                       draggable
                       onDragStart={(e) => {
@@ -229,7 +231,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
                       <ListPlus className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                  <div className="col-span-1 flex justify-center">
+                  <div className="flex justify-center">
                     <span
                       className={`inline-flex items-center justify-center ${isCompact ? 'w-8 h-7 rounded text-sm' : 'w-10 h-8 rounded-md text-lg'} font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
@@ -239,12 +241,12 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
                       {task.priority}
                     </span>
                   </div>
-                  <div className="col-span-4 flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
                     <span className={`font-medium ${isCompact ? 'text-sm leading-snug' : 'text-base leading-relaxed'} ${
                       task.completed
                         ? 'text-muted-foreground line-through'
                         : 'text-foreground'
-                    }`} title={task.title}>
+                    } truncate`} title={task.title}>
                       {task.title}
                     </span>
                     <WorkTypeBadge workType={task.workType} />
@@ -255,13 +257,13 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
                     )}
                     {!isCompact && <SubtaskProgress subtasks={task.subtasks} />}
                   </div>
-                  <div className="col-span-1 flex justify-end">
+                  <div className="flex justify-end">
                     <div className={`flex items-center ${isCompact ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}>
                       <Clock className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3'} mr-1`} />
                       <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                     </div>
                   </div>
-                  <div className="col-span-1 flex justify-end">
+                  <div className="flex justify-end">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
                       <div className={`flex items-center ${isCompact ? 'text-[10px]' : 'text-xs'} text-green-600 dark:text-green-400`}>
                         <CheckCircle className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3'} mr-1`} />
@@ -271,7 +273,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
                       <span className={`${isCompact ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}>-</span>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-end">
+                  <div className="flex justify-end">
                     {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
                       <span className={`${isCompact ? 'text-[10px]' : 'text-xs'} font-bold ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
@@ -280,7 +282,7 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
                       <span className={`${isCompact ? 'text-[10px]' : 'text-xs'} text-muted-foreground`}>-</span>
                     )}
                   </div>
-                  <div className="col-span-1 flex justify-end gap-1">
+                  <div className="flex justify-end gap-1">
                     <Button
                       variant="ghost"
                       size="sm"

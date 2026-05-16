@@ -43,7 +43,7 @@ export function InlineCompletionPanel({ task, onConfirm, onCancel }) {
   const hasEstimate = task?.estimatedTime != null && task.estimatedTime > 0;
 
   return (
-    <div className="ml-4 lg:ml-12 mt-2 pl-3 border-l-2 border-blue-300 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/10 rounded-r-lg py-3 pr-3 animate-in slide-in-from-top-1 duration-200">
+    <div className="ml-4 lg:ml-[11rem] mt-2 pl-3 border-l-2 border-blue-300 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-900/10 rounded-r-lg py-3 pr-3 animate-in slide-in-from-top-1 duration-200">
       <div className="flex flex-col sm:flex-row sm:items-end gap-3">
         {/* Actual Time */}
         <div className="flex-1 min-w-0">
