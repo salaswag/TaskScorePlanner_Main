@@ -189,7 +189,7 @@ export function useTasks() {
     enabled: true, // Always fetch tasks (for both authenticated and anonymous users)
   });
 
-  // Archived tasks query (authenticated users only)
+  // Archived tasks query (authenticated users only) — fetch eagerly
   const { data: archivedTasks } = useQuery({
     queryKey: ["/api/tasks/archived", user?.uid],
     queryFn: async () => {
@@ -200,13 +200,14 @@ export function useTasks() {
       const data = await response.json();
       return data;
     },
-    staleTime: 30000,
+    staleTime: 5000,
+    refetchOnMount: true,
     enabled: !!user && !user.isAnonymous,
   });
 
-  // Categories query
+  // Categories query — fetch eagerly alongside tasks
   const { data: categories } = useQuery({
-    queryKey: ["/api/categories", user?.uid],
+    queryKey: ["/api/categories", user?.uid || 'anonymous', user?.isAnonymous],
     queryFn: async () => {
       const isAnonymous = user?.isAnonymous || !user;
       if (isAnonymous) return getAnonymousCategories();
@@ -214,7 +215,9 @@ export function useTasks() {
       const response = await apiRequest("/api/categories");
       return response.json();
     },
-    staleTime: 30000,
+    staleTime: 5000,
+    refetchOnMount: true,
+    enabled: true,
   });
 
   const createCategory = useMutation({

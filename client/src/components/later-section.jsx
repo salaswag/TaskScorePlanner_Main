@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +17,24 @@ function LaterSection({ tasks, onMoveToMain, onDeleteTask, onEditTask, onUpdateT
   const [expandedTasks, setExpandedTasks] = useState(new Set());
   const [expandedSubtasks, setExpandedSubtasks] = useState(new Set());
   const [completingTaskId, setCompletingTaskId] = useState(null);
+
+  // Track which task IDs we've already auto-expanded
+  const autoExpandedRef = useRef(new Set());
+
+  // Auto-expand subtasks for tasks that have them (only on first appearance)
+  useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+    const newExpanded = new Set(expandedSubtasks);
+    let changed = false;
+    for (const task of tasks) {
+      if (task.subtasks && task.subtasks.length > 0 && !autoExpandedRef.current.has(task.id)) {
+        newExpanded.add(task.id);
+        autoExpandedRef.current.add(task.id);
+        changed = true;
+      }
+    }
+    if (changed) setExpandedSubtasks(newExpanded);
+  }, [tasks]);
 
   const toggleExpanded = (taskId) => {
     const newExpanded = new Set(expandedTasks);

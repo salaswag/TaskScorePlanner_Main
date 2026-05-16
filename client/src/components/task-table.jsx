@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -236,6 +236,24 @@ export default function TaskTable({
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [renamingCategoryId, setRenamingCategoryId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
+
+  // Track which task IDs we've already auto-expanded so we don't re-open after user closes
+  const autoExpandedRef = useRef(new Set());
+
+  // Auto-expand subtasks for tasks that have them (only on first appearance)
+  useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+    const newExpanded = new Set(expandedSubtasks);
+    let changed = false;
+    for (const task of tasks) {
+      if (task.subtasks && task.subtasks.length > 0 && !autoExpandedRef.current.has(task.id)) {
+        newExpanded.add(task.id);
+        autoExpandedRef.current.add(task.id);
+        changed = true;
+      }
+    }
+    if (changed) setExpandedSubtasks(newExpanded);
+  }, [tasks]);
 
   const toggleExpanded = (taskId) => {
     const newExpanded = new Set(expandedTasks);
