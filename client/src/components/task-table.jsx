@@ -1,12 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
+import {
   Check, Edit, Trash2, Clock, CheckCircle, CheckSquare, GripVertical,
   MoreHorizontal, ChevronDown, ChevronRight, Archive, ListPlus, Plus,
-  Brain, Coffee, X,
+  Brain, Coffee, X, FolderPlus, Folder, Pencil, Rows3, Rows4, ArrowDown,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -156,7 +161,7 @@ function SubtaskSection({ task, onUpdateTask }) {
   };
 
   return (
-    <div className="ml-4 lg:ml-12 mt-2 pl-3 border-l-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 rounded-r-lg py-2 pr-3">
+    <div className="mt-2 pl-3 border-l-2 border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/30 rounded-r-lg py-2 pr-3 ml-4 lg:ml-[33.5%]">
       {subtasks.map((sub, idx) => (
         <div key={sub.id} className={`flex items-center gap-2 py-1.5 group/sub hover:bg-gray-100/50 dark:hover:bg-gray-800/30 rounded px-1 ${
           idx < subtasks.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''
@@ -212,10 +217,43 @@ export default function TaskTable({
   totalPossibleScore,
   totalEstimatedTime,
   isAnonymous = false,
+  categories = [],
+  onCreateCategory,
+  onDeleteCategory,
+  onRenameCategory,
+  onMoveCategoryToLater,
+  viewDensity = 'extended',
+  onToggleDensity,
+  layoutWidth = 'compact',
+  onToggleLayout,
 }) {
+  const isCompact = viewDensity === 'compact';
   const [expandedTasks, setExpandedTasks] = useState(new Set());
   const [expandedSubtasks, setExpandedSubtasks] = useState(new Set());
   const [completingTaskId, setCompletingTaskId] = useState(null);
+  const [collapsedCategories, setCollapsedCategories] = useState(new Set());
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [renamingCategoryId, setRenamingCategoryId] = useState(null);
+  const [renameValue, setRenameValue] = useState("");
+
+  // Track which task IDs we've already auto-expanded so we don't re-open after user closes
+  const autoExpandedRef = useRef(new Set());
+
+  // Auto-expand subtasks for tasks that have them (only on first appearance)
+  useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+    const newExpanded = new Set(expandedSubtasks);
+    let changed = false;
+    for (const task of tasks) {
+      if (task.subtasks && task.subtasks.length > 0 && !autoExpandedRef.current.has(task.id)) {
+        newExpanded.add(task.id);
+        autoExpandedRef.current.add(task.id);
+        changed = true;
+      }
+    }
+    if (changed) setExpandedSubtasks(newExpanded);
+  }, [tasks]);
 
   const toggleExpanded = (taskId) => {
     const newExpanded = new Set(expandedTasks);
@@ -308,6 +346,52 @@ export default function TaskTable({
 
   const completedCount = tasks.filter(t => t.completed).length;
 
+  const toggleCategory = (catName) => {
+    setCollapsedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(catName)) next.delete(catName);
+      else next.add(catName);
+      return next;
+    });
+  };
+
+  const handleCreateCategory = () => {
+    if (newCategoryName.trim() && onCreateCategory) {
+      onCreateCategory({ name: newCategoryName.trim() });
+      setNewCategoryName("");
+      setShowNewCategoryInput(false);
+    }
+  };
+
+  const handleRenameCategory = (catId) => {
+    if (renameValue.trim() && onRenameCategory) {
+      onRenameCategory({ id: catId, name: renameValue.trim() });
+      setRenamingCategoryId(null);
+      setRenameValue("");
+    }
+  };
+
+  // Group tasks by category
+  const categoryGroups = useMemo(() => {
+    const uncategorized = sortedTasks.filter(t => !t.category);
+    const groups = [];
+
+    // Order categories by their order field
+    const orderedCats = [...categories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    for (const cat of orderedCats) {
+      const catTasks = sortedTasks.filter(t => t.category === cat.name);
+      if (catTasks.length > 0) {
+        groups.push({ ...cat, tasks: catTasks });
+      } else {
+        // Show empty categories too so user can drag tasks into them
+        groups.push({ ...cat, tasks: [] });
+      }
+    }
+
+    return { uncategorized, groups };
+  }, [sortedTasks, categories]);
+
   if (isLoading) {
     return (
       <Card className="bg-white shadow-sm border border-gray-200">
@@ -351,7 +435,35 @@ export default function TaskTable({
     >
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-black z-10">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white">Main Tasks</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white">Main Tasks</h3>
+            {onCreateCategory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowNewCategoryInput(prev => !prev)}
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 px-1.5 py-1 h-7"
+                title="New Category"
+              >
+                <FolderPlus className="h-4 w-4" />
+              </Button>
+            )}
+            {onToggleDensity && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggleDensity}
+                className={`px-1.5 py-1 h-7 transition-colors ${
+                  isCompact
+                    ? 'text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300'
+                    : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                }`}
+                title={isCompact ? 'Switch to Extended view' : 'Switch to Compact view'}
+              >
+                {isCompact ? <Rows4 className="h-4 w-4" /> : <Rows3 className="h-4 w-4" />}
+              </Button>
+            )}
+          </div>
 
           {/* Score Display + Archive Done */}
           <div className="flex items-center gap-2">
@@ -401,19 +513,39 @@ export default function TaskTable({
       </div>
 
       {/* Table Header - Only visible on larger screens */}
-      <div className="hidden lg:block px-6 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-[65px] z-10">
-        <div className="grid grid-cols-12 gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-          <div className="col-span-1 text-center"></div>
-          <div className="col-span-1 text-center">Done</div>
-          <div className="col-span-1 text-center"></div>
+      <div className="hidden lg:block px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-[65px] z-10">
+        <div className="grid grid-cols-12 gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+          <div className="col-span-3 text-center"></div>
           <div className="col-span-1 text-center">Priority</div>
-          <div className="col-span-4 text-left">Task</div>
-          <div className="col-span-1 text-right">Est Time</div>
-          <div className="col-span-1 text-right">Actual Time</div>
-          <div className="col-span-1 text-right">Distracted</div>
+          <div className="col-span-4 text-left pl-1">Task</div>
+          <div className="col-span-1 text-right">Est</div>
+          <div className="col-span-1 text-right">Actual</div>
+          <div className="col-span-1 text-right">Distract</div>
           <div className="col-span-1 text-right">Actions</div>
         </div>
       </div>
+
+      {/* New Category Input */}
+      {showNewCategoryInput && (
+        <div className="px-4 sm:px-6 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex items-center gap-2">
+          <Folder className="h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Category name..."
+            value={newCategoryName}
+            onChange={(e) => setNewCategoryName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleCreateCategory(); if (e.key === 'Escape') { setShowNewCategoryInput(false); setNewCategoryName(""); } }}
+            autoFocus
+            className="flex-1 min-w-0 px-3 py-1.5 text-sm rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+          />
+          <Button variant="ghost" size="sm" onClick={handleCreateCategory} disabled={!newCategoryName.trim()} className="text-blue-500 hover:text-blue-700 px-2 py-1 h-7">
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => { setShowNewCategoryInput(false); setNewCategoryName(""); }} className="text-gray-400 hover:text-gray-600 px-2 py-1 h-7">
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      )}
 
       {/* Task Rows */}
       <div className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -423,8 +555,9 @@ export default function TaskTable({
             <p className="text-lg font-medium text-gray-400 dark:text-gray-500 mb-2">No tasks found</p>
             <p className="text-sm text-gray-400 dark:text-gray-500">Add a new task to get started!</p>
           </div>
-        ) : (
-          sortedTasks.map((task) => {
+        ) : (<>
+          {/* Uncategorized tasks */}
+          {categoryGroups.uncategorized.map((task) => {
             const isExpanded = expandedTasks.has(task.id);
             const isSubtasksOpen = expandedSubtasks.has(task.id);
             const hasSubtasks = task.subtasks && task.subtasks.length > 0;
@@ -432,7 +565,7 @@ export default function TaskTable({
             return (
               <div
                 key={task.id}
-                className={`px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group ${
+                className={`${isCompact ? 'px-3 sm:px-4 py-1.5 sm:py-2' : 'px-4 sm:px-6 py-3 sm:py-4'} hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group ${
                   task.completed
                     ? `${getDistractionBackgroundColor(task.distractionLevel) || 'bg-gray-50 dark:bg-gray-800'}`
                     : ''
@@ -440,20 +573,28 @@ export default function TaskTable({
               >
                 {/* Desktop Layout - Hidden on mobile/tablet */}
                 <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
-                  <div className="col-span-1 flex justify-center">
+                  {/* Controls group: drag + later + checkbox + subtask */}
+                  <div className="col-span-3 flex items-center justify-end gap-2 pr-3">
                     <div
                       draggable
                       onDragStart={(e) => {
                         e.dataTransfer.setData("text/plain", JSON.stringify(task));
                         e.dataTransfer.effectAllowed = "move";
                       }}
-                      className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                       title="Drag to move"
                     >
-                      <GripVertical className="h-4 w-4 text-gray-400" />
+                      <GripVertical className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'} text-gray-400`} />
                     </div>
-                  </div>
-                  <div className="col-span-1 flex justify-center">
+                    {!task.completed && onMoveToLater && (
+                      <button
+                        onClick={() => onMoveToLater(task)}
+                        className="p-0.5 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                        title="Move to Later"
+                      >
+                        <ArrowDown className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
+                      </button>
+                    )}
                     <Checkbox
                       checked={task.completed}
                       onCheckedChange={(checked) => {
@@ -463,25 +604,23 @@ export default function TaskTable({
                           onUndoCompletion(task);
                         }
                       }}
-                      className="cursor-pointer w-6 h-6"
+                      className={`cursor-pointer ${isCompact ? 'w-4 h-4' : 'w-5 h-5'}`}
                     />
-                  </div>
-                  <div className="col-span-1 flex justify-center">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleSubtasks(task.id)}
-                      className={`text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 px-2 py-1 h-7 ${
+                      className={`text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 px-1 py-0.5 h-6 ${
                         isSubtasksOpen ? 'text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''
                       }`}
                       title="Subtasks"
                     >
-                      <ListPlus className="h-4 w-4" />
+                      <ListPlus className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span
-                      className={`inline-flex items-center justify-center w-12 h-10 rounded-md text-xl font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center ${isCompact ? 'w-8 h-7 rounded text-sm' : 'w-10 h-8 rounded-md text-lg'} font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -490,7 +629,7 @@ export default function TaskTable({
                     </span>
                   </div>
                   <div className="col-span-4 flex items-center gap-2 flex-wrap">
-                    <span className={`font-medium text-lg leading-relaxed ${
+                    <span className={`font-medium ${isCompact ? 'text-sm leading-snug' : 'text-base leading-relaxed'} ${
                       task.completed
                         ? 'text-gray-400 dark:text-gray-500 line-through'
                         : 'text-gray-900 dark:text-gray-100'
@@ -498,73 +637,62 @@ export default function TaskTable({
                       {task.title}
                     </span>
                     <WorkTypeBadge workType={task.workType} />
-                    <SubtaskProgress subtasks={task.subtasks} />
+                    {!isCompact && <SubtaskProgress subtasks={task.subtasks} />}
                   </div>
                   <div className="col-span-1 flex justify-end">
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                      <Clock className="h-4 w-4 mr-1" />
+                    <div className={`flex items-center ${isCompact ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>
+                      <Clock className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'} mr-0.5`} />
                       <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                     </div>
                   </div>
                   <div className="col-span-1 flex justify-end">
                     {task.completed && task.actualTime !== null && task.actualTime !== undefined ? (
-                      <div className="flex items-center text-sm text-green-600 dark:text-green-400">
-                        <CheckCircle className="h-4 w-4 mr-1" />
+                      <div className={`flex items-center ${isCompact ? 'text-xs' : 'text-sm'} text-green-600 dark:text-green-400`}>
+                        <CheckCircle className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'} mr-0.5`} />
                         <span className="font-medium">{formatTime(task.actualTime)}</span>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
+                      <span className={`${isCompact ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400`}>-</span>
                     )}
                   </div>
                   <div className="col-span-1 flex justify-end">
                     {task.completed && task.distractionLevel !== null && task.distractionLevel !== undefined && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
-                      <span className={`text-sm font-bold ${getDistractionColor(task.distractionLevel)}`}>
+                      <span className={`${isCompact ? 'text-xs' : 'text-sm'} font-bold ${getDistractionColor(task.distractionLevel)}`}>
                         {task.distractionLevel}
                       </span>
                     ) : (
-                      <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
+                      <span className={`${isCompact ? 'text-xs' : 'text-sm'} text-gray-400 dark:text-gray-500`}>-</span>
                     )}
                   </div>
                   <div className="col-span-1 flex justify-end gap-0.5">
-                    {!task.completed && onMoveToLater && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onMoveToLater(task)}
-                        className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-1.5 py-1 h-7 text-[10px] font-medium"
-                        title="Move to Later"
-                      >
-                        Later
-                      </Button>
-                    )}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onEditTask && onEditTask(task)}
-                      className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-1.5 py-1 h-7"
+                      className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 ${isCompact ? 'px-1 py-0.5 h-6' : 'px-1.5 py-1 h-7'}`}
                       title="Edit"
                     >
-                      <Edit className="h-3.5 w-3.5" />
+                      <Edit className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
                     </Button>
                     {task.completed && !isAnonymous ? (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onArchive && onArchive(task)}
-                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 px-1.5 py-1 h-7"
+                        className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 ${isCompact ? 'px-1 py-0.5 h-6' : 'px-1.5 py-1 h-7'}`}
                         title="Archive"
                       >
-                        <Archive className="h-3.5 w-3.5" />
+                        <Archive className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
                       </Button>
                     ) : (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onDeleteTask && onDeleteTask(task)}
-                        className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-1.5 py-1 h-7"
+                        className={`text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 ${isCompact ? 'px-1 py-0.5 h-6' : 'px-1.5 py-1 h-7'}`}
                         title="Delete"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
                       </Button>
                     )}
                   </div>
@@ -572,7 +700,7 @@ export default function TaskTable({
 
                 {/* Mobile/Tablet Layout */}
                 <div className="lg:hidden">
-                  <div className="flex items-center gap-3">
+                  <div className={`flex items-center ${isCompact ? 'gap-2' : 'gap-3'}`}>
                     {/* Checkbox */}
                     <Checkbox
                       checked={task.completed}
@@ -583,12 +711,12 @@ export default function TaskTable({
                           onUndoCompletion(task);
                         }
                       }}
-                      className="cursor-pointer flex-shrink-0 w-5 h-5"
+                      className={`cursor-pointer flex-shrink-0 ${isCompact ? 'w-4 h-4' : 'w-5 h-5'}`}
                     />
 
                     {/* Priority */}
                     <span
-                      className={`inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md text-lg sm:text-xl font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
+                      className={`inline-flex items-center justify-center ${isCompact ? 'w-6 h-6 rounded text-sm' : 'w-8 h-8 sm:w-9 sm:h-9 rounded-md text-lg sm:text-xl'} font-extrabold border-2 flex-shrink-0 ${getPriorityColor(
                       task.priority,
                       task.completed,
                     )}`}
@@ -599,8 +727,8 @@ export default function TaskTable({
                     {/* Task Title and Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                          <span className={`font-medium text-base sm:text-lg leading-relaxed break-words ${
+                        <div className={`flex flex-wrap items-center ${isCompact ? 'gap-1' : 'gap-1.5'} min-w-0`}>
+                          <span className={`font-medium ${isCompact ? 'text-sm leading-snug' : 'text-base sm:text-lg leading-relaxed'} break-words ${
                             task.completed
                               ? 'text-gray-400 dark:text-gray-500 line-through'
                               : 'text-gray-900 dark:text-gray-100'
@@ -608,14 +736,14 @@ export default function TaskTable({
                             {task.title}
                           </span>
                           <WorkTypeBadge workType={task.workType} />
-                          <SubtaskProgress subtasks={task.subtasks} />
+                          {!isCompact && <SubtaskProgress subtasks={task.subtasks} />}
                         </div>
 
                         {/* Time and Actions Row */}
                         <div className="flex items-start gap-2 flex-shrink-0 mt-1">
                           {/* Estimated Time */}
-                          <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                            <Clock className="h-3 w-3 mr-1" />
+                          <div className={`flex items-center ${isCompact ? 'text-[10px]' : 'text-xs'} text-gray-600 dark:text-gray-400`}>
+                            <Clock className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3'} mr-1`} />
                             <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
                           </div>
 
@@ -625,13 +753,13 @@ export default function TaskTable({
                               variant="ghost"
                               size="sm"
                               onClick={() => toggleExpanded(task.id)}
-                              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1 h-6"
+                              className={`text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1 ${isCompact ? 'h-5' : 'h-6'}`}
                               title="Show Details"
                             >
                               {isExpanded ? (
-                                <ChevronDown className="h-3 w-3" />
+                                <ChevronDown className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
                               ) : (
-                                <ChevronRight className="h-3 w-3" />
+                                <ChevronRight className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
                               )}
                             </Button>
                           )}
@@ -642,9 +770,9 @@ export default function TaskTable({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1 h-6"
+                                className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1 ${isCompact ? 'h-5' : 'h-6'}`}
                               >
-                                <MoreHorizontal className="h-3 w-3" />
+                                <MoreHorizontal className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -735,8 +863,288 @@ export default function TaskTable({
                 )}
               </div>
             );
-          })
-        )}
+          })}
+
+          {/* Category Groups */}
+          {categoryGroups.groups.map((cat) => {
+            const isCollapsed = collapsedCategories.has(cat.name);
+            const incompleteTasks = cat.tasks.filter(t => !t.completed);
+            const totalTime = incompleteTasks.reduce((sum, t) => sum + (t.estimatedTime || 0), 0);
+
+            return (
+              <div key={cat.id || cat.name} className="border-t-2 border-gray-300 dark:border-gray-700">
+                {/* Category Header */}
+                <div
+                  className="px-4 sm:px-6 py-2.5 bg-gray-50 dark:bg-gray-900/80 flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => toggleCategory(cat.name)}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/plain", JSON.stringify({
+                      type: 'category',
+                      name: cat.name,
+                      taskIds: cat.tasks.filter(t => !t.completed).map(t => t.id),
+                    }));
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.dataTransfer.dropEffect = 'move';
+                    e.currentTarget.classList.add('bg-blue-100', 'dark:bg-blue-900/30', 'ring-2', 'ring-blue-400');
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'ring-2', 'ring-blue-400');
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'ring-2', 'ring-blue-400');
+                    try {
+                      const taskData = JSON.parse(e.dataTransfer.getData('text/plain'));
+                      if (taskData && taskData.id && !taskData.type) {
+                        onUpdateTask({ ...taskData, category: cat.name });
+                      }
+                    } catch (err) {
+                      console.error('Error parsing dropped task for category:', err);
+                    }
+                  }}
+                >
+                  {isCollapsed ? (
+                    <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
+                  )}
+                  <div
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: cat.color || '#6b7280' }}
+                  />
+                  {renamingCategoryId === cat.id ? (
+                    <input
+                      type="text"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRenameCategory(cat.id);
+                        if (e.key === 'Escape') { setRenamingCategoryId(null); setRenameValue(""); }
+                      }}
+                      onBlur={() => handleRenameCategory(cat.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      autoFocus
+                      className="flex-1 min-w-0 px-2 py-0.5 text-sm font-semibold rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    />
+                  ) : (
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+                      {cat.name}
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                    {cat.tasks.length} {cat.tasks.length === 1 ? 'task' : 'tasks'}
+                  </span>
+                  {isCollapsed && totalTime > 0 && (
+                    <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 shrink-0">
+                      <Clock className="h-3 w-3" />
+                      {formatTime(totalTime)}
+                    </span>
+                  )}
+                  <div className="ml-auto flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-1.5 py-1 h-6">
+                          <MoreHorizontal className="h-3.5 w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => { setRenamingCategoryId(cat.id); setRenameValue(cat.name); }}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Rename
+                        </DropdownMenuItem>
+                        {onMoveCategoryToLater && (
+                          <DropdownMenuItem onClick={() => onMoveCategoryToLater(cat.name)}>
+                            Move All to Later
+                          </DropdownMenuItem>
+                        )}
+                        {onDeleteCategory && (
+                          <DropdownMenuItem onClick={() => onDeleteCategory(cat.id)} className="text-red-600 focus:text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Category
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+
+                {/* Category Tasks */}
+                {!isCollapsed && cat.tasks.map((task) => {
+                  const isExpanded = expandedTasks.has(task.id);
+                  const isSubtasksOpen = expandedSubtasks.has(task.id);
+                  const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+
+                  return (
+                    <div
+                      key={task.id}
+                      className={`${isCompact ? 'px-3 sm:px-4 py-1.5 sm:py-2' : 'px-4 sm:px-6 py-3 sm:py-4'} hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group border-t border-gray-100 dark:border-gray-800/50 ${
+                        task.completed
+                          ? `${getDistractionBackgroundColor(task.distractionLevel) || 'bg-gray-50 dark:bg-gray-800'}`
+                          : ''
+                      }`}
+                    >
+                      {/* Desktop Layout */}
+                      <div className="hidden lg:grid grid-cols-12 gap-1 items-center">
+                        {/* Controls group: drag + checkbox + subtask (NO Later for categorized tasks) */}
+                        <div className="col-span-3 flex items-center justify-end gap-2 pr-3">
+                          <div
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", JSON.stringify(task));
+                              e.dataTransfer.effectAllowed = "move";
+                            }}
+                            className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                            title="Drag to move"
+                          >
+                            <GripVertical className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'} text-gray-400`} />
+                          </div>
+                          <Checkbox
+                            checked={task.completed}
+                            onCheckedChange={(checked) => {
+                              if (checked && !task.completed) setCompletingTaskId(task.id);
+                              else if (!checked && task.completed) onUndoCompletion(task);
+                            }}
+                            className={`cursor-pointer ${isCompact ? 'w-4 h-4' : 'w-5 h-5'}`}
+                          />
+                          <Button
+                            variant="ghost" size="sm"
+                            onClick={() => toggleSubtasks(task.id)}
+                            className={`text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 px-1 py-0.5 h-6 ${
+                              isSubtasksOpen ? 'text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : ''
+                            }`}
+                            title="Subtasks"
+                          >
+                            <ListPlus className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        <div className="col-span-1 flex justify-center">
+                          <span className={`inline-flex items-center justify-center ${isCompact ? 'w-8 h-7 rounded text-sm' : 'w-10 h-8 rounded-md text-lg'} font-extrabold border-2 flex-shrink-0 ${getPriorityColor(task.priority, task.completed)}`}>
+                            {task.priority}
+                          </span>
+                        </div>
+                        <div className="col-span-4 flex items-center gap-2 flex-wrap">
+                          <span className={`font-medium ${isCompact ? 'text-sm leading-snug' : 'text-base leading-relaxed'} ${
+                            task.completed ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-900 dark:text-gray-100'
+                          }`} title={task.title}>
+                            {task.title}
+                          </span>
+                          <WorkTypeBadge workType={task.workType} />
+                          {!isCompact && <SubtaskProgress subtasks={task.subtasks} />}
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          <div className={`flex items-center ${isCompact ? 'text-xs' : 'text-sm'} text-gray-600 dark:text-gray-400`}>
+                            <Clock className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'} mr-0.5`} />
+                            <span className="font-semibold">{formatTime(task.estimatedTime)}</span>
+                          </div>
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          {task.completed && task.actualTime != null ? (
+                            <div className={`flex items-center ${isCompact ? 'text-xs' : 'text-sm'} text-green-600 dark:text-green-400`}>
+                              <CheckCircle className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'} mr-0.5`} />
+                              <span className="font-medium">{formatTime(task.actualTime)}</span>
+                            </div>
+                          ) : (<span className={`${isCompact ? 'text-xs' : 'text-sm'} text-gray-500 dark:text-gray-400`}>-</span>)}
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          {task.completed && task.distractionLevel != null && task.distractionLevel >= 1 && task.distractionLevel <= 5 ? (
+                            <span className={`${isCompact ? 'text-xs' : 'text-sm'} font-bold ${getDistractionColor(task.distractionLevel)}`}>{task.distractionLevel}</span>
+                          ) : (<span className={`${isCompact ? 'text-xs' : 'text-sm'} text-gray-400 dark:text-gray-500`}>-</span>)}
+                        </div>
+                        <div className="col-span-1 flex justify-end gap-0.5">
+                          <Button variant="ghost" size="sm" onClick={() => onEditTask && onEditTask(task)} className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 ${isCompact ? 'px-1 py-0.5 h-6' : 'px-1.5 py-1 h-7'}`} title="Edit">
+                            <Edit className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
+                          </Button>
+                          {task.completed && !isAnonymous ? (
+                            <Button variant="ghost" size="sm" onClick={() => onArchive && onArchive(task)} className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 ${isCompact ? 'px-1 py-0.5 h-6' : 'px-1.5 py-1 h-7'}`} title="Archive">
+                              <Archive className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
+                            </Button>
+                          ) : (
+                            <Button variant="ghost" size="sm" onClick={() => onDeleteTask && onDeleteTask(task)} className={`text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 ${isCompact ? 'px-1 py-0.5 h-6' : 'px-1.5 py-1 h-7'}`} title="Delete">
+                              <Trash2 className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Mobile Layout */}
+                      <div className="lg:hidden">
+                        <div className={`flex items-center ${isCompact ? 'gap-2' : 'gap-3'}`}>
+                          <Checkbox
+                            checked={task.completed}
+                            onCheckedChange={(checked) => {
+                              if (checked && !task.completed) setCompletingTaskId(task.id);
+                              else if (!checked && task.completed) onUndoCompletion(task);
+                            }}
+                            className={`cursor-pointer flex-shrink-0 ${isCompact ? 'w-4 h-4' : 'w-5 h-5'}`}
+                          />
+                          <span className={`inline-flex items-center justify-center ${isCompact ? 'w-6 h-6 rounded text-sm' : 'w-8 h-8 sm:w-9 sm:h-9 rounded-md text-lg sm:text-xl'} font-extrabold border-2 flex-shrink-0 ${getPriorityColor(task.priority, task.completed)}`}>
+                            {task.priority}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className={`flex flex-wrap items-center ${isCompact ? 'gap-1' : 'gap-1.5'} min-w-0`}>
+                                <span className={`font-medium ${isCompact ? 'text-sm leading-snug' : 'text-base sm:text-lg leading-relaxed'} break-words ${
+                                  task.completed ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-900 dark:text-gray-100'
+                                }`}>{task.title}</span>
+                                <WorkTypeBadge workType={task.workType} />
+                                {!isCompact && <SubtaskProgress subtasks={task.subtasks} />}
+                              </div>
+                              <div className="flex items-start gap-2 flex-shrink-0 mt-1">
+                                <div className={`flex items-center ${isCompact ? 'text-[10px]' : 'text-xs'} text-gray-600 dark:text-gray-400`}>
+                                  <Clock className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3'} mr-1`} /><span className="font-semibold">{formatTime(task.estimatedTime)}</span>
+                                </div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className={`text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1 ${isCompact ? 'h-5' : 'h-6'}`}>
+                                      <MoreHorizontal className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => toggleSubtasks(task.id)}><ListPlus className="h-4 w-4 mr-2" />Subtasks</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onEditTask && onEditTask(task)}><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
+                                    {task.completed ? (
+                                      isAnonymous ? (
+                                        <DropdownMenuItem onClick={() => onDeleteTask && onDeleteTask(task)} className="text-red-600 focus:text-red-600"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
+                                      ) : (
+                                        <DropdownMenuItem onClick={() => onArchive && onArchive(task)}><Archive className="h-4 w-4 mr-2" />Archive</DropdownMenuItem>
+                                      )
+                                    ) : (
+                                      <DropdownMenuItem onClick={() => onDeleteTask && onDeleteTask(task)} className="text-red-600 focus:text-red-600"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Inline Completion Panel */}
+                      {completingTaskId === task.id && !task.completed && (
+                        <InlineCompletionPanel
+                          task={task}
+                          onConfirm={(t, actualTime, distractionLevel) => { onCompleteTask(t, actualTime, distractionLevel); setCompletingTaskId(null); }}
+                          onCancel={() => setCompletingTaskId(null)}
+                        />
+                      )}
+
+                      {/* Subtasks Section */}
+                      {isSubtasksOpen && (
+                        <SubtaskSection task={task} onUpdateTask={onUpdateTask} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </>)}
       </div>
     </Card>
   );

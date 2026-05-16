@@ -2,6 +2,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useRef, useEffect } from "react";
 
+// Local storage helpers for anonymous categories
+const getAnonymousCategories = () => {
+  try {
+    const cats = localStorage.getItem('anonymous_categories');
+    return cats ? JSON.parse(cats) : [];
+  } catch { return []; }
+};
+
+const saveAnonymousCategories = (cats) => {
+  try {
+    localStorage.setItem('anonymous_categories', JSON.stringify(cats));
+  } catch (error) {
+    console.error('Error saving anonymous categories:', error);
+  }
+};
+
 // Local storage helpers for anonymous users
 const getAnonymousTasks = () => {
   try {
@@ -173,6 +189,152 @@ export function useTasks() {
     enabled: true, // Always fetch tasks (for both authenticated and anonymous users)
   });
 
+  // Archived tasks query (authenticated users only) — fetch eagerly
+  const { data: archivedTasks } = useQuery({
+    queryKey: ["/api/tasks/archived", user?.uid],
+    queryFn: async () => {
+      const isAnonymous = user?.isAnonymous || !user;
+      if (isAnonymous) return [];
+
+      const response = await apiRequest("/api/tasks/archived");
+      const data = await response.json();
+      return data;
+    },
+    staleTime: 5000,
+    refetchOnMount: true,
+    enabled: !!user && !user.isAnonymous,
+  });
+
+  // Categories query — fetch eagerly alongside tasks
+  const { data: categories } = useQuery({
+    queryKey: ["/api/categories", user?.uid || 'anonymous', user?.isAnonymous],
+    queryFn: async () => {
+      const isAnonymous = user?.isAnonymous || !user;
+      if (isAnonymous) return getAnonymousCategories();
+
+      const response = await apiRequest("/api/categories");
+      return response.json();
+    },
+    staleTime: 5000,
+    refetchOnMount: true,
+    enabled: true,
+  });
+
+  const createCategory = useMutation({
+    mutationFn: async (data) => {
+      const isAnonymous = user?.isAnonymous || !user;
+
+      if (isAnonymous) {
+        const current = getAnonymousCategories();
+        const newCat = {
+          id: Date.now() + Math.random(),
+          name: data.name,
+          order: data.order ?? current.length,
+          color: data.color || null,
+        };
+        current.push(newCat);
+        saveAnonymousCategories(current);
+        return newCat;
+      }
+
+      const response = await apiRequest("/api/categories", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+    },
+  });
+
+  const updateCategory = useMutation({
+    mutationFn: async ({ id, ...data }) => {
+      const isAnonymous = user?.isAnonymous || !user;
+
+      if (isAnonymous) {
+        const current = getAnonymousCategories();
+        const idx = current.findIndex(c => c.id === id);
+        if (idx === -1) throw new Error('Category not found');
+
+        // If renaming, update tasks in localStorage too
+        if (data.name && data.name !== current[idx].name) {
+          const tasks = getAnonymousTasks();
+          const oldName = current[idx].name;
+          tasks.forEach(t => { if (t.category === oldName) t.category = data.name; });
+          saveAnonymousTasks(tasks);
+        }
+
+        current[idx] = { ...current[idx], ...data };
+        saveAnonymousCategories(current);
+        return current[idx];
+      }
+
+      const response = await apiRequest(`/api/categories/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  const deleteCategory = useMutation({
+    mutationFn: async (id) => {
+      const isAnonymous = user?.isAnonymous || !user;
+
+      if (isAnonymous) {
+        const current = getAnonymousCategories();
+        const cat = current.find(c => c.id === id);
+        if (cat) {
+          // Clear category from tasks
+          const tasks = getAnonymousTasks();
+          tasks.forEach(t => { if (t.category === cat.name) t.category = null; });
+          saveAnonymousTasks(tasks);
+        }
+        saveAnonymousCategories(current.filter(c => c.id !== id));
+        return id;
+      }
+
+      await apiRequest(`/api/categories/${id}`, { method: "DELETE" });
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  const moveCategoryToLater = useMutation({
+    mutationFn: async (categoryName) => {
+      const isAnonymous = user?.isAnonymous || !user;
+
+      if (isAnonymous) {
+        const tasks = getAnonymousTasks();
+        let count = 0;
+        tasks.forEach(t => {
+          if (t.category === categoryName && !t.completed && !t.isLater) {
+            t.isLater = true;
+            count++;
+          }
+        });
+        saveAnonymousTasks(tasks);
+        return { count };
+      }
+
+      const response = await apiRequest(`/api/categories/${encodeURIComponent(categoryName)}/to-later`, {
+        method: "POST",
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
   const createTask = useMutation({
     mutationFn: async (taskData) => {
       console.log('Creating task with data:', taskData);
@@ -192,9 +354,10 @@ export function useTasks() {
           distractionLevel: null,
           completedAt: null,
           workType: taskData.workType || null,
+          category: taskData.category || null,
           subtasks: taskData.subtasks || [],
         };
-        
+
         currentTasks.push(newTask);
         saveAnonymousTasks(currentTasks);
         console.log('Anonymous task created in localStorage:', newTask);
@@ -323,6 +486,7 @@ export function useTasks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/archived"] });
     },
   });
 
@@ -348,6 +512,7 @@ export function useTasks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/archived"] });
     },
   });
 
@@ -404,5 +569,11 @@ export function useTasks() {
     mainTasks,
     laterTasks,
     focusTasks,
+    archivedTasks: archivedTasks || [],
+    categories: categories || [],
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    moveCategoryToLater,
   };
 }

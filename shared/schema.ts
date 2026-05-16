@@ -23,6 +23,7 @@ export const insertTaskSchema = createInsertSchema(tasks).pick({
 }).extend({
   estimatedTime: z.number().nullable().optional(),
   workType: z.enum(["deep", "shallow"]).nullable().optional(),
+  category: z.string().nullable().optional(),
 });
 
 export const updateTaskSchema = z.object({
@@ -36,6 +37,7 @@ export const updateTaskSchema = z.object({
   completedAt: z.union([z.string(), z.date()]).nullable().optional(),
   isLater: z.boolean().optional(),
   workType: z.enum(["deep", "shallow"]).nullable().optional(),
+  category: z.string().nullable().optional(),
   subtasks: z.array(z.object({
     id: z.string(),
     title: z.string(),
@@ -109,3 +111,19 @@ export const settingsSchema = z.object({
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
+
+// Category schemas
+export const insertCategorySchema = z.object({
+  name: z.string().min(1).max(50),
+  order: z.number().optional(),
+  color: z.string().nullable().optional(),
+});
+
+export const updateCategorySchema = z.object({
+  name: z.string().min(1).max(50).optional(),
+  order: z.number().optional(),
+  color: z.string().nullable().optional(),
+});
+
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type UpdateCategory = z.infer<typeof updateCategorySchema>;

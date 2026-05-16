@@ -8,7 +8,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TaskForm from "./task-form";
 
-export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, isInline = false }) {
+export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, isInline = false, categories = [] }) {
   const [formData, setFormData] = useState({
     title: "",
     priority: 5,
@@ -34,11 +34,12 @@ export default function TaskFormModal({ isOpen, onClose, onSubmit, isLoading, is
 
   if (isInline) {
     return (
-      <TaskForm 
-        onSubmit={handleSubmit} 
+      <TaskForm
+        onSubmit={handleSubmit}
         isLoading={isLoading}
         formData={formData}
         setFormData={setFormData}
+        categories={categories}
       />
     );
   }

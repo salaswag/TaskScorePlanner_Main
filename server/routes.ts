@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { mongoStorage } from "./mongodb-storage.js";
-import { insertTaskSchema, updateTaskSchema } from "@shared/schema";
+import { insertTaskSchema, updateTaskSchema, insertCategorySchema, updateCategorySchema } from "@shared/schema";
 import { z } from "zod";
 import { authenticateUser } from "./middleware/auth-middleware.js";
 import { Logger } from "./logger.js";
@@ -430,14 +430,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get archived tasks
   app.get("/api/tasks/archived", async (req, res) => {
     try {
-      // Always try MongoDB first
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      // Anonymous users have no archive
+      if (isAnonymous) {
+        return res.json([]);
+      }
+
       const mongoAvailable = await testMongoConnection();
+
+      if (!mongoAvailable) {
+        console.warn("⚠️  MongoDB unavailable for archived tasks");
+        return res.json([]);
+      }
+
+      const archivedTasks = await mongoStorage.getArchivedTasks(userId);
+      res.json(archivedTasks);
+    } catch (error) {
+      console.error("Error fetching archived tasks:", error);
+      res.status(500).json({ message: "Failed to fetch archived tasks" });
+    }
+  });
 
   // Transfer anonymous data to authenticated user
   app.post("/api/auth/transfer-data", async (req, res) => {
     try {
       const { anonymousUid, permanentUid } = req.body;
-      
+
       if (!anonymousUid || !permanentUid) {
         return res.status(400).json({ message: "Both anonymousUid and permanentUid are required" });
       }
@@ -446,12 +466,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Try MongoDB first for authenticated users
       const mongoAvailable = await testMongoConnection();
-      
+
       if (mongoAvailable) {
         Logger.info("📤 Transferring data via MongoDB...");
         try {
           const success = await mongoStorage.transferUserData(anonymousUid, permanentUid);
-          
+
           if (success) {
             Logger.info("Data transfer completed successfully via MongoDB");
             res.json({ message: "Data transferred successfully" });
@@ -463,12 +483,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           Logger.error("MongoDB transfer failed:", mongoError);
         }
       }
-      
+
       // Fall back to in-memory storage transfer
       Logger.info("📤 Transferring session data from in-memory storage...");
       try {
         const success = await storage.transferSessionData(anonymousUid, permanentUid);
-        
+
         if (success) {
           Logger.info("Session data transfer completed successfully");
           res.json({ message: "Session data transferred successfully" });
@@ -483,24 +503,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       Logger.error("Error in data transfer endpoint:", error);
       res.status(500).json({ message: "Failed to transfer data" });
-    }
-  });
-
-
-      const storageToUse = mongoAvailable ? mongoStorage : storage;
-      
-      if (!mongoAvailable) {
-        console.warn("⚠️  Getting archived tasks from in-memory storage - MongoDB unavailable");
-        return res.json([]);
-      } else {
-        console.log("✅ Getting archived tasks from MongoDB storage");
-      }
-      
-      const archivedTasks = await storageToUse.getArchivedTasks();
-      res.json(archivedTasks);
-    } catch (error) {
-      console.error("Error fetching archived tasks:", error);
-      res.status(500).json({ message: "Failed to fetch archived tasks" });
     }
   });
 
@@ -829,6 +831,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving planning data:", error);
       res.status(500).json({ message: "Failed to save planning data" });
+    }
+  });
+
+  // ─── Category Endpoints ──────────────────────────────────────
+
+  // Get all categories
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous) {
+        return res.json([]);
+      }
+
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.json([]);
+      }
+
+      const categories = await mongoStorage.getCategories(userId);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Create a category
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const validated = insertCategorySchema.parse(req.body);
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Categories require MongoDB" });
+      }
+
+      const category = await mongoStorage.createCategory({ ...validated, userId });
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid category data", errors: error.errors });
+      }
+      console.error("Error creating category:", error);
+      res.status(500).json({ message: "Failed to create category" });
+    }
+  });
+
+  // Update a category
+  app.patch("/api/categories/:id", async (req, res) => {
+    try {
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const validated = updateCategorySchema.parse(req.body);
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Categories require MongoDB" });
+      }
+
+      const updated = await mongoStorage.updateCategory(req.params.id, userId, validated);
+      if (!updated) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid category data", errors: error.errors });
+      }
+      console.error("Error updating category:", error);
+      res.status(500).json({ message: "Failed to update category" });
+    }
+  });
+
+  // Delete a category
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Categories require MongoDB" });
+      }
+
+      const deleted = await mongoStorage.deleteCategory(req.params.id, userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      res.status(500).json({ message: "Failed to delete category" });
+    }
+  });
+
+  // Move all tasks in a category to Later
+  app.post("/api/categories/:name/to-later", async (req, res) => {
+    try {
+      const userId = req.user?.uid || 'anonymous';
+      const isAnonymous = !req.user || req.user.isAnonymous;
+
+      if (isAnonymous) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const mongoAvailable = await testMongoConnection();
+      if (!mongoAvailable) {
+        return res.status(503).json({ message: "Requires MongoDB" });
+      }
+
+      const categoryName = decodeURIComponent(req.params.name);
+      const count = await mongoStorage.moveCategoryToLater(categoryName, userId);
+      res.json({ message: `${count} tasks moved to Later`, count });
+    } catch (error) {
+      console.error("Error moving category to later:", error);
+      res.status(500).json({ message: "Failed to move category to later" });
     }
   });
 

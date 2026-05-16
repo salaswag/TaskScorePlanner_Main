@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save } from "lucide-react";
+import { Save, Folder } from "lucide-react";
 import { useKeyboardAware } from "@/hooks/use-keyboard-aware";
 import { useInputFocus } from "@/hooks/use-input-focus";
 import { WorkTypeToggle } from "./task-form";
@@ -18,11 +18,13 @@ export default function TaskEditModal({
   onClose,
   onSave,
   isLoading,
+  categories = [],
 }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState(5);
   const [estimatedTime, setEstimatedTime] = useState(30);
   const [workType, setWorkType] = useState(null);
+  const [category, setCategory] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const { isKeyboardVisible } = useKeyboardAware();
@@ -34,6 +36,7 @@ export default function TaskEditModal({
       setPriority(task.priority || 5);
       setEstimatedTime(task.estimatedTime || 30);
       setWorkType(task.workType || null);
+      setCategory(task.category || "");
     }
   }, [task]);
 
@@ -47,6 +50,7 @@ export default function TaskEditModal({
           priority: Number(priority),
           estimatedTime: Number(estimatedTime),
           workType: workType,
+          category: category || null,
         });
         handleClose();
       } catch (error) {
@@ -62,6 +66,7 @@ export default function TaskEditModal({
     setPriority(5);
     setEstimatedTime(30);
     setWorkType(null);
+    setCategory("");
     onClose();
   };
 
@@ -104,6 +109,28 @@ export default function TaskEditModal({
             </label>
             <WorkTypeToggle value={workType} onChange={setWorkType} />
           </div>
+
+          {/* Category Selector */}
+          {categories.length > 0 && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-black dark:text-white">
+                Category
+              </label>
+              <div className="flex items-center gap-2">
+                <Folder className="h-4 w-4 text-gray-400" />
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                >
+                  <option value="">No category</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* Priority and Time Controls */}
           <div className="space-y-6">
