@@ -37,6 +37,10 @@ import {
   Skull,
   Eclipse,
   ChevronRight,
+  Rows3,
+  Rows4,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 const visualThemes = [
@@ -157,6 +161,71 @@ function VisualStyleSubmenu() {
             </button>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ───────── View Density submenu content ───────── */
+function ViewDensitySubmenu({ viewDensity, onToggleDensity, layoutWidth, onToggleLayout }) {
+  const verticalOptions = [
+    { id: "extended", label: "Extended", icon: Rows4, description: "Larger rows, more detail" },
+    { id: "compact", label: "Compact", icon: Rows3, description: "Tighter rows, more tasks visible" },
+  ];
+  const horizontalOptions = [
+    { id: "extended", label: "Wide", icon: Maximize2, description: "Full-width layout" },
+    { id: "compact", label: "Narrow", icon: Minimize2, description: "Centered, constrained width" },
+  ];
+  return (
+    <div style={{ minWidth: 220 }}>
+      {/* Vertical Density */}
+      <div className="px-3 pt-2.5 pb-1">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Row Height</span>
+      </div>
+      <div className="px-3 pb-2 space-y-1">
+        {verticalOptions.map(({ id, label, icon: Icon, description }) => (
+          <button
+            key={id}
+            onClick={() => { if (viewDensity !== id && onToggleDensity) onToggleDensity(); }}
+            className={`flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg border-2 transition-all text-left ${
+              viewDensity === id
+                ? "border-gray-900 dark:border-white bg-gray-100 dark:bg-gray-800"
+                : "border-transparent hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
+          >
+            <Icon className={`h-4 w-4 shrink-0 ${viewDensity === id ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`} />
+            <div className="flex-1 min-w-0">
+              <span className={`text-xs font-medium block ${viewDensity === id ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>{label}</span>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 block">{description}</span>
+            </div>
+            {viewDensity === id && <Check className="h-3 w-3 text-green-500 shrink-0" />}
+          </button>
+        ))}
+      </div>
+      {/* Horizontal Width */}
+      <div className="border-t border-gray-200 dark:border-gray-700 mx-3" />
+      <div className="px-3 pt-2 pb-1">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Page Width</span>
+      </div>
+      <div className="px-3 pb-3 space-y-1">
+        {horizontalOptions.map(({ id, label, icon: Icon, description }) => (
+          <button
+            key={id}
+            onClick={() => { if (layoutWidth !== id && onToggleLayout) onToggleLayout(); }}
+            className={`flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg border-2 transition-all text-left ${
+              layoutWidth === id
+                ? "border-gray-900 dark:border-white bg-gray-100 dark:bg-gray-800"
+                : "border-transparent hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
+          >
+            <Icon className={`h-4 w-4 shrink-0 ${layoutWidth === id ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`} />
+            <div className="flex-1 min-w-0">
+              <span className={`text-xs font-medium block ${layoutWidth === id ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>{label}</span>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 block">{description}</span>
+            </div>
+            {layoutWidth === id && <Check className="h-3 w-3 text-green-500 shrink-0" />}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -312,7 +381,7 @@ function ApiConfigPanel({ onClose, user }) {
 }
 
 /* ───────── Main UserMenu ───────── */
-function UserMenu() {
+function UserMenu({ viewDensity, onToggleDensity, layoutWidth, onToggleLayout }) {
   const { user, login, signup, logout, isLoginLoading, isSignupLoading, loginError, signupError } = useAuth();
   const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -450,6 +519,10 @@ function UserMenu() {
                 <VisualStyleSubmenu />
               </HoverSubmenuItem>
 
+              <HoverSubmenuItem icon={viewDensity === 'compact' ? Rows3 : Rows4} label="View Density">
+                <ViewDensitySubmenu viewDensity={viewDensity} onToggleDensity={onToggleDensity} layoutWidth={layoutWidth} onToggleLayout={onToggleLayout} />
+              </HoverSubmenuItem>
+
               {/* API Config — click opens a separate panel */}
               <div
                 onClick={() => { setShowApiPanel(true); setDropdownOpen(false); }}
@@ -512,6 +585,10 @@ function UserMenu() {
 
             <HoverSubmenuItem icon={Palette} label="Visual Style">
               <VisualStyleSubmenu />
+            </HoverSubmenuItem>
+
+            <HoverSubmenuItem icon={viewDensity === 'compact' ? Rows3 : Rows4} label="View Density">
+              <ViewDensitySubmenu viewDensity={viewDensity} onToggleDensity={onToggleDensity} layoutWidth={layoutWidth} onToggleLayout={onToggleLayout} />
             </HoverSubmenuItem>
 
             <div

@@ -3,6 +3,7 @@ import TaskTable from "@/components/task-table";
 import TaskEditModal from "@/components/task-edit-modal";
 import TimerModal from "@/components/timer-modal";
 import LaterSection from "@/components/later-section";
+import ArchiveSection from "@/components/archive-section";
 import FloatingAddButton from "@/components/floating-add-button";
 import TaskFormModal from "@/components/task-form-modal";
 import DataTransferDialog from "@/components/data-transfer-dialog";
@@ -21,6 +22,8 @@ import {
   ChevronUp,
   Calendar,
   BookOpen,
+  Rows3,
+  Rows4,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -54,6 +57,27 @@ export default function TodoApp() {
   });
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [dashboardViewMode, setDashboardViewMode] = useState("calendar");
+  const [viewDensity, setViewDensity] = useState(() => {
+    try { return localStorage.getItem('taskViewDensity') || 'extended'; } catch { return 'extended'; }
+  });
+  const [layoutWidth, setLayoutWidth] = useState(() => {
+    try { return localStorage.getItem('taskLayoutWidth') || 'compact'; } catch { return 'compact'; }
+  });
+
+  const toggleViewDensity = () => {
+    setViewDensity(prev => {
+      const next = prev === 'extended' ? 'compact' : 'extended';
+      try { localStorage.setItem('taskViewDensity', next); } catch {}
+      return next;
+    });
+  };
+  const toggleLayoutWidth = () => {
+    setLayoutWidth(prev => {
+      const next = prev === 'extended' ? 'compact' : 'extended';
+      try { localStorage.setItem('taskLayoutWidth', next); } catch {}
+      return next;
+    });
+  };
 
   // Sync tab with URL
   useEffect(() => {
@@ -78,7 +102,7 @@ export default function TodoApp() {
     setLocation(tabToRoute[value] || "/");
   };
 
-  const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask, archiveAllCompleted } =
+  const { tasks, isLoading, createTask, updateTask, deleteTask, archiveTask, archiveAllCompleted, archivedTasks, categories, createCategory, updateCategory, deleteCategory, moveCategoryToLater } =
     useTasks();
   // Theme is handled by UserMenu component directly via useTheme()
 
@@ -216,6 +240,7 @@ export default function TodoApp() {
       priority: task.priority,
       estimatedTime: task.estimatedTime,
       workType: task.workType || null,
+      category: task.category || null,
       subtasks: task.subtasks || [],
     });
     showNotification("Task deletion undone", "success");
@@ -291,6 +316,7 @@ export default function TodoApp() {
       distractionLevel: task.distractionLevel,
       isLater: task.isLater,
       workType: task.workType || null,
+      category: task.category || null,
       subtasks: task.subtasks || [],
     });
     showNotification("Task archive undone", "success");
@@ -352,6 +378,43 @@ export default function TodoApp() {
       `Task "${task.title}" moved back to main tasks`,
       "success",
     );
+  };
+
+  const handleCreateCategory = (data) => {
+    // Prevent duplicate categories (case-insensitive)
+    const exists = categories.some(
+      (cat) => cat.name.toLowerCase() === data.name.toLowerCase()
+    );
+    if (exists) {
+      showNotification(`Category "${data.name}" already exists`, "error");
+      return;
+    }
+    createCategory.mutate(data, {
+      onSuccess: (result) => {
+        showNotification(`Category "${data.name}" created!`, "success");
+      },
+    });
+  };
+
+  const handleDeleteCategory = (catId) => {
+    deleteCategory.mutate(catId, {
+      onSuccess: () => showNotification("Category deleted", "success"),
+    });
+  };
+
+  const handleRenameCategory = (data) => {
+    updateCategory.mutate(data, {
+      onSuccess: () => showNotification("Category renamed", "success"),
+    });
+  };
+
+  const handleMoveCategoryToLater = (categoryName) => {
+    moveCategoryToLater.mutate(categoryName, {
+      onSuccess: (result) => {
+        const count = result?.count || 0;
+        showNotification(`${count} task${count !== 1 ? 's' : ''} from "${categoryName}" moved to Later`, "success");
+      },
+    });
   };
 
   // Add touch handling for swipe gestures
@@ -422,7 +485,7 @@ export default function TodoApp() {
           user && !user.isAnonymous && !isHeaderVisible ? "hidden" : ""
         }`}
       >
-        <div className="max-w-7xl mx-auto">
+        <div className={`mx-auto ${layoutWidth === 'extended' ? 'max-w-full px-2 md:px-6' : 'max-w-7xl'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 sm:space-x-3">
               <CheckSquare className="h-5 w-5 sm:h-8 sm:w-8 text-black dark:text-white" />
@@ -458,34 +521,6 @@ export default function TodoApp() {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-
-              {/* Calendar/Journal toggle — visible only when Time Tracking active */}
-              {activeTab === "dashboard" && (
-                <div className="hidden sm:flex gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-md p-0.5 ml-2">
-                  <button
-                    onClick={() => setDashboardViewMode("calendar")}
-                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
-                      dashboardViewMode === "calendar"
-                        ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
-                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
-                  >
-                    <Calendar className="h-3 w-3" />
-                    Calendar
-                  </button>
-                  <button
-                    onClick={() => setDashboardViewMode("journal")}
-                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
-                      dashboardViewMode === "journal"
-                        ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
-                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
-                  >
-                    <BookOpen className="h-3 w-3" />
-                    Journal
-                  </button>
-                </div>
-              )}
             </div>
 
             <div className="flex items-center space-x-1 sm:space-x-2">
@@ -501,7 +536,7 @@ export default function TodoApp() {
                 </Button>
               )}
 
-              <UserMenu />
+              <UserMenu viewDensity={viewDensity} onToggleDensity={toggleViewDensity} layoutWidth={layoutWidth} onToggleLayout={toggleLayoutWidth} />
             </div>
           </div>
         </div>
@@ -511,7 +546,7 @@ export default function TodoApp() {
       <div
         className={`${user && !user.isAnonymous && !isHeaderVisible ? "h-screen" : "h-[calc(100vh-60px)]"} overflow-y-auto transition-all duration-300`}
       >
-        <main className={`mx-auto px-2 md:px-4 py-2 md:py-3 ${activeTab === "planning" ? "" : "max-w-7xl"}`}>
+        <main className={`mx-auto px-2 md:px-4 py-2 md:py-3 ${activeTab === "planning" ? "" : (layoutWidth === 'extended' ? "max-w-full px-2 md:px-6" : "max-w-7xl")}`}>
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
@@ -525,6 +560,7 @@ export default function TodoApp() {
                     isInline={true}
                     onSubmit={handleCreateTask}
                     isLoading={createTask.isPending}
+                    categories={categories}
                   />
                 </div>
 
@@ -546,6 +582,15 @@ export default function TodoApp() {
                     totalPossibleScore={totalPossibleScore}
                     totalEstimatedTime={totalEstimatedTime}
                     isAnonymous={!user || user.isAnonymous}
+                    categories={categories}
+                    onCreateCategory={handleCreateCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                    onRenameCategory={handleRenameCategory}
+                    onMoveCategoryToLater={handleMoveCategoryToLater}
+                    viewDensity={viewDensity}
+                    onToggleDensity={toggleViewDensity}
+                    layoutWidth={layoutWidth}
+                    onToggleLayout={toggleLayoutWidth}
                   />
 
                   {/* Later Section */}
@@ -559,7 +604,15 @@ export default function TodoApp() {
                     onCompleteTask={handleCompleteTask}
                     onUndoCompletion={handleUndoCompletion}
                     onArchiveTask={handleArchive}
+                    onMoveCategoryToLater={handleMoveCategoryToLater}
+                    viewDensity={viewDensity}
+                    layoutWidth={layoutWidth}
                   />
+
+                  {/* Archive Section */}
+                  {user && !user.isAnonymous && (
+                    <ArchiveSection tasks={archivedTasks} />
+                  )}
                 </div>
               </div>
 
@@ -568,11 +621,39 @@ export default function TodoApp() {
                 <FloatingAddButton
                   onSubmit={handleCreateTask}
                   isLoading={createTask.isPending}
+                  categories={categories}
                 />
               </div>
             </TabsContent>
 
             <TabsContent value="dashboard" className="mt-0">
+              {/* Calendar/Journal toggle — inside the content area so it doesn't shift header tabs */}
+              <div className="flex justify-end mb-2">
+                <div className="flex gap-0.5 bg-muted rounded-md p-0.5">
+                  <button
+                    onClick={() => setDashboardViewMode("calendar")}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                      dashboardViewMode === "calendar"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Calendar className="h-3 w-3" />
+                    Calendar
+                  </button>
+                  <button
+                    onClick={() => setDashboardViewMode("journal")}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                      dashboardViewMode === "journal"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <BookOpen className="h-3 w-3" />
+                    Journal
+                  </button>
+                </div>
+              </div>
               <DashboardView viewMode={dashboardViewMode} onViewModeChange={setDashboardViewMode} />
             </TabsContent>
 
@@ -606,6 +687,7 @@ export default function TodoApp() {
           setTaskToEdit(null);
         }}
         onSave={handleSaveEditedTask}
+        categories={categories}
       />
 
       {/* Notifications */}

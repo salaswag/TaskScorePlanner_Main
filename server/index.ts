@@ -68,17 +68,17 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false }));
 
-// Add cache control headers to prevent browser caching issues
+// Cache control for API responses (static file caching is handled in vite.ts serveStatic)
 app.use((req, res, next) => {
-  // For HTML files, prevent caching
+  // HTML pages should never be cached — always get fresh entry point after deploys
   if (req.path.endsWith('.html') || req.path === '/') {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
   }
-  // For static assets, allow short-term caching but enable revalidation
-  else if (req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
-    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+  // API responses should not be cached
+  else if (req.path.startsWith('/api/')) {
+    res.setHeader('Cache-Control', 'no-store');
   }
   next();
 });

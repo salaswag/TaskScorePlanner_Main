@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import TaskFormModal from "./task-form-modal";
 
-export default function FloatingAddButton({ onSubmit, isLoading }) {
+export default function FloatingAddButton({ onSubmit, isLoading, categories = [] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSubmit = (taskData) => {
@@ -29,6 +29,7 @@ export default function FloatingAddButton({ onSubmit, isLoading }) {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
         isLoading={isLoading}
+        categories={categories}
       />
     </>
   );

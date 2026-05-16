@@ -28,6 +28,7 @@ export class MongoStorage {
       this.timeEntriesCollection = this.db.collection('TimeEntries');
       this.settingsCollection = this.db.collection('Settings');
       this.planningCollection = this.db.collection('Planning');
+      this.categoriesCollection = this.db.collection('Categories');
       // Test the connection with a ping
       await this.db.command({ ping: 1 });
 
@@ -85,6 +86,7 @@ export class MongoStorage {
           isFocus: task.isFocus || false,
           archived: task.archived || false,
           workType: task.workType || null,
+          category: task.category || null,
           subtasks: task.subtasks || [],
         })),
         ...laterTasks.map(task => ({
@@ -98,6 +100,7 @@ export class MongoStorage {
           isFocus: task.isFocus || false,
           archived: task.archived || false,
           workType: task.workType || null,
+          category: task.category || null,
           subtasks: task.subtasks || [],
         }))
       ];
@@ -159,6 +162,7 @@ export class MongoStorage {
         isFocus: Boolean(taskData.isFocus),
         archived: Boolean(taskData.archived),
         workType: taskData.workType || null,
+        category: taskData.category || null,
         subtasks: taskData.subtasks || [],
         userId: taskData.userId || 'anonymous',
         createdAt: new Date(),
@@ -606,11 +610,11 @@ export class MongoStorage {
     }
   }
 
-  async getArchivedTasks() {
+  async getArchivedTasks(userId) {
     try {
-      const archivedTasks = await this.archiveCollection.find({}).sort({ archivedAt: -1 }).toArray();
+      const filter = userId ? { userId } : {};
+      const archivedTasks = await this.archiveCollection.find(filter).sort({ archivedAt: -1 }).toArray();
       console.log('Fetched archived tasks:', archivedTasks.length);
-      console.log('Archived tasks:', JSON.stringify(archivedTasks, null, 2));
       return archivedTasks.map(task => ({
         ...task,
         id: task.id || task._id.toString(),
@@ -780,6 +784,149 @@ export class MongoStorage {
     } catch (error) {
       console.error('Error saving planning data:', error);
       return false;
+    }
+  }
+
+  // ─── Category CRUD ───────────────────────────────────────────
+
+  async getCategories(userId) {
+    try {
+      const filter = userId ? { userId } : { userId: 'no-user-specified' };
+      const categories = await this.categoriesCollection.find(filter).sort({ order: 1 }).toArray();
+      return categories.map(cat => ({
+        id: cat.id || cat._id.toString(),
+        name: cat.name,
+        order: cat.order ?? 0,
+        color: cat.color || null,
+        userId: cat.userId,
+      }));
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      return [];
+    }
+  }
+
+  async createCategory(data) {
+    try {
+      // Auto-increment id
+      const lastCat = await this.categoriesCollection.findOne({}, { sort: { id: -1 } });
+      const nextId = (lastCat?.id || 0) + 1;
+
+      // Default order = max existing + 1
+      const maxOrder = await this.categoriesCollection.findOne(
+        { userId: data.userId },
+        { sort: { order: -1 } }
+      );
+      const order = data.order ?? ((maxOrder?.order ?? -1) + 1);
+
+      const category = {
+        id: nextId,
+        name: data.name,
+        order,
+        color: data.color || null,
+        userId: data.userId,
+        createdAt: new Date(),
+      };
+
+      await this.categoriesCollection.insertOne(category);
+      console.log('Category created:', category.name, 'id:', nextId);
+      return { id: nextId, name: category.name, order, color: category.color, userId: category.userId };
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw error;
+    }
+  }
+
+  async updateCategory(id, userId, data) {
+    try {
+      const updateFields = {};
+      if (data.name !== undefined) updateFields.name = data.name;
+      if (data.order !== undefined) updateFields.order = data.order;
+      if (data.color !== undefined) updateFields.color = data.color;
+
+      // If renaming, also update all tasks with the old name
+      if (data.name !== undefined) {
+        const existing = await this.categoriesCollection.findOne({ id: Number(id), userId });
+        if (existing && existing.name !== data.name) {
+          const oldName = existing.name;
+          await this.tasksCollection.updateMany(
+            { userId, category: oldName },
+            { $set: { category: data.name } }
+          );
+          await this.laterTasksCollection.updateMany(
+            { userId, category: oldName },
+            { $set: { category: data.name } }
+          );
+          console.log(`Renamed category tasks from "${oldName}" to "${data.name}"`);
+        }
+      }
+
+      const result = await this.categoriesCollection.findOneAndUpdate(
+        { id: Number(id), userId },
+        { $set: updateFields },
+        { returnDocument: 'after' }
+      );
+
+      if (!result) return null;
+      return { id: result.id, name: result.name, order: result.order, color: result.color };
+    } catch (error) {
+      console.error('Error updating category:', error);
+      return null;
+    }
+  }
+
+  async deleteCategory(id, userId) {
+    try {
+      const existing = await this.categoriesCollection.findOne({ id: Number(id), userId });
+      if (!existing) return false;
+
+      // Set all tasks with this category to null
+      await this.tasksCollection.updateMany(
+        { userId, category: existing.name },
+        { $set: { category: null } }
+      );
+      await this.laterTasksCollection.updateMany(
+        { userId, category: existing.name },
+        { $set: { category: null } }
+      );
+
+      const result = await this.categoriesCollection.deleteOne({ id: Number(id), userId });
+      console.log('Category deleted:', existing.name);
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      return false;
+    }
+  }
+
+  async moveCategoryToLater(categoryName, userId) {
+    try {
+      // Find all non-completed main tasks in this category
+      const tasksToMove = await this.tasksCollection.find({
+        userId,
+        category: categoryName,
+        completed: { $ne: true },
+      }).toArray();
+
+      if (tasksToMove.length === 0) return 0;
+
+      // Update each task's isLater flag and move to Later collection
+      const movedTasks = tasksToMove.map(task => ({
+        ...task,
+        isLater: true,
+      }));
+
+      await this.laterTasksCollection.insertMany(movedTasks);
+
+      // Delete from main collection
+      const ids = tasksToMove.map(t => t._id);
+      await this.tasksCollection.deleteMany({ _id: { $in: ids } });
+
+      console.log(`Moved ${tasksToMove.length} tasks in category "${categoryName}" to Later`);
+      return tasksToMove.length;
+    } catch (error) {
+      console.error('Error moving category to later:', error);
+      return 0;
     }
   }
 
